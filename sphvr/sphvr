@@ -1,0 +1,188 @@
+#!/usr/bin/env python3
+
+import signal
+from sinks import *
+# from vrsink.widgets import *
+
+import gi
+gi.require_version('Gdk', '3.0')
+gi.require_version('Gst', '1.0')
+gi.require_version('Gtk', '3.0')
+gi.require_version('GstVideo', '1.0')
+gi.require_version('GstGL', '1.0')
+
+from gi.repository import Gdk, Gst, Gtk, GdkX11, GstVideo, GstGL
+
+signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+# video_uri = "file:///home/bmonkey/workspace/ges/data/hd/Return to split point.mp4"
+# video_uri = "file:///home/bmonkey/Videos/vr/Beach 3D 360 - panocam3d.com.mp4"
+video_uri = "file:///home/bmonkey/Videos/360/elephants.webm"
+
+
+def trace(frame, event, arg):
+    print ("%s, %s:%d" % (event, frame.f_code.co_filename, frame.f_lineno))
+    return trace
+#sys.settrace(trace)
+
+
+def quit_app(widget, pipeline):
+    widget.hide()
+    pipeline.set_state(Gst.State.NULL)
+    Gtk.main_quit()
+
+
+class SPHVR:
+    @staticmethod
+    def pad_added_cb(element, stuff, sink):
+        element.link(sink)
+
+    @staticmethod
+    def bus_cb(bus, message):
+        if message.type == Gst.MessageType.EOS:
+            print("eos")
+            Gtk.main_quit()
+        elif message.type == Gst.MessageType.ERROR:
+            print(message.parse_error())
+            Gtk.main_quit()
+        else:
+            pass
+
+    def __init__(self):
+        Gtk.init([])
+        Gst.init([])
+
+        self.is_fullscreen = False
+
+        width, height = 1920, 1080
+        #width, height = 640, 480
+        self.aspect = width/height
+
+        pipeline = Gst.Pipeline()
+
+        src = Gst.ElementFactory.make("uridecodebin", None)
+        src.set_property("uri", video_uri)
+
+        sink = CairoGLSink(width, height)
+        
+        
+        #sink = Gst.ElementFactory.make("gtkglsink", None)
+        
+        """
+        gst-launch-1.0 filesrc location=~/Videos/360/carpet.webm ! decodebin ! glupload ! glcolorconvert ! glcompositor ! video/x-raw\(memory:GLMemory\), width=1920, height=1080 ! hmdwarp ! glimagesink
+        """
+        
+        glupload = Gst.ElementFactory.make("glupload", None)
+        glcolorconvert = Gst.ElementFactory.make("glcolorconvert", None)
+        videorate = Gst.ElementFactory.make("videorate", None)
+        glcompositor = Gst.ElementFactory.make("glcompositor", None)
+        hmdwarp = Gst.ElementFactory.make("hmdwarp", None)
+
+        # caps
+        caps = Gst.Caps.from_string("video/x-raw\(memory:GLMemory\), width=%d, height=%d, framerate=75/1" % (width, height))
+        cf = Gst.ElementFactory.make("capsfilter")
+        cf.set_property("caps", caps)
+
+        pipeline.add(src, glupload, glcolorconvert, videorate, glcompositor, cf, hmdwarp, sink.sink)
+        src.link(glupload)
+        glupload.link(glcolorconvert)
+        glcolorconvert.link(videorate)
+        videorate.link(glcompositor)
+        glcompositor.link(cf)
+        cf.link(hmdwarp)
+        hmdwarp.link(sink.sink)
+        src.connect("pad-added", self.pad_added_cb, glupload)
+
+        bus = pipeline.get_bus()
+        bus.add_signal_watch()
+        bus.connect("message", self.bus_cb)
+
+        self.window = Gtk.Window()
+        self.window.connect("delete-event", self.window_closed, pipeline)
+        self.window.connect("key-press-event", self.key_pressed, pipeline)
+        self.window.set_default_size(width, height)
+        self.window.set_title("SPHVR")
+        
+
+
+        """
+        outer_box = Gtk.Box()
+        outer_box.set_orientation(Gtk.Orientation.VERTICAL)
+
+        box = Gtk.Box()
+        box.set_orientation(Gtk.Orientation.HORIZONTAL)
+
+        #slider_box = Transformation2DSliderBox(transform, sink.scene)
+        #slider_box = Transformation3DSliderBox(transform)
+
+        #slider_box = SphereBox()
+
+        #sink.scene.slider_box = slider_box
+        #sink.scene.reposition(slider_box.build_mvp())
+        # sink.scene.window = window
+
+        #box.add(slider_box)
+        box.add(sink)
+
+        outer_box.add(box)
+
+        pause_button = Gtk.Button()
+        pause_button.set_label("Pause")
+        outer_box.add(pause_button)
+
+        pause_button.connect("clicked", self.pause, pipeline, sink)
+
+        self.window.add(outer_box)
+        """
+        #gtksink
+        #w = sink.get_property("widget")
+        #self.window.add(w)
+
+        self.window.add(sink)
+
+        from gi.repository import GdkPixbuf
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file("data/sphvr2.svg")
+        theme = Gtk.IconTheme.get_default()
+        theme.add_builtin_icon("sphvr", 256, pixbuf)
+        self.window.set_icon_name("sphvr")
+
+        self.window.show_all()
+
+        sink.set_handle()
+
+        if pipeline.set_state(Gst.State.PLAYING) == Gst.StateChangeReturn.FAILURE:
+            pipeline.set_state(Gst.State.NULL)
+        else:
+            Gtk.main()
+
+
+    def toggle_fullscreen(self):
+      if self.is_fullscreen:
+          self.is_fullscreen = False
+          self.window.unfullscreen() 
+      else:
+          screen = Gdk.Screen.get_default()
+          self.window.fullscreen_on_monitor(screen, 0)
+          self.is_fullscreen = True
+
+    def key_pressed(self, widget, key, pipeline):
+        if key.keyval == Gdk.KEY_Escape:
+            quit_app(widget, pipeline)
+        elif key.keyval == Gdk.KEY_f:
+            self.toggle_fullscreen()
+        else:
+            print(key.keyval)
+
+
+    @staticmethod
+    def pause(button, pipeline, sink):
+        if pipeline.get_state(Gst.CLOCK_TIME_NONE)[1] == Gst.State.PAUSED:
+            pipeline.set_state(Gst.State.PLAYING)
+        else:
+            pipeline.set_state(Gst.State.PAUSED)
+
+    @staticmethod
+    def window_closed(widget, event, pipeline):
+        quit_app(widget, pipeline)
+
+SPHVR()
