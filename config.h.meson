@@ -1,0 +1,68 @@
+/* config.h.in.  Generated from configure.ac by autoheader.  */
+
+/* GStreamer API Version */
+#mesondefine GST_API_VERSION
+
+/* data dir */
+#mesondefine GST_DATADIR
+
+/* Extra platform specific plugin suffix */
+#mesondefine GST_EXTRA_MODULE_SUFFIX
+
+/* macro to use to show function name */
+#mesondefine GST_FUNCTION
+
+/* Defined if gcov is enabled to force a rebuild due to config.h changing */
+#mesondefine GST_GCOV_ENABLED
+
+/* Defined when registry scanning through fork is unsafe */
+#mesondefine GST_HAVE_UNSAFE_FORK
+
+/* Default errorlevel to use */
+#mesondefine GST_LEVEL_DEFAULT
+
+/* GStreamer license */
+#mesondefine GST_LICENSE
+
+/* package name in plugins */
+#mesondefine GST_PACKAGE_NAME
+
+/* package origin */
+#mesondefine GST_PACKAGE_ORIGIN
+
+/* Define to 1 if you have getrusage in the <sys/resource.h> header file. */
+#mesondefine HAVE_GETRUSAGE
+
+
+/* library dir */
+#mesondefine LIBDIR
+
+/* gettext locale dir */
+#mesondefine LOCALEDIR
+
+/* Name of package */
+#mesondefine PACKAGE
+
+/* Define to the address where bug reports for this package should be sent. */
+#mesondefine PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#mesondefine PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#mesondefine PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#mesondefine PACKAGE_TARNAME
+
+/* Define to the home page for this package. */
+#mesondefine PACKAGE_URL
+
+/* Define to the version of this package. */
+#mesondefine PACKAGE_VERSION
+
+/* directory where plugins are located */
+#mesondefine PLUGINDIR
+
+/* Version number of package */
+#mesondefine VERSION
