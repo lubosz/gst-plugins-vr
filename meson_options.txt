@@ -1,0 +1,1 @@
+option('disable-introspection', type : 'boolean', value : false, description : 'disable introspection of the library')
