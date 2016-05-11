@@ -1,0 +1,6 @@
+Makefile
+build/
+.libs/
+gpu/shaders.c
+*.idea
+*~
