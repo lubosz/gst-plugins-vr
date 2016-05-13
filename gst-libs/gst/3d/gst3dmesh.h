@@ -67,6 +67,8 @@ void        gst_3d_mesh_bind           (Gst3DMesh * self);
 void        gst_3d_mesh_draw           (Gst3DMesh * self);
 void        gst_3d_mesh_upload_sphere  (Gst3DMesh * self, float radius, unsigned stacks, unsigned slices);
 void        gst_3d_mesh_upload_plane   (Gst3DMesh * self, float aspect);
+void        gst_3d_mesh_upload_point_plane (Gst3DMesh * self, unsigned width, unsigned height);
+void        gst_3d_mesh_draw_arrays(Gst3DMesh * self);
 GType       gst_3d_mesh_get_type       (void);
 
 G_END_DECLS

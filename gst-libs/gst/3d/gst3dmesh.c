@@ -242,6 +242,14 @@ gst_3d_mesh_draw (Gst3DMesh * self)
   gl->DrawElements (self->draw_mode, self->index_size, GL_UNSIGNED_SHORT, 0);
 }
 
+
+void
+gst_3d_mesh_draw_arrays(Gst3DMesh * self) {
+  GstGLFuncs *gl = self->context->gl_vtable;
+  //gl->DrawElements (self->draw_mode, self->index_size, GL_UNSIGNED_SHORT, 0);
+  gl->DrawArrays(self->draw_mode, 0, self->index_size);
+}
+
 void
 gst_3d_mesh_upload_plane (Gst3DMesh * self, float aspect)
 {
@@ -285,3 +293,80 @@ gst_3d_mesh_upload_plane (Gst3DMesh * self, float aspect)
 
   self->draw_mode = GL_TRIANGLE_STRIP;
 }
+
+void
+gst_3d_mesh_upload_point_plane (Gst3DMesh * self, unsigned width, unsigned height)
+{
+  GLfloat *vertices;
+  GLfloat *texcoords;
+  GLuint *indices;
+  
+  GstGLFuncs *gl = self->context->gl_vtable;
+
+  self->vector_length = 3;
+  int vertex_count = width * height;
+  const int component_size = sizeof (GLfloat) * vertex_count;
+
+  vertices = (GLfloat *) malloc (component_size * 3);
+  texcoords = (GLfloat *) malloc (component_size * 2);
+
+  GLfloat *v = vertices;
+  GLfloat *t = texcoords;
+  
+  float w_step = 2.0 / (float) width;
+  float h_step = 2.0 / (float) height;
+
+  float curent_w = -1.0;
+
+
+  float u_step = 1.0 / (float) width;
+  float v_step = 1.0 / (float) height;
+
+  float curent_u = 0.0;
+
+
+  for (int i = 0; i < width; i++) {
+  float curent_h = -1.0;
+  float curent_v = 0.0;
+    for (int j = 0; j < height; j++) {
+      
+      *v++ = curent_w;
+      *v++ = curent_h;
+      *v++ = 0;
+
+      *t++ = curent_u;
+      *t++ = curent_v;
+      
+      curent_h += h_step;
+      curent_v += v_step;
+    }
+      curent_u += u_step;
+      curent_w += w_step;
+  }
+
+  gl->BindBuffer (GL_ARRAY_BUFFER, self->vbo_positions);
+  gl->BufferData (GL_ARRAY_BUFFER, sizeof (GLfloat) * vertex_count * 3,
+      vertices, GL_STATIC_DRAW);
+
+  gl->BindBuffer (GL_ARRAY_BUFFER, self->vbo_uv);
+  gl->BufferData (GL_ARRAY_BUFFER, sizeof (GLfloat) * vertex_count * 2,
+      texcoords, GL_STATIC_DRAW);
+
+  self->index_size = width * height;
+  indices = (GLuint *) malloc (sizeof (GLuint) * self->index_size);
+
+  GLuint *indextemp = indices;
+  for (int i = 0; i < self->index_size; i++) {
+      *indextemp++ = i;
+  }
+      GST_ERROR("wxh %d", self->index_size);
+
+  // upload index
+  /*
+*/
+  gl->BindBuffer (GL_ELEMENT_ARRAY_BUFFER, self->vbo_indices);
+  gl->BufferData (GL_ELEMENT_ARRAY_BUFFER, sizeof (GLuint) * self->index_size,
+      indices, GL_STATIC_DRAW);
+  self->draw_mode = GL_POINTS;
+}
+

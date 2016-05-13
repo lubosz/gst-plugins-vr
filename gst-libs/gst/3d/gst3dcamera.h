@@ -42,26 +42,36 @@ struct _Gst3DCamera
   /*< private >*/
   GstObject parent;
   
+  graphene_matrix_t mvp;
+
+  /* position */
+  graphene_vec3_t eye;
+  graphene_vec3_t center;
+  graphene_vec3_t up;
+
+  gfloat xtranslation;
+  gfloat ytranslation;
+  gfloat ztranslation;
+
   /* perspective */
   gfloat fov;
   gfloat aspect;
   gfloat znear;
   gfloat zfar;
   gboolean ortho;
+    
+  /* arcball cam */
+  gfloat center_distance;
+  gfloat scroll_speed;
+  gfloat theta;
+  gfloat phi;
   
-  /* position */
-  graphene_vec3_t eye;
-  graphene_vec3_t center;
-  graphene_vec3_t up;
-  
-  float eye_separation;
+  /* stereo */
+  gfloat eye_separation;
   
   graphene_matrix_t left_vp_matrix;
-  graphene_matrix_t right_vp_matrix; 
+  graphene_matrix_t right_vp_matrix;
   
-  gfloat xtranslation;
-  gfloat ytranslation;
-  gfloat ztranslation;
   
   ohmd_device *device;
   ohmd_context *hmd_context;
@@ -74,6 +84,8 @@ struct _Gst3DCameraClass {
 Gst3DCamera * gst_3d_camera_new            (void);
 
 void gst_3d_camera_update_view (Gst3DCamera * self);
+void gst_3d_camera_update_view_mvp(Gst3DCamera * self);
+void gst_3d_camera_update_view_arcball(Gst3DCamera * self);
 
 void gst_3d_camera_inc_eye_sep(Gst3DCamera * self);
 void gst_3d_camera_dec_eye_sep(Gst3DCamera * self);

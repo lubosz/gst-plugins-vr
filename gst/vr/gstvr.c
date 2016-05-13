@@ -29,6 +29,7 @@
 #include "gstvrcompositor.h"
 #include "gsthmdwarp.h"
 #include "gstvrtestsrc.h"
+#include "gstpointcloudbuilder.h"
 
 static gboolean
 plugin_init (GstPlugin * plugin)
@@ -40,6 +41,9 @@ plugin_init (GstPlugin * plugin)
     return FALSE;
 
   if (!gst_element_register (plugin, "hmdwarp", GST_RANK_NONE, gst_hmd_warp_get_type()))
+    return FALSE;
+
+  if (!gst_element_register (plugin, "pointcloudbuilder", GST_RANK_NONE, gst_point_cloud_builder_get_type()))
     return FALSE;
 
   return TRUE;
