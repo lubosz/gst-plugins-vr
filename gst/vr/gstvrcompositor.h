@@ -29,15 +29,15 @@
 
 G_BEGIN_DECLS
 #define GST_TYPE_VR_COMPOSITOR            (gst_vr_compositor_get_type())
-#define GST_VR_COMPOSITOR(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_VR_COMPOSITOR,GstGLCompositor))
+#define GST_VR_COMPOSITOR(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_VR_COMPOSITOR,GstVRCompositor))
 #define GST_IS_VR_COMPOSITOR(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj),GST_TYPE_VR_COMPOSITOR))
-#define GST_VR_COMPOSITOR_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass) ,GST_TYPE_VR_COMPOSITOR,GstGLCompositorClass))
+#define GST_VR_COMPOSITOR_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass) ,GST_TYPE_VR_COMPOSITOR,GstVRCompositorClass))
 #define GST_IS_VR_COMPOSITOR_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass) ,GST_TYPE_VR_COMPOSITOR))
-#define GST_VR_COMPOSITOR_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj) ,GST_TYPE_VR_COMPOSITOR,GstGLCompositorClass))
-typedef struct _GstGLCompositor GstGLCompositor;
-typedef struct _GstGLCompositorClass GstGLCompositorClass;
+#define GST_VR_COMPOSITOR_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj) ,GST_TYPE_VR_COMPOSITOR,GstVRCompositorClass))
+typedef struct _GstVRCompositor GstVRCompositor;
+typedef struct _GstVRCompositorClass GstVRCompositorClass;
 
-struct _GstGLCompositor
+struct _GstVRCompositor
 {
   GstGLFilter filter;
 
@@ -63,7 +63,7 @@ struct _GstGLCompositor
   GLint default_fbo;
 };
 
-struct _GstGLCompositorClass
+struct _GstVRCompositorClass
 {
   GstGLFilterClass filter_class;
 };

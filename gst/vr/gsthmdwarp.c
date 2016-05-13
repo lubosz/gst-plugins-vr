@@ -97,7 +97,7 @@ gst_hmd_warp_class_init (GstHmdWarpClass * klass)
 
   gst_element_class_set_metadata (element_class, "HMD warp",
       "Filter/Effect/Video", "Warp HMD distortion",
-      "Lubosz Sarnecki <lubosz@gmail.com>\n");
+      "Lubosz Sarnecki <lubosz.sarnecki@collabora.co.uk>\n");
 
   GST_GL_BASE_FILTER_CLASS (klass)->supported_gl_api =
       GST_GL_API_OPENGL | GST_GL_API_OPENGL3 | GST_GL_API_GLES2;

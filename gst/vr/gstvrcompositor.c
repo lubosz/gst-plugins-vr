@@ -1,6 +1,6 @@
 /*
  * GStreamer Plugins VR
- * Copyright (C) 2016 Lubosz Sarnecki <lubosz@collabora.co.uk>
+ * Copyright (C) 2016 Lubosz Sarnecki <lubosz.sarnecki@collabora.co.uk>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -56,7 +56,7 @@ enum
 #define DEBUG_INIT \
     GST_DEBUG_CATEGORY_INIT (gst_vr_compositor_debug, "vrcompositor", 0, "vrcompositor element");
 
-G_DEFINE_TYPE_WITH_CODE (GstGLCompositor, gst_vr_compositor,
+G_DEFINE_TYPE_WITH_CODE (GstVRCompositor, gst_vr_compositor,
     GST_TYPE_GL_FILTER, DEBUG_INIT);
 
 static void gst_vr_compositor_set_property (GObject * object, guint prop_id,
@@ -73,13 +73,13 @@ static void gst_vr_compositor_reset_gl (GstGLFilter * filter);
 static gboolean gst_vr_compositor_stop (GstBaseTransform * trans);
 static gboolean gst_vr_compositor_init_shader (GstGLFilter * filter);
 static void gst_vr_compositor_callback (gpointer stuff);
-static void gst_vr_compositor_build_mvp (GstGLCompositor * self);
+static void gst_vr_compositor_build_mvp (GstVRCompositor * self);
 
 static gboolean gst_vr_compositor_filter_texture (GstGLFilter * filter,
     guint in_tex, guint out_tex);
 
 static void
-gst_vr_compositor_class_init (GstGLCompositorClass * klass)
+gst_vr_compositor_class_init (GstVRCompositorClass * klass)
 {
   GObjectClass *gobject_class;
   GstElementClass *element_class;
@@ -103,14 +103,14 @@ gst_vr_compositor_class_init (GstGLCompositorClass * klass)
 
   gst_element_class_set_metadata (element_class, "VR compositor",
       "Filter/Effect/Video", "Transform video for VR",
-      "Lubosz Sarnecki <lubosz@gmail.com>\n");
+      "Lubosz Sarnecki <lubosz.sarnecki@collabora.co.uk>\n");
 
   GST_GL_BASE_FILTER_CLASS (klass)->supported_gl_api =
       GST_GL_API_OPENGL | GST_GL_API_OPENGL3 | GST_GL_API_GLES2;
 }
 
 static void
-gst_vr_compositor_init (GstGLCompositor * self)
+gst_vr_compositor_init (GstVRCompositor * self)
 {
   self->shader = NULL;
   self->render_mode = GL_TRIANGLE_STRIP;
@@ -132,7 +132,7 @@ gst_vr_compositor_init (GstGLCompositor * self)
 }
 
 static void
-gst_vr_compositor_build_mvp (GstGLCompositor * self)
+gst_vr_compositor_build_mvp (GstVRCompositor * self)
 {
   gst_3d_camera_update_view(self->camera);
 }
@@ -142,7 +142,7 @@ static void
 gst_vr_compositor_set_property (GObject * object, guint prop_id,
     const GValue * value, GParamSpec * pspec)
 {
-  GstGLCompositor *filter = GST_VR_COMPOSITOR (object);
+  GstVRCompositor *filter = GST_VR_COMPOSITOR (object);
 
   switch (prop_id) {
     default:
@@ -168,7 +168,7 @@ static gboolean
 gst_vr_compositor_set_caps (GstGLFilter * filter, GstCaps * incaps,
     GstCaps * outcaps)
 {
-  GstGLCompositor *self = GST_VR_COMPOSITOR (filter);
+  GstVRCompositor *self = GST_VR_COMPOSITOR (filter);
 
   self->camera->aspect =
       (gdouble) GST_VIDEO_INFO_WIDTH (&filter->out_info) /
@@ -190,7 +190,7 @@ gst_vr_compositor_set_caps (GstGLFilter * filter, GstCaps * incaps,
 }
 
 void
-_release_key (GstGLCompositor * self, const gchar * key)
+_release_key (GstVRCompositor * self, const gchar * key)
 {
   GST_DEBUG ("Event: Release %s", key);
 
@@ -206,7 +206,7 @@ _release_key (GstGLCompositor * self, const gchar * key)
 }
 
 void
-_press_key (GstGLCompositor * self, const gchar * key)
+_press_key (GstVRCompositor * self, const gchar * key)
 {
   GList *l;
   gboolean already_pushed = FALSE;
@@ -222,7 +222,7 @@ _press_key (GstGLCompositor * self, const gchar * key)
 }
 
 void
-_print_pressed_keys (GstGLCompositor * self)
+_print_pressed_keys (GstVRCompositor * self)
 {
   GList *l;
   GST_DEBUG ("Pressed keys:");
@@ -234,7 +234,7 @@ _print_pressed_keys (GstGLCompositor * self)
 static gboolean
 gst_vr_compositor_src_event (GstBaseTransform * trans, GstEvent * event)
 {
-  GstGLCompositor *self = GST_VR_COMPOSITOR (trans);
+  GstVRCompositor *self = GST_VR_COMPOSITOR (trans);
   GstStructure *structure;
 
   GST_DEBUG_OBJECT (trans, "handling %s event", GST_EVENT_TYPE_NAME (event));
@@ -284,7 +284,7 @@ gst_vr_compositor_src_event (GstBaseTransform * trans, GstEvent * event)
 static void
 gst_vr_compositor_reset_gl (GstGLFilter * filter)
 {
-  GstGLCompositor *self = GST_VR_COMPOSITOR (filter);
+  GstVRCompositor *self = GST_VR_COMPOSITOR (filter);
 
   if (self->shader) {
     gst_object_unref (self->shader);
@@ -296,7 +296,7 @@ gst_vr_compositor_reset_gl (GstGLFilter * filter)
 static gboolean
 gst_vr_compositor_stop (GstBaseTransform * trans)
 {
-  GstGLCompositor *self = GST_VR_COMPOSITOR (trans);
+  GstVRCompositor *self = GST_VR_COMPOSITOR (trans);
   // GstGLContext *context = GST_GL_BASE_FILTER (trans)->context;
 
   /* blocking call, wait until the opengl thread has destroyed the shader */
@@ -305,7 +305,7 @@ gst_vr_compositor_stop (GstBaseTransform * trans)
   return GST_BASE_TRANSFORM_CLASS (parent_class)->stop (trans);
 }
 
-void _create_fbo(GstGLCompositor * self, GLuint* fbo, GLuint* color_tex)
+void _create_fbo(GstVRCompositor * self, GLuint* fbo, GLuint* color_tex)
 {
   GstGLContext *context = GST_GL_BASE_FILTER (self)->context;
   GstGLFuncs *gl = context->gl_vtable;
@@ -331,7 +331,7 @@ void _create_fbo(GstGLCompositor * self, GLuint* fbo, GLuint* color_tex)
 	gl->BindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-static gboolean _init_gl(GstGLCompositor * self) {
+static gboolean _init_gl(GstVRCompositor * self) {
   GstGLContext *context = GST_GL_BASE_FILTER (self)->context;
   GstGLFuncs *gl = context->gl_vtable;
   gboolean ret = TRUE;
@@ -364,7 +364,7 @@ static gboolean _init_gl(GstGLCompositor * self) {
 static gboolean
 gst_vr_compositor_init_shader (GstGLFilter * filter)
 {
-  GstGLCompositor *self = GST_VR_COMPOSITOR (filter);
+  GstVRCompositor *self = GST_VR_COMPOSITOR (filter);
   
   return _init_gl(self);
 }
@@ -373,7 +373,7 @@ static gboolean
 gst_vr_compositor_filter_texture (GstGLFilter * filter, guint in_tex,
     guint out_tex)
 {
-  GstGLCompositor *self = GST_VR_COMPOSITOR (filter);
+  GstVRCompositor *self = GST_VR_COMPOSITOR (filter);
 
   self->in_tex = in_tex;
 
@@ -389,7 +389,7 @@ gst_vr_compositor_filter_texture (GstGLFilter * filter, guint in_tex,
 
 /*
 void
-_toggle_render_mode (GstGLCompositor * self)
+_toggle_render_mode (GstVRCompositor * self)
 {
   if (self->render_mode == GL_TRIANGLES)
     self->render_mode = GL_LINES;
@@ -399,7 +399,7 @@ _toggle_render_mode (GstGLCompositor * self)
 */
 
 void
-_process_input (GstGLCompositor * self)
+_process_input (GstVRCompositor * self)
 {
   //_print_pressed_keys (self);
 
@@ -442,7 +442,7 @@ _process_input (GstGLCompositor * self)
 static void
 gst_vr_compositor_callback (gpointer this)
 {
-  GstGLCompositor *self = GST_VR_COMPOSITOR (this);
+  GstVRCompositor *self = GST_VR_COMPOSITOR (this);
   GstGLContext *context = GST_GL_BASE_FILTER (this)->context;
   GstGLFuncs *gl = context->gl_vtable;
   
