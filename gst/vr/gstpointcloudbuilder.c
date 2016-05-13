@@ -189,6 +189,7 @@ gst_point_cloud_builder_set_caps (GstGLFilter * filter, GstCaps * incaps,
   return TRUE;
 }
 
+/*
 void
 _release_key (GstPointCloudBuilder * self, const gchar * key)
 {
@@ -230,6 +231,7 @@ _print_pressed_keys (GstPointCloudBuilder * self)
   for (l = self->pushed_buttons; l != NULL; l = l->next)
     GST_DEBUG ("%s", (const gchar*) l->data);
 }
+*/
 
 static gboolean
 gst_point_cloud_builder_src_event (GstBaseTransform * trans, GstEvent * event)
@@ -261,7 +263,7 @@ gst_point_cloud_builder_src_event (GstBaseTransform * trans, GstEvent * event)
             gst_3d_camera_dec_eye_sep(self->camera);
           } else {
             GST_DEBUG("%s", key);
-            _press_key (self, key);
+            //_press_key (self, key);
           }
           
           /*
@@ -271,8 +273,8 @@ gst_point_cloud_builder_src_event (GstBaseTransform * trans, GstEvent * event)
 						ohmd_device_setf(hmd, OHMD_POSITION_VECTOR, zero);
           */
           
-        else if (g_strcmp0 (event_name, "key-release") == 0)
-          _release_key (self, key);
+        //else if (g_strcmp0 (event_name, "key-release") == 0)
+        //  _release_key (self, key);
       }
       break;
     default:
@@ -305,7 +307,7 @@ gst_point_cloud_builder_stop (GstBaseTransform * trans)
   return GST_BASE_TRANSFORM_CLASS (parent_class)->stop (trans);
 }
 
-void _create_fbo(GstPointCloudBuilder * self, GLuint* fbo, GLuint* color_tex)
+void _create_fbo2(GstPointCloudBuilder * self, GLuint* fbo, GLuint* color_tex)
 {
   GstGLContext *context = GST_GL_BASE_FILTER (self)->context;
   GstGLFuncs *gl = context->gl_vtable;
@@ -337,7 +339,7 @@ static gboolean _init_gl(GstPointCloudBuilder * self) {
   gboolean ret = TRUE;
    if (!self->mesh) {
       self->shader = gst_3d_shader_new(context);
-      ret = gst_3d_shader_from_vert_frag(self->shader, "mvp_uv.vert", "texture_uv.frag");
+      ret = gst_3d_shader_from_vert_frag(self->shader, "points.vert", "points.frag");
       gst_3d_shader_bind(self->shader);
 
       self->mesh = gst_3d_mesh_new(context);
@@ -352,8 +354,8 @@ static gboolean _init_gl(GstPointCloudBuilder * self) {
       gst_3d_mesh_upload_plane (self->render_plane, self->camera->aspect);
       gst_3d_mesh_bind_buffers (self->render_plane, self->shader->attr_position, self->shader->attr_uv);
 
-      _create_fbo(self, &self->left_fbo, &self->left_color_tex);
-      _create_fbo(self, &self->right_fbo, &self->right_color_tex);
+      _create_fbo2(self, &self->left_fbo, &self->left_color_tex);
+      _create_fbo2(self, &self->right_fbo, &self->right_color_tex);
       gl->ClearColor (0.f, 0.f, 0.f, 0.f);
       gl->ActiveTexture (GL_TEXTURE0);
       gst_gl_shader_set_uniform_1i (self->shader->shader, "texture", 0);
@@ -398,6 +400,7 @@ _toggle_render_mode (GstPointCloudBuilder * self)
 }
 */
 
+/*
 void
 _process_input (GstPointCloudBuilder * self)
 {
@@ -438,6 +441,7 @@ _process_input (GstPointCloudBuilder * self)
     }
   }
 }
+*/
 
 static void
 gst_point_cloud_builder_callback (gpointer this)
@@ -446,7 +450,7 @@ gst_point_cloud_builder_callback (gpointer this)
   GstGLContext *context = GST_GL_BASE_FILTER (this)->context;
   GstGLFuncs *gl = context->gl_vtable;
   
-  _process_input (self);
+  //_process_input (self);
   
   if (self->default_fbo == 0)
   gl->GetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &self->default_fbo);
