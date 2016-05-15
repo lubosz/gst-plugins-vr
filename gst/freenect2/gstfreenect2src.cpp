@@ -557,7 +557,7 @@ freenect2_initialise_devices (GstFreenect2Src * src)
 
   GST_DEBUG("serial %s", serial.c_str());
 
-  src->pipeline = new libfreenect2::CpuPacketPipeline();
+  src->pipeline = new libfreenect2::OpenGLPacketPipeline();
 
   if(src->pipeline)
   {

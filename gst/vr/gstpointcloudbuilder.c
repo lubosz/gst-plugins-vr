@@ -174,13 +174,13 @@ gst_point_cloud_builder_set_caps (GstGLFilter * filter, GstCaps * incaps,
       (gdouble) GST_VIDEO_INFO_WIDTH (&filter->out_info) /
       (gdouble) GST_VIDEO_INFO_HEIGHT (&filter->out_info);
       
-  self->eye_width = 1920 / 2;
-  self->eye_height = 1080;
+  self->eye_width = GST_VIDEO_INFO_WIDTH (&filter->out_info);
+  self->eye_height = GST_VIDEO_INFO_HEIGHT (&filter->out_info);
   
   //self->eye_width = GST_VIDEO_INFO_WIDTH (&filter->out_info) / 2;
   //self->eye_height = GST_VIDEO_INFO_HEIGHT (&filter->out_info);
   
-  GST_DEBUG("eye %dx%d", self->eye_width, self->eye_height);
+  GST_ERROR("eye %dx%d", self->eye_width, self->eye_height);
 
   self->caps_change = TRUE;
 
@@ -341,21 +341,22 @@ static gboolean _init_gl(GstPointCloudBuilder * self) {
       self->shader = gst_3d_shader_new(context);
       ret = gst_3d_shader_from_vert_frag(self->shader, "points.vert", "points.frag");
       gst_3d_shader_bind(self->shader);
-
+/*
       self->mesh = gst_3d_mesh_new(context);
       gst_3d_mesh_init_buffers (self->mesh);
       gst_3d_shader_enable_attribs(self->shader);
       gst_3d_mesh_upload_sphere (self->mesh, 10.0, 20, 20);
       gst_3d_mesh_bind_buffers (self->mesh, self->shader->attr_position, self->shader->attr_uv);
-      
+*/      
       self->render_plane = gst_3d_mesh_new(context);
       gst_3d_mesh_init_buffers (self->render_plane);
       gst_3d_shader_enable_attribs(self->shader);
-      gst_3d_mesh_upload_plane (self->render_plane, self->camera->aspect);
+      //gst_3d_mesh_upload_plane (self->render_plane, self->camera->aspect);
+      gst_3d_mesh_upload_point_plane(self->render_plane, self->eye_width, self->eye_height);
       gst_3d_mesh_bind_buffers (self->render_plane, self->shader->attr_position, self->shader->attr_uv);
 
-      _create_fbo2(self, &self->left_fbo, &self->left_color_tex);
-      _create_fbo2(self, &self->right_fbo, &self->right_color_tex);
+      //_create_fbo2(self, &self->left_fbo, &self->left_color_tex);
+      //_create_fbo2(self, &self->right_fbo, &self->right_color_tex);
       gl->ClearColor (0.f, 0.f, 0.f, 0.f);
       gl->ActiveTexture (GL_TEXTURE0);
       gst_gl_shader_set_uniform_1i (self->shader->shader, "texture", 0);
@@ -452,59 +453,54 @@ gst_point_cloud_builder_callback (gpointer this)
   
   //_process_input (self);
   
-  if (self->default_fbo == 0)
-  gl->GetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &self->default_fbo);
+  //if (self->default_fbo == 0)
+  //gl->GetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &self->default_fbo);
   
   // LEFT EYE
-  gl->BindFramebuffer(GL_FRAMEBUFFER, self->left_fbo);
+  //gl->BindFramebuffer(GL_FRAMEBUFFER, self->left_fbo);
   
-  gl->Viewport(0, 0, self->eye_width, self->eye_height);
+  //gl->Viewport(0, 0, self->eye_width, self->eye_height);
   gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   gst_gl_shader_use (self->shader->shader);
   gl->BindTexture (GL_TEXTURE_2D, self->in_tex);
 
+/*
   gst_point_cloud_builder_build_mvp (self);
   gst_3d_shader_upload_matrix(self->shader, &self->camera->left_vp_matrix, "mvp");
-  gst_3d_mesh_bind(self->mesh);
-  gst_3d_mesh_draw(self->mesh);
-
-
-  // RIGHT EYE
-  gl->BindFramebuffer(GL_FRAMEBUFFER, self->right_fbo);
-  gl->Viewport(0, 0, self->eye_width, self->eye_height);
-  gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-  gst_gl_shader_use (self->shader->shader);
-  gl->BindTexture (GL_TEXTURE_2D, self->in_tex);
-
-  gst_point_cloud_builder_build_mvp (self);
-  gst_3d_shader_upload_matrix(self->shader, &self->camera->right_vp_matrix, "mvp");
-  gst_3d_mesh_bind(self->mesh);
-  gst_3d_mesh_draw(self->mesh);
-
+ */
  
-  // DRAW FRAMEBUFFERS ON PLANES
-  gl->BindFramebuffer(GL_FRAMEBUFFER, self->default_fbo);
-
-  gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-               
-  graphene_matrix_t projection_ortho;
-  graphene_matrix_init_ortho (&projection_ortho, -self->camera->aspect, self->camera->aspect, -1.0, 1.0, -1.0, 1.0);
+  
+  /*
+   graphene_matrix_t projection_ortho;
+  graphene_matrix_init_ortho (&projection_ortho, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
   gst_3d_shader_upload_matrix(self->shader, &projection_ortho, "mvp");
-  gst_3d_mesh_bind(self->render_plane);
+ */
+ 
+ graphene_matrix_t mvp;
+ graphene_matrix_t view_matrix;
+ graphene_matrix_t projection_matrix;
+ 
+  graphene_vec3_t eye;
+  graphene_vec3_t center;
+  graphene_vec3_t up;
+  graphene_vec3_init (&eye, 0.f, 0.f, 1.f);
+  graphene_vec3_init (&center, 0.f, 0.f, 0.f);
+  graphene_vec3_init (&up, 0.f, 1.f, 0.f);
+ 
+  graphene_matrix_init_perspective (&projection_matrix,
+      90.0,
+      4.0/3.0, 0.1, 1000.0);
+  graphene_matrix_init_look_at (&view_matrix, &eye, &center,
+      &up);
 
-  // left framebuffer
-  gl->Viewport(0, 0, self->eye_width, self->eye_height);
-  glBindTexture(GL_TEXTURE_2D, self->left_color_tex);
-  gst_3d_mesh_draw(self->render_plane);
+  graphene_matrix_multiply (&view_matrix, &projection_matrix, &mvp);
   
-  // right framebuffer
-  gl->Viewport(self->eye_width, 0, self->eye_width, self->eye_height);
-  glBindTexture(GL_TEXTURE_2D, self->right_color_tex);
-  gst_3d_mesh_draw(self->render_plane);
-  
-  
+  gst_3d_shader_upload_matrix(self->shader, &mvp, "mvp");
+ 
+  gst_3d_mesh_bind(self->render_plane);
+  gst_3d_mesh_draw_arrays(self->render_plane);
+
   gl->BindVertexArray (0);
   gl->BindTexture (GL_TEXTURE_2D, 0);
   gst_gl_context_clear_shader (context);

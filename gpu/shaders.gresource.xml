@@ -5,5 +5,7 @@
     <file>texture_uv.frag</file>
     <file>warp.frag</file>
     <file>mvp_uv.vert</file>
+    <file>points.vert</file>
+    <file>points.frag</file>
   </gresource>
 </gresources>
