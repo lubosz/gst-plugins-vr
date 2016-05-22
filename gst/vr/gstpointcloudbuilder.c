@@ -128,6 +128,8 @@ gst_point_cloud_builder_init (GstPointCloudBuilder * self)
   self->eye_height = 1;
 
   self->default_fbo = 0;
+  
+  self->pressed_mouse_button = 0;
 }
 
 static void
@@ -222,27 +224,17 @@ _print_pressed_keys (GstPointCloudBuilder * self)
 }
 */
 
+/*
 static gboolean
 gst_print_events (GQuark field_id, const GValue * value, gpointer data)
 {
   GstStructure *s = data;
-  //GValue v = { 0 };
-
   const GValue *v = gst_structure_id_get_value (s, field_id);
-  // g_printf ("Value: %s\n", g_value_get_string (v));
   GST_ERROR ("%s: %s", g_type_name (G_VALUE_TYPE (v)),
       g_quark_to_string (field_id));
-
-/*
-  if (fixate_value (&v, value)) {
-    gst_structure_id_set_value (s, field_id, &v);
-    g_value_unset (&v);
-  }
-*/
-
-
   return TRUE;
 }
+*/
 
 static gboolean
 gst_point_cloud_builder_src_event (GstBaseTransform * trans, GstEvent * event)
@@ -282,18 +274,67 @@ gst_point_cloud_builder_src_event (GstBaseTransform * trans, GstEvent * event)
             //_press_key (self, key);
           }
         }
-      } else if (g_strcmp0 (event_name, "mouse-button-press") == 0) {
-
-        gint button;
-        gst_structure_get_int (structure, "button", &button);
+      } else if (g_strcmp0 (event_name, "mouse-move") == 0) {
         gdouble x, y;
         gst_structure_get_double (structure, "pointer_x", &x);
         gst_structure_get_double (structure, "pointer_y", &y);
+        
+        // hanlde the mouse motion for zooming and rotating the view
+        gdouble dx, dy;
+        dx = x - self->camera->cursor_last_x;
+        dy = y - self->camera->cursor_last_y;
 
-        GST_ERROR ("button: %d [%fx%f]", button, x, y);
+        if (self->pressed_mouse_button == 1) {
+            // GST_ERROR ("Rotating [%fx%f]", x, y);
+            gst_3d_camera_rotate_arcball(self->camera, dx, dy);
+        }
 
+        self->camera->cursor_last_x = x;
+        self->camera->cursor_last_y = y;
+        
+        
+      } else if (g_strcmp0 (event_name, "mouse-button-release") == 0) {
+        gint button;
+        gst_structure_get_int (structure, "button", &button);
+        
+        self->pressed_mouse_button = 0;
+        
+        if (button == 1) {
+          GST_DEBUG("first button release");
+          gst_structure_get_double (structure, "pointer_x", &self->camera->cursor_last_x);
+          gst_structure_get_double (structure, "pointer_y", &self->camera->cursor_last_y);
+        } else if (button == 4) {
+          GST_DEBUG("wheel up");
+          
+          gst_3d_camera_translate_arcball (self->camera, -1.0);
+          
+        } else if (button == 5) {
+          GST_DEBUG("wheel down");
+          
+          gst_3d_camera_translate_arcball (self->camera, 1.0);
+        }
+        
+        //GST_ERROR ("release %d", button);
+      } else if (g_strcmp0 (event_name, "mouse-button-press") == 0) {
+        gint button;
+        gst_structure_get_int (structure, "button", &button);
+        //GST_ERROR ("press %d", button);
+        
+        
+        self->pressed_mouse_button = button;
+        
+        //GST_ERROR ("press %d", button);
+        /*
+        if (button == 4) {
+          GST_ERROR("wheel up");
+        } else if (button == 5) {
+          GST_ERROR("wheel down");
+        }
+        */
+        
+      // } else if (g_strcmp0 (event_name, "key-release") == 0) {
       } else {
-        GST_ERROR ("event %s", event_name);
+        GST_ERROR ("unknown event %s", event_name);
       }
       /*
          // reset rotation and position
@@ -387,8 +428,11 @@ _init_gl (GstPointCloudBuilder * self)
     gst_3d_mesh_init_buffers (self->render_plane);
     gst_3d_shader_enable_attribs (self->shader);
     //gst_3d_mesh_upload_plane (self->render_plane, self->camera->aspect);
-    gst_3d_mesh_upload_point_plane (self->render_plane, self->eye_width,
-        self->eye_height);
+    //gst_3d_mesh_upload_point_plane (self->render_plane, self->eye_width,
+    //    self->eye_height);
+    
+    gst_3d_mesh_upload_point_plane (self->render_plane, 512, 424);
+    
     gst_3d_mesh_bind_buffers (self->render_plane, self->shader->attr_position,
         self->shader->attr_uv);
 
@@ -514,7 +558,9 @@ gst_point_cloud_builder_callback (gpointer this)
      gst_3d_shader_upload_matrix(self->shader, &projection_ortho, "mvp");
    */
 
-  gst_3d_camera_update_view_mvp (self->camera);
+  //gst_3d_camera_update_view_mvp (self->camera);
+  
+  gst_3d_camera_update_view_arcball (self->camera);
 
   gst_3d_shader_upload_matrix (self->shader, &self->camera->mvp, "mvp");
 

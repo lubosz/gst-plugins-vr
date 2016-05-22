@@ -175,7 +175,6 @@ gst_3d_mesh_upload_sphere (Gst3DMesh * self, float radius, unsigned stacks, unsi
   float const J = 1. / (float) (stacks - 1);
   float const I = 1. / (float) (slices - 1);
 
-
   for (int i = 0; i < slices + 1; i++) {
     float const theta = M_PI * i * I;
     for (int j = 0; j < stacks; j++) {
@@ -189,12 +188,6 @@ gst_3d_mesh_upload_sphere (Gst3DMesh * self, float radius, unsigned stacks, unsi
       *v++ = y * radius;
       *v++ = z * radius;
 
-/*
-      float hacky = j * J + 0.75;
-      if (hacky > 1)
-        hacky -= 1.0;
-      *t++ = hacky;
-*/
       *t++ = j * J;
       *t++ = i * I;
     }
@@ -317,7 +310,6 @@ gst_3d_mesh_upload_point_plane (Gst3DMesh * self, unsigned width, unsigned heigh
   float h_step = 2.0 / (float) height;
 
   float curent_w = -1.0;
-
 
   float u_step = 1.0 / (float) width;
   float v_step = 1.0 / (float) height;

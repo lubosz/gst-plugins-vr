@@ -33,13 +33,14 @@ install_headers(
 
 gst_3d_lib = shared_library('gst3d-' + apiversion,
   'gst-libs/gst/3d/gst3dmesh.c',
-  'gst-libs/gst/3d/gst3dcamera.c',
+  'gst-libs/gst/3d/gst3dcamera.cpp',
   'gst-libs/gst/3d/gst3dhmd.c',
   'gst-libs/gst/3d/gst3drenderer.c',
   'gst-libs/gst/3d/gst3dshader.c',
   install: true,
   dependencies: [glib_dep, gobject_dep, gst_dep, gst_gl_dep, gst_video_dep, graphene_dep, openhmd_dep, gio_dep],
   c_args: ['-Wno-pedantic'],
+  cpp_args: ['-fpermissive'],
   link_args: ['-lm'],
   soversion : '0')
 

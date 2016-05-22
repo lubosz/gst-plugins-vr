@@ -54,6 +54,8 @@ struct _GstPointCloudBuilder
 
   Gst3DMesh * mesh;
   Gst3DMesh * render_plane;
+  
+  int pressed_mouse_button;
 
   Gst3DShader * shader;
   Gst3DCamera * camera;

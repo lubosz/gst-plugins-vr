@@ -26,7 +26,7 @@ void main()
     {
         pos = vec3(9999.0);
     }
-    gl_Position = mvp * vec4(pos, 1.0);
+   gl_Position = mvp * vec4(pos, 1.0);
 
 
    //gl_Position = mvp * vec4(position, 1);
