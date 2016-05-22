@@ -148,6 +148,8 @@ gst_3d_camera_init (Gst3DCamera * self)
   self->zfar = 100;
   self->hmd_context = NULL;
   self->device = NULL;
+  self->center_distance = 1.0;
+  self->scroll_speed = 1.0;
   
   graphene_vec3_init (&self->eye, 0.f, 0.f, 1.f);
   graphene_vec3_init (&self->center, 0.f, 0.f, 0.f);
@@ -265,4 +267,69 @@ gst_3d_camera_update_view_from_matrix (Gst3DCamera * self)
 void gst_3d_camera_update_view(Gst3DCamera * self) {
   gst_3d_camera_update_view_from_quaternion (self);
   // gst_3d_camera_update_view_from_matrix (self);
+}
+
+
+void gst_3d_camera_update_view_mvp(Gst3DCamera * self) {
+  graphene_vec3_t eye;
+  graphene_vec3_t center;
+  graphene_vec3_t up;
+  graphene_vec3_init (&eye, 0.f, 0.f, 1.f);
+  graphene_vec3_init (&center, 0.f, 0.f, 0.f);
+  graphene_vec3_init (&up, 0.f, 1.f, 0.f);
+ 
+ graphene_matrix_t projection_matrix;
+  graphene_matrix_init_perspective (&projection_matrix,
+      90.0,
+      4.0/3.0, 0.1, 1000.0);
+
+ graphene_matrix_t view_matrix;
+  graphene_matrix_init_look_at (&view_matrix, &eye, &center,
+      &up);
+
+  graphene_matrix_multiply (&view_matrix, &projection_matrix, &self->mvp);
+}
+
+void gst_3d_camera_translate_arcball(Gst3DCamera * self, float z) {
+    self->center_distance += z * self->scroll_speed;
+    // updateView();
+    gst_3d_camera_update_view_arcball(self);
+}
+
+void gst_3d_camera_update_view_arcball(Gst3DCamera * self) {
+  graphene_vec3_t eye;
+  graphene_vec3_t center;
+  graphene_vec3_t up;
+  
+  float radius = exp(-self->center_distance);
+  
+  /*
+  glm::vec3 center(0, 0, 0);
+    glm::vec3 up(0, 0, -1);
+
+    glm::vec3 eye(radius * sin(theta) * cos(phi),
+                  radius * sin(theta) * sin(phi),
+                  radius * cos(theta));
+
+    // printf("theta %f phi %f scrollPosition %f\n",
+    //   theta, phi, scrollPosition);
+
+    view = glm::lookAt(eye, center, up);
+  */
+  
+  graphene_vec3_init (&center, 0.f, 0.f, 0.f);
+  graphene_vec3_init (&up, 0.f, 0.f, -1.f);
+  graphene_vec3_init (&eye, radius * sin(self->theta) * cos(self->phi),
+                            radius * sin(self->theta) * sin(self->phi),
+                            radius * cos(self->theta));
+ 
+ graphene_matrix_t projection_matrix;
+  graphene_matrix_init_perspective (&projection_matrix,
+      90.0,
+      4.0/3.0, 0.1, 1000.0);
+
+ graphene_matrix_t view_matrix;
+  graphene_matrix_init_look_at (&view_matrix, &eye, &center, &up);
+
+  graphene_matrix_multiply (&view_matrix, &projection_matrix, &self->mvp);
 }

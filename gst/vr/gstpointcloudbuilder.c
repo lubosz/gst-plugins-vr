@@ -21,13 +21,13 @@
 /**
  * SECTION:element-pointcloudbuilder
  *
- * Transform video for VR.
+ * Construct a planar point cloud from a depth buffer.
  *
  * <refsect2>
  * <title>Examples</title>
  * |[
- * gst-launch-1.0 filesrc location=~/Videos/360.webm ! decodebin ! glupload ! glcolorconvert ! pointcloudbuilder ! glimagesink
- * ]| Play spheric video.
+ * gst-launch-1.0 freenect2src sourcetype=0 ! glupload ! glcolorconvert ! pointcloudbuilder ! glimagesink
+ * ]| Display point cloud from Kinect v2.
  * </refsect2>
  */
 
@@ -41,7 +41,8 @@
 
 #include <gst/gl/gstglapi.h>
 #include <graphene-gobject.h>
-
+#include <glib.h>
+#include <glib/gprintf.h>
 
 #define GST_CAT_DEFAULT gst_point_cloud_builder_debug
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -73,7 +74,6 @@ static void gst_point_cloud_builder_reset_gl (GstGLFilter * filter);
 static gboolean gst_point_cloud_builder_stop (GstBaseTransform * trans);
 static gboolean gst_point_cloud_builder_init_shader (GstGLFilter * filter);
 static void gst_point_cloud_builder_callback (gpointer stuff);
-static void gst_point_cloud_builder_build_mvp (GstPointCloudBuilder * self);
 
 static gboolean gst_point_cloud_builder_filter_texture (GstGLFilter * filter,
     guint in_tex, guint out_tex);
@@ -127,29 +127,19 @@ gst_point_cloud_builder_init (GstPointCloudBuilder * self)
   self->eye_height = 1;
   
   self->default_fbo = 0;
-
-  gst_point_cloud_builder_build_mvp (self);
 }
-
-static void
-gst_point_cloud_builder_build_mvp (GstPointCloudBuilder * self)
-{
-  gst_3d_camera_update_view(self->camera);
-}
-
 
 static void
 gst_point_cloud_builder_set_property (GObject * object, guint prop_id,
     const GValue * value, GParamSpec * pspec)
 {
-  GstPointCloudBuilder *filter = GST_POINT_CLOUD_BUILDER (object);
+  // GstPointCloudBuilder *filter = GST_POINT_CLOUD_BUILDER (object);
 
   switch (prop_id) {
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
   }
-  gst_point_cloud_builder_build_mvp (filter);
 }
 
 
@@ -183,8 +173,6 @@ gst_point_cloud_builder_set_caps (GstGLFilter * filter, GstCaps * incaps,
   GST_ERROR("eye %dx%d", self->eye_width, self->eye_height);
 
   self->caps_change = TRUE;
-
-  gst_point_cloud_builder_build_mvp (self);
 
   return TRUE;
 }
@@ -234,6 +222,27 @@ _print_pressed_keys (GstPointCloudBuilder * self)
 */
 
 static gboolean
+gst_print_events (GQuark field_id, const GValue * value, gpointer data)
+{
+  GstStructure *s = data;
+  //GValue v = { 0 };
+
+  const GValue* v = gst_structure_id_get_value (s, field_id);
+  // g_printf ("Value: %s\n", g_value_get_string (v));
+  GST_ERROR("%s: %s", g_type_name (G_VALUE_TYPE(v)), g_quark_to_string (field_id));
+
+/*
+  if (fixate_value (&v, value)) {
+    gst_structure_id_set_value (s, field_id, &v);
+    g_value_unset (&v);
+  }
+*/
+
+
+  return TRUE;
+}
+
+static gboolean
 gst_point_cloud_builder_src_event (GstBaseTransform * trans, GstEvent * event)
 {
   GstPointCloudBuilder *self = GST_POINT_CLOUD_BUILDER (trans);
@@ -247,25 +256,42 @@ gst_point_cloud_builder_src_event (GstBaseTransform * trans, GstEvent * event)
           GST_EVENT (gst_mini_object_make_writable (GST_MINI_OBJECT (event)));
 
       structure = (GstStructure *) gst_event_get_structure (event);
+      
+      // gst_structure_foreach (structure, gst_print_events, structure);
+      
 
-      const gchar *key = gst_structure_get_string (structure, "key");
-      if (key != NULL) {
-        const gchar *event_name = gst_structure_get_string (structure, "event");
-        if (g_strcmp0 (event_name, "key-press") == 0)
-          if (g_strcmp0 (key, "Escape") == 0) {
-            // TODO: send EOS or something
-            exit (0);
-          // } else if (g_strcmp0 (key, "Tab") == 0) {
-          //  _toggle_render_mode (self);
-          } else if (g_strcmp0 (key, "KP_Add") == 0) {
-            gst_3d_camera_inc_eye_sep(self->camera);        
-          } else if (g_strcmp0 (key, "KP_Subtract") == 0) {
-            gst_3d_camera_dec_eye_sep(self->camera);
-          } else {
-            GST_DEBUG("%s", key);
-            //_press_key (self, key);
-          }
+      const gchar *event_name = gst_structure_get_string (structure, "event");
+      
+
+        if (g_strcmp0 (event_name, "key-press") == 0) {
+          const gchar *key = gst_structure_get_string (structure, "key");
+          if (key != NULL) {
+            if (g_strcmp0 (key, "Escape") == 0) {
+              // TODO: send EOS or something
+              exit (0);
+            // } else if (g_strcmp0 (key, "Tab") == 0) {
+            //  _toggle_render_mode (self);
+            } else if (g_strcmp0 (key, "KP_Add") == 0) {
+              gst_3d_camera_inc_eye_sep(self->camera);        
+            } else if (g_strcmp0 (key, "KP_Subtract") == 0) {
+              gst_3d_camera_dec_eye_sep(self->camera);
+            } else {
+              GST_DEBUG("%s", key);
+              //_press_key (self, key);
+            }
+        } else if (g_strcmp0 (event_name, "mouse-button-press") == 0) {
+        
+          gint button;
+          gst_structure_get_int (structure, "button", &button);
+          gdouble x,y; 
+          gst_structure_get_double (structure, "pointer_x", &x);
+          gst_structure_get_double (structure, "pointer_y", &y);
           
+          GST_ERROR("button: %d [%fx%f]", button, x, y);
+        
+        } else {
+          GST_ERROR("event %s", event_name);
+        }
           /*
           	// reset rotation and position
 						float zero[] = {0, 0, 0, 1};
@@ -477,26 +503,9 @@ gst_point_cloud_builder_callback (gpointer this)
   gst_3d_shader_upload_matrix(self->shader, &projection_ortho, "mvp");
  */
  
- graphene_matrix_t mvp;
- graphene_matrix_t view_matrix;
- graphene_matrix_t projection_matrix;
- 
-  graphene_vec3_t eye;
-  graphene_vec3_t center;
-  graphene_vec3_t up;
-  graphene_vec3_init (&eye, 0.f, 0.f, 1.f);
-  graphene_vec3_init (&center, 0.f, 0.f, 0.f);
-  graphene_vec3_init (&up, 0.f, 1.f, 0.f);
- 
-  graphene_matrix_init_perspective (&projection_matrix,
-      90.0,
-      4.0/3.0, 0.1, 1000.0);
-  graphene_matrix_init_look_at (&view_matrix, &eye, &center,
-      &up);
-
-  graphene_matrix_multiply (&view_matrix, &projection_matrix, &mvp);
+  gst_3d_camera_update_view_mvp(self->camera);
   
-  gst_3d_shader_upload_matrix(self->shader, &mvp, "mvp");
+  gst_3d_shader_upload_matrix(self->shader, &self->camera->mvp, "mvp");
  
   gst_3d_mesh_bind(self->render_plane);
   gst_3d_mesh_draw_arrays(self->render_plane);
