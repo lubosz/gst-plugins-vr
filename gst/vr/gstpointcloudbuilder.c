@@ -282,18 +282,37 @@ gst_point_cloud_builder_src_event (GstBaseTransform * trans, GstEvent * event)
             //_press_key (self, key);
           }
         }
-      } else if (g_strcmp0 (event_name, "mouse-button-press") == 0) {
-
-        gint button;
-        gst_structure_get_int (structure, "button", &button);
+      } else if (g_strcmp0 (event_name, "mouse-move") == 0) {
         gdouble x, y;
         gst_structure_get_double (structure, "pointer_x", &x);
         gst_structure_get_double (structure, "pointer_y", &y);
-
-        GST_ERROR ("button: %d [%fx%f]", button, x, y);
-
+        GST_ERROR ("[%fx%f]", x, y);
+      } else if (g_strcmp0 (event_name, "mouse-button-release") == 0) {
+        gint button;
+        gst_structure_get_int (structure, "button", &button);
+        
+        if (button == 4) {
+          GST_ERROR("wheel up");
+        } else if (button == 5) {
+          GST_ERROR("wheel down");
+        }
+        
+        GST_ERROR ("release %d", button);
+      } else if (g_strcmp0 (event_name, "mouse-button-press") == 0) {
+        gint button;
+        gst_structure_get_int (structure, "button", &button);
+        //GST_ERROR ("press %d", button);
+        
+        if (button == 4) {
+          GST_ERROR("wheel up");
+        } else if (button == 5) {
+          GST_ERROR("wheel down");
+        }
+        
+        GST_ERROR ("press %d", button);
+      // } else if (g_strcmp0 (event_name, "key-release") == 0) {
       } else {
-        GST_ERROR ("event %s", event_name);
+        GST_ERROR ("unknown event %s", event_name);
       }
       /*
          // reset rotation and position
