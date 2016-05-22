@@ -281,29 +281,29 @@ gst_point_cloud_builder_src_event (GstBaseTransform * trans, GstEvent * event)
             GST_DEBUG ("%s", key);
             //_press_key (self, key);
           }
-        } else if (g_strcmp0 (event_name, "mouse-button-press") == 0) {
-
-          gint button;
-          gst_structure_get_int (structure, "button", &button);
-          gdouble x, y;
-          gst_structure_get_double (structure, "pointer_x", &x);
-          gst_structure_get_double (structure, "pointer_y", &y);
-
-          GST_ERROR ("button: %d [%fx%f]", button, x, y);
-
-        } else {
-          GST_ERROR ("event %s", event_name);
         }
-        /*
-           // reset rotation and position
-           float zero[] = {0, 0, 0, 1};
-           ohmd_device_setf(hmd, OHMD_ROTATION_QUAT, zero);
-           ohmd_device_setf(hmd, OHMD_POSITION_VECTOR, zero);
-         */
+      } else if (g_strcmp0 (event_name, "mouse-button-press") == 0) {
 
-        //else if (g_strcmp0 (event_name, "key-release") == 0)
-        //  _release_key (self, key);
+        gint button;
+        gst_structure_get_int (structure, "button", &button);
+        gdouble x, y;
+        gst_structure_get_double (structure, "pointer_x", &x);
+        gst_structure_get_double (structure, "pointer_y", &y);
+
+        GST_ERROR ("button: %d [%fx%f]", button, x, y);
+
+      } else {
+        GST_ERROR ("event %s", event_name);
       }
+      /*
+         // reset rotation and position
+         float zero[] = {0, 0, 0, 1};
+         ohmd_device_setf(hmd, OHMD_ROTATION_QUAT, zero);
+         ohmd_device_setf(hmd, OHMD_POSITION_VECTOR, zero);
+       */
+
+      //else if (g_strcmp0 (event_name, "key-release") == 0)
+      //  _release_key (self, key);
       break;
     default:
       break;
