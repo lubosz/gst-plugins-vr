@@ -60,10 +60,10 @@ enum
 G_DEFINE_TYPE_WITH_CODE (GstPointCloudBuilder, gst_point_cloud_builder,
     GST_TYPE_GL_FILTER, DEBUG_INIT);
 
-static void gst_point_cloud_builder_set_property (GObject * object, guint prop_id,
-    const GValue * value, GParamSpec * pspec);
-static void gst_point_cloud_builder_get_property (GObject * object, guint prop_id,
-    GValue * value, GParamSpec * pspec);
+static void gst_point_cloud_builder_set_property (GObject * object,
+    guint prop_id, const GValue * value, GParamSpec * pspec);
+static void gst_point_cloud_builder_get_property (GObject * object,
+    guint prop_id, GValue * value, GParamSpec * pspec);
 
 static gboolean gst_point_cloud_builder_set_caps (GstGLFilter * filter,
     GstCaps * incaps, GstCaps * outcaps);
@@ -95,7 +95,8 @@ gst_point_cloud_builder_class_init (GstPointCloudBuilderClass * klass)
   base_transform_class->src_event = gst_point_cloud_builder_src_event;
 
   GST_GL_FILTER_CLASS (klass)->init_fbo = gst_point_cloud_builder_init_shader;
-  GST_GL_FILTER_CLASS (klass)->display_reset_cb = gst_point_cloud_builder_reset_gl;
+  GST_GL_FILTER_CLASS (klass)->display_reset_cb =
+      gst_point_cloud_builder_reset_gl;
   GST_GL_FILTER_CLASS (klass)->set_caps = gst_point_cloud_builder_set_caps;
   GST_GL_FILTER_CLASS (klass)->filter_texture =
       gst_point_cloud_builder_filter_texture;
@@ -116,16 +117,16 @@ gst_point_cloud_builder_init (GstPointCloudBuilder * self)
   self->render_mode = GL_TRIANGLE_STRIP;
   self->in_tex = 0;
   self->mesh = NULL;
-  self->camera = gst_3d_camera_new();
-  
+  self->camera = gst_3d_camera_new ();
+
   self->left_color_tex = 0;
   self->left_fbo = 0;
   self->right_color_tex = 0;
   self->right_fbo = 0;
-  
+
   self->eye_width = 1;
   self->eye_height = 1;
-  
+
   self->default_fbo = 0;
 }
 
@@ -163,14 +164,14 @@ gst_point_cloud_builder_set_caps (GstGLFilter * filter, GstCaps * incaps,
   self->camera->aspect =
       (gdouble) GST_VIDEO_INFO_WIDTH (&filter->out_info) /
       (gdouble) GST_VIDEO_INFO_HEIGHT (&filter->out_info);
-      
+
   self->eye_width = GST_VIDEO_INFO_WIDTH (&filter->out_info);
   self->eye_height = GST_VIDEO_INFO_HEIGHT (&filter->out_info);
-  
+
   //self->eye_width = GST_VIDEO_INFO_WIDTH (&filter->out_info) / 2;
   //self->eye_height = GST_VIDEO_INFO_HEIGHT (&filter->out_info);
-  
-  GST_ERROR("eye %dx%d", self->eye_width, self->eye_height);
+
+  GST_ERROR ("eye %dx%d", self->eye_width, self->eye_height);
 
   self->caps_change = TRUE;
 
@@ -227,9 +228,10 @@ gst_print_events (GQuark field_id, const GValue * value, gpointer data)
   GstStructure *s = data;
   //GValue v = { 0 };
 
-  const GValue* v = gst_structure_id_get_value (s, field_id);
+  const GValue *v = gst_structure_id_get_value (s, field_id);
   // g_printf ("Value: %s\n", g_value_get_string (v));
-  GST_ERROR("%s: %s", g_type_name (G_VALUE_TYPE(v)), g_quark_to_string (field_id));
+  GST_ERROR ("%s: %s", g_type_name (G_VALUE_TYPE (v)),
+      g_quark_to_string (field_id));
 
 /*
   if (fixate_value (&v, value)) {
@@ -256,49 +258,49 @@ gst_point_cloud_builder_src_event (GstBaseTransform * trans, GstEvent * event)
           GST_EVENT (gst_mini_object_make_writable (GST_MINI_OBJECT (event)));
 
       structure = (GstStructure *) gst_event_get_structure (event);
-      
+
       // gst_structure_foreach (structure, gst_print_events, structure);
-      
+
 
       const gchar *event_name = gst_structure_get_string (structure, "event");
-      
 
-        if (g_strcmp0 (event_name, "key-press") == 0) {
-          const gchar *key = gst_structure_get_string (structure, "key");
-          if (key != NULL) {
-            if (g_strcmp0 (key, "Escape") == 0) {
-              // TODO: send EOS or something
-              exit (0);
+
+      if (g_strcmp0 (event_name, "key-press") == 0) {
+        const gchar *key = gst_structure_get_string (structure, "key");
+        if (key != NULL) {
+          if (g_strcmp0 (key, "Escape") == 0) {
+            // TODO: send EOS or something
+            exit (0);
             // } else if (g_strcmp0 (key, "Tab") == 0) {
             //  _toggle_render_mode (self);
-            } else if (g_strcmp0 (key, "KP_Add") == 0) {
-              gst_3d_camera_inc_eye_sep(self->camera);        
-            } else if (g_strcmp0 (key, "KP_Subtract") == 0) {
-              gst_3d_camera_dec_eye_sep(self->camera);
-            } else {
-              GST_DEBUG("%s", key);
-              //_press_key (self, key);
-            }
+          } else if (g_strcmp0 (key, "KP_Add") == 0) {
+            gst_3d_camera_inc_eye_sep (self->camera);
+          } else if (g_strcmp0 (key, "KP_Subtract") == 0) {
+            gst_3d_camera_dec_eye_sep (self->camera);
+          } else {
+            GST_DEBUG ("%s", key);
+            //_press_key (self, key);
+          }
         } else if (g_strcmp0 (event_name, "mouse-button-press") == 0) {
-        
+
           gint button;
           gst_structure_get_int (structure, "button", &button);
-          gdouble x,y; 
+          gdouble x, y;
           gst_structure_get_double (structure, "pointer_x", &x);
           gst_structure_get_double (structure, "pointer_y", &y);
-          
-          GST_ERROR("button: %d [%fx%f]", button, x, y);
-        
+
+          GST_ERROR ("button: %d [%fx%f]", button, x, y);
+
         } else {
-          GST_ERROR("event %s", event_name);
+          GST_ERROR ("event %s", event_name);
         }
-          /*
-          	// reset rotation and position
-						float zero[] = {0, 0, 0, 1};
-						ohmd_device_setf(hmd, OHMD_ROTATION_QUAT, zero);
-						ohmd_device_setf(hmd, OHMD_POSITION_VECTOR, zero);
-          */
-          
+        /*
+           // reset rotation and position
+           float zero[] = {0, 0, 0, 1};
+           ohmd_device_setf(hmd, OHMD_ROTATION_QUAT, zero);
+           ohmd_device_setf(hmd, OHMD_POSITION_VECTOR, zero);
+         */
+
         //else if (g_strcmp0 (event_name, "key-release") == 0)
         //  _release_key (self, key);
       }
@@ -318,7 +320,7 @@ gst_point_cloud_builder_reset_gl (GstGLFilter * filter)
     gst_object_unref (self->shader);
     self->shader = NULL;
   }
-  gst_object_unref(self->mesh);
+  gst_object_unref (self->mesh);
 }
 
 static gboolean
@@ -328,64 +330,73 @@ gst_point_cloud_builder_stop (GstBaseTransform * trans)
   // GstGLContext *context = GST_GL_BASE_FILTER (trans)->context;
 
   /* blocking call, wait until the opengl thread has destroyed the shader */
-  gst_3d_shader_delete(self->shader);
+  gst_3d_shader_delete (self->shader);
 
   return GST_BASE_TRANSFORM_CLASS (parent_class)->stop (trans);
 }
 
-void _create_fbo2(GstPointCloudBuilder * self, GLuint* fbo, GLuint* color_tex)
+void
+_create_fbo2 (GstPointCloudBuilder * self, GLuint * fbo, GLuint * color_tex)
 {
   GstGLContext *context = GST_GL_BASE_FILTER (self)->context;
   GstGLFuncs *gl = context->gl_vtable;
 
-	gl->GenTextures(1, color_tex);
-	gl->GenFramebuffers(1, fbo);
+  gl->GenTextures (1, color_tex);
+  gl->GenFramebuffers (1, fbo);
 
-	gl->BindTexture(GL_TEXTURE_2D, *color_tex);
-	gl->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, self->eye_width, self->eye_height, 0, GL_RGBA, GL_UNSIGNED_INT, NULL);
-	gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  gl->BindTexture (GL_TEXTURE_2D, *color_tex);
+  gl->TexImage2D (GL_TEXTURE_2D, 0, GL_RGBA8, self->eye_width, self->eye_height,
+      0, GL_RGBA, GL_UNSIGNED_INT, NULL);
+  gl->TexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  gl->TexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  gl->TexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  gl->TexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	gl->BindFramebuffer(GL_FRAMEBUFFER_EXT, *fbo);
-	gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, *color_tex, 0);
+  gl->BindFramebuffer (GL_FRAMEBUFFER_EXT, *fbo);
+  gl->FramebufferTexture2D (GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+      *color_tex, 0);
 
-	GLenum status = gl->CheckFramebufferStatus(GL_FRAMEBUFFER);
+  GLenum status = gl->CheckFramebufferStatus (GL_FRAMEBUFFER);
 
-	if(status != GL_FRAMEBUFFER_COMPLETE){
-		GST_ERROR ("failed to create fbo %x\n", status);
-	}
-	gl->BindFramebuffer(GL_FRAMEBUFFER, 0);
+  if (status != GL_FRAMEBUFFER_COMPLETE) {
+    GST_ERROR ("failed to create fbo %x\n", status);
+  }
+  gl->BindFramebuffer (GL_FRAMEBUFFER, 0);
 }
 
-static gboolean _init_gl(GstPointCloudBuilder * self) {
+static gboolean
+_init_gl (GstPointCloudBuilder * self)
+{
   GstGLContext *context = GST_GL_BASE_FILTER (self)->context;
   GstGLFuncs *gl = context->gl_vtable;
   gboolean ret = TRUE;
-   if (!self->mesh) {
-      self->shader = gst_3d_shader_new(context);
-      ret = gst_3d_shader_from_vert_frag(self->shader, "points.vert", "points.frag");
-      gst_3d_shader_bind(self->shader);
+  if (!self->mesh) {
+    self->shader = gst_3d_shader_new (context);
+    ret =
+        gst_3d_shader_from_vert_frag (self->shader, "points.vert",
+        "points.frag");
+    gst_3d_shader_bind (self->shader);
 /*
       self->mesh = gst_3d_mesh_new(context);
       gst_3d_mesh_init_buffers (self->mesh);
       gst_3d_shader_enable_attribs(self->shader);
       gst_3d_mesh_upload_sphere (self->mesh, 10.0, 20, 20);
       gst_3d_mesh_bind_buffers (self->mesh, self->shader->attr_position, self->shader->attr_uv);
-*/      
-      self->render_plane = gst_3d_mesh_new(context);
-      gst_3d_mesh_init_buffers (self->render_plane);
-      gst_3d_shader_enable_attribs(self->shader);
-      //gst_3d_mesh_upload_plane (self->render_plane, self->camera->aspect);
-      gst_3d_mesh_upload_point_plane(self->render_plane, self->eye_width, self->eye_height);
-      gst_3d_mesh_bind_buffers (self->render_plane, self->shader->attr_position, self->shader->attr_uv);
+*/
+    self->render_plane = gst_3d_mesh_new (context);
+    gst_3d_mesh_init_buffers (self->render_plane);
+    gst_3d_shader_enable_attribs (self->shader);
+    //gst_3d_mesh_upload_plane (self->render_plane, self->camera->aspect);
+    gst_3d_mesh_upload_point_plane (self->render_plane, self->eye_width,
+        self->eye_height);
+    gst_3d_mesh_bind_buffers (self->render_plane, self->shader->attr_position,
+        self->shader->attr_uv);
 
-      //_create_fbo2(self, &self->left_fbo, &self->left_color_tex);
-      //_create_fbo2(self, &self->right_fbo, &self->right_color_tex);
-      gl->ClearColor (0.f, 0.f, 0.f, 0.f);
-      gl->ActiveTexture (GL_TEXTURE0);
-      gst_gl_shader_set_uniform_1i (self->shader->shader, "texture", 0);
+    //_create_fbo2(self, &self->left_fbo, &self->left_color_tex);
+    //_create_fbo2(self, &self->right_fbo, &self->right_color_tex);
+    gl->ClearColor (0.f, 0.f, 0.f, 0.f);
+    gl->ActiveTexture (GL_TEXTURE0);
+    gst_gl_shader_set_uniform_1i (self->shader->shader, "texture", 0);
   }
   return ret;
 }
@@ -394,8 +405,8 @@ static gboolean
 gst_point_cloud_builder_init_shader (GstGLFilter * filter)
 {
   GstPointCloudBuilder *self = GST_POINT_CLOUD_BUILDER (filter);
-  
-  return _init_gl(self);
+
+  return _init_gl (self);
 }
 
 static gboolean
@@ -476,15 +487,15 @@ gst_point_cloud_builder_callback (gpointer this)
   GstPointCloudBuilder *self = GST_POINT_CLOUD_BUILDER (this);
   GstGLContext *context = GST_GL_BASE_FILTER (this)->context;
   GstGLFuncs *gl = context->gl_vtable;
-  
+
   //_process_input (self);
-  
+
   //if (self->default_fbo == 0)
   //gl->GetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &self->default_fbo);
-  
+
   // LEFT EYE
   //gl->BindFramebuffer(GL_FRAMEBUFFER, self->left_fbo);
-  
+
   //gl->Viewport(0, 0, self->eye_width, self->eye_height);
   gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -495,20 +506,20 @@ gst_point_cloud_builder_callback (gpointer this)
   gst_point_cloud_builder_build_mvp (self);
   gst_3d_shader_upload_matrix(self->shader, &self->camera->left_vp_matrix, "mvp");
  */
- 
-  
+
+
   /*
-   graphene_matrix_t projection_ortho;
-  graphene_matrix_init_ortho (&projection_ortho, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
-  gst_3d_shader_upload_matrix(self->shader, &projection_ortho, "mvp");
- */
- 
-  gst_3d_camera_update_view_mvp(self->camera);
-  
-  gst_3d_shader_upload_matrix(self->shader, &self->camera->mvp, "mvp");
- 
-  gst_3d_mesh_bind(self->render_plane);
-  gst_3d_mesh_draw_arrays(self->render_plane);
+     graphene_matrix_t projection_ortho;
+     graphene_matrix_init_ortho (&projection_ortho, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
+     gst_3d_shader_upload_matrix(self->shader, &projection_ortho, "mvp");
+   */
+
+  gst_3d_camera_update_view_mvp (self->camera);
+
+  gst_3d_shader_upload_matrix (self->shader, &self->camera->mvp, "mvp");
+
+  gst_3d_mesh_bind (self->render_plane);
+  gst_3d_mesh_draw_arrays (self->render_plane);
 
   gl->BindVertexArray (0);
   gl->BindTexture (GL_TEXTURE_2D, 0);
