@@ -63,8 +63,12 @@ struct _Gst3DCamera
   /* arcball cam */
   gfloat center_distance;
   gfloat scroll_speed;
+  gfloat rotation_speed;
   gfloat theta;
   gfloat phi;
+  
+  gdouble cursor_last_x;
+  gdouble cursor_last_y;
   
   /* stereo */
   gfloat eye_separation;
@@ -86,6 +90,10 @@ Gst3DCamera * gst_3d_camera_new            (void);
 void gst_3d_camera_update_view (Gst3DCamera * self);
 void gst_3d_camera_update_view_mvp(Gst3DCamera * self);
 void gst_3d_camera_update_view_arcball(Gst3DCamera * self);
+
+
+void gst_3d_camera_translate_arcball (Gst3DCamera * self, float z);
+void gst_3d_camera_rotate_arcball (Gst3DCamera * self, float x, float y);
 
 void gst_3d_camera_inc_eye_sep(Gst3DCamera * self);
 void gst_3d_camera_dec_eye_sep(Gst3DCamera * self);
