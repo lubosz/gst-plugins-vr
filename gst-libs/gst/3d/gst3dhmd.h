@@ -24,6 +24,7 @@
 
 #include <gst/gst.h>
 #include <gst/gl/gstgl_fwd.h>
+#include <openhmd/openhmd.h>
 
 G_BEGIN_DECLS
 #define GST_3D_TYPE_HMD            (gst_3d_hmd_get_type ())
@@ -39,7 +40,11 @@ struct _Gst3DHmd
 {
   /*< private > */
   GstObject parent;
-  GstGLContext *context;
+  
+  ohmd_device *device;
+  ohmd_context *hmd_context;
+  
+  gfloat eye_separation;
 };
 
 struct _Gst3DHmdClass
@@ -47,8 +52,11 @@ struct _Gst3DHmdClass
   GstObjectClass parent_class;
 };
 
-Gst3DHmd *gst_3d_hmd_new (GstGLContext * context);
+Gst3DHmd *gst_3d_hmd_new (void);
 GType gst_3d_hmd_get_type (void);
+graphene_matrix_t gst_3d_hmd_get_matrix (Gst3DHmd * self, ohmd_float_value type);
+graphene_quaternion_t gst_3d_hmd_get_quaternion (Gst3DHmd * self);
+void gst_3d_hmd_update (Gst3DHmd * self);
 
 G_END_DECLS
 #endif /* __GST_3D_HMD_H__ */

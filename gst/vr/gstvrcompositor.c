@@ -173,7 +173,7 @@ gst_vr_compositor_set_caps (GstGLFilter * filter, GstCaps * incaps,
   if (!self->camera)
     self->camera = gst_3d_camera_new ();
 
-  if (!self->camera->device)
+  if (!self->camera->hmd->device)
     return FALSE;
 
   // int w = GST_VIDEO_INFO_WIDTH (&filter->out_info);

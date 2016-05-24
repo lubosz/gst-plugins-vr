@@ -25,7 +25,8 @@
 #include <gst/gst.h>
 #include <gst/gl/gstgl_fwd.h>
 #include <graphene.h>
-#include <openhmd/openhmd.h>
+#include "gst3dhmd.h"
+
 G_BEGIN_DECLS
 #define GST_3D_TYPE_CAMERA            (gst_3d_camera_get_type ())
 #define GST_3D_CAMERA(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), GST_3D_TYPE_CAMERA, Gst3DCamera))
@@ -70,14 +71,11 @@ struct _Gst3DCamera
   gdouble cursor_last_y;
 
   /* stereo */
-  gfloat eye_separation;
-
   graphene_matrix_t left_vp_matrix;
   graphene_matrix_t right_vp_matrix;
+  
+  Gst3DHmd * hmd;
 
-
-  ohmd_device *device;
-  ohmd_context *hmd_context;
 };
 
 struct _Gst3DCameraClass

@@ -61,9 +61,6 @@ typedef enum
   SOURCETYPE_COLOR_DEPTH,
 } GstFreenect2SourceType;
 #define DEFAULT_SOURCETYPE  SOURCETYPE_DEPTH
-
-#define SAMPLE_READ_WAIT_TIMEOUT 2000   /* 2000ms */
-
 #define GST_TYPE_FREENECT2_SRC_SOURCETYPE (gst_freenect2_src_sourcetype_get_type ())
 static GType
 gst_freenect2_src_sourcetype_get_type (void)
