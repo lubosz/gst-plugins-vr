@@ -36,12 +36,8 @@
 #endif
 
 #include <string.h>
-
 #include <opencv2/opencv.hpp>
-
 #include "gstfreenect2src.h"
-
-
 
 GST_DEBUG_CATEGORY_STATIC (freenect2src_debug);
 #define GST_CAT_DEFAULT freenect2src_debug
@@ -63,7 +59,6 @@ typedef enum
   SOURCETYPE_COLOR,
   SOURCETYPE_IR,
   SOURCETYPE_COLOR_DEPTH,
-  //SOURCETYPE_ALL
 } GstFreenect2SourceType;
 #define DEFAULT_SOURCETYPE  SOURCETYPE_DEPTH
 
@@ -80,7 +75,6 @@ gst_freenect2_src_sourcetype_get_type (void)
       {SOURCETYPE_COLOR, "Get color readings", "color"},
       {SOURCETYPE_IR, "Get color readings", "ir"},
       {SOURCETYPE_COLOR_DEPTH, "Get color and depth", "color_depth"},
-      //{SOURCETYPE_ALL, "Get color readings", "all"},
       {0, NULL, NULL},
     };
     etype = g_enum_register_static ("GstFreenect2SrcSourcetype", values);
@@ -179,19 +173,11 @@ gst_freenect2_src_init (GstFreenect2Src * freenect2src)
 {
   gst_base_src_set_live (GST_BASE_SRC (freenect2src), TRUE);
   gst_base_src_set_format (GST_BASE_SRC (freenect2src), GST_FORMAT_TIME);
-/*
-  freenect2src->device = new openni::Device ();
-  freenect2src->depth = new openni::VideoStream ();
-  freenect2src->color = new openni::VideoStream ();
-  freenect2src->depthFrame = new openni::VideoFrameRef ();
-  freenect2src->colorFrame = new openni::VideoFrameRef ();
-*/
 
   freenect2src->dev = NULL;
   freenect2src->pipeline = NULL;
 
   freenect2src->oni_start_ts = GST_CLOCK_TIME_NONE;
-  /* Freenect2 initialisation inside this function */
   freenect2_initialise_library (freenect2src);
 }
 
@@ -220,32 +206,6 @@ gst_freenect2_src_finalize (GObject * gobject)
     gst_caps_unref (freenect2src->gst_caps);
     freenect2src->gst_caps = NULL;
   }
-/*
-  if (freenect2src->device) {
-    delete freenect2src->device;
-    freenect2src->device = NULL;
-  }
-
-  if (freenect2src->depth) {
-    delete freenect2src->depth;
-    freenect2src->depth = NULL;
-  }
-
-  if (freenect2src->color) {
-    delete freenect2src->color;
-    freenect2src->color = NULL;
-  }
-
-  if (freenect2src->depthFrame) {
-    delete freenect2src->depthFrame;
-    freenect2src->depthFrame = NULL;
-  }
-
-  if (freenect2src->colorFrame) {
-    delete freenect2src->colorFrame;
-    freenect2src->colorFrame = NULL;
-  }
-*/
 
   delete freenect2src->registration;
 
@@ -305,36 +265,10 @@ gst_freenect2_src_get_property (GObject * object, guint prop_id,
   GST_OBJECT_UNLOCK (freenect2src);
 }
 
-/* Interesting info from gstv4l2src.c:
- * "start and stop are not symmetric -- start will open the device, but not
- * start capture. it's setcaps that will start capture, which is called via
- * basesrc's negotiate method. stop will both stop capture and close t device."
- */
+
 static gboolean
 gst_freenect2_src_start (GstBaseSrc * bsrc)
 {
-  /*
-     GstFreenect2Src *src = GST_FREENECT2_SRC (bsrc);
-     openni::Status rc = openni::STATUS_OK;
-
-     if (src->depth->isValid ()) {
-     rc = src->depth->start ();
-     if (rc != openni::STATUS_OK) {
-     GST_ERROR_OBJECT (src, "Couldn't start the depth stream\n%s\n",
-     openni::OpenNI::getExtendedError ());
-     return FALSE;
-     }
-     }
-
-     if (src->color->isValid ()) {
-     rc = src->color->start ();
-     if (rc != openni::STATUS_OK) {
-     GST_ERROR_OBJECT (src, "Couldn't start the color stream\n%s\n",
-     openni::OpenNI::getExtendedError ());
-     return FALSE;
-     }
-     }
-   */
   return TRUE;
 }
 
@@ -342,29 +276,8 @@ static gboolean
 gst_freenect2_src_stop (GstBaseSrc * bsrc)
 {
   GstFreenect2Src *src = GST_FREENECT2_SRC (bsrc);
-/*
-  if (src->depthFrame)
-    src->depthFrame->release ();
-
-  if (src->colorFrame)
-    src->colorFrame->release ();
-
-  if (src->depth->isValid ()) {
-    src->depth->stop ();
-    src->depth->destroy ();
-  }
-
-  if (src->color->isValid ()) {
-    src->color->stop ();
-    src->color->destroy ();
-  }
-
-  src->device->close ();
-*/
-
   src->dev->stop ();
   src->dev->close ();
-
   return TRUE;
 }
 
@@ -645,17 +558,12 @@ freenect2_read_gstbuffer (GstFreenect2Src * src, GstBuffer * buf)
       pColor += rgb->bytes_per_pixel * rgb->width;
       //pDepth += sizeof(float) * rgb->width;
     }
-
-
   } else if (src->sourcetype == SOURCETYPE_DEPTH) {
     depth = src->frames[libfreenect2::Frame::Depth];
     guint16 *pData = (guint16 *) GST_VIDEO_FRAME_PLANE_DATA (&vframe, 0);
     gfloat *pDepth = (float *) depth->data;
-
     for (unsigned i = 0; i < depth->height * depth->width; ++i)
       pData[i] = (guint16) 10 *pDepth[i];
-
-    //cv::imshow("depth", cv::Mat(depth->height, depth->width, CV_32FC1, depth->data) / 4500.0f);
   } else if (src->sourcetype == SOURCETYPE_IR) {
     ir = src->frames[libfreenect2::Frame::Ir];
     guint16 *pData = (guint16 *) GST_VIDEO_FRAME_PLANE_DATA (&vframe, 0);
@@ -690,10 +598,7 @@ freenect2_read_gstbuffer (GstFreenect2Src * src, GstBuffer * buf)
 /*
     cv::imshow("undistorted", cv::Mat(freenect2src->undistorted.height, freenect2src->undistorted.width, CV_32FC1, freenect2src->undistorted.data) / 4500.0f);
     cv::imshow("registered", cv::Mat(freenect2src->registered.height, freenect2src->registered.width, CV_8UC4, freenect2src->registered.data));
-  //src->registration->apply(rgb,depth,src->undistorted,src->registered);
-*/
-
-/*
+    src->registration->apply(rgb,depth,src->undistorted,src->registered);
     cv::imshow("rgb", cv::Mat(rgb->height, rgb->width, CV_8UC4, rgb->data));
     cv::imshow("ir", cv::Mat(ir->height, ir->width, CV_32FC1, ir->data) / 20000.0f);
     cv::imshow("depth", cv::Mat(depth->height, depth->width, CV_32FC1, depth->data) / 4500.0f);
