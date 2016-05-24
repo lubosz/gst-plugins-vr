@@ -1,0 +1,26 @@
+GL Multi sinks pipeline test with tee
+
+
+glimagesink - Segfaults
+
+gst-launch-1.0 videotestsrc ! tee name=t ! queue ! glimagesink t. ! queue ! glimagesink
+
+
+gtkglsink with glpipeline duplication - Both work
+
+gst-launch-1.0 videotestsrc ! tee name=t ! queue ! glupload ! glcolorconvert ! glfiltercube ! gtkglsink t. ! queue ! glupload ! glcolorconvert ! glfiltercube ! gtkglsink
+
+
+gtkglsink without gl pipeline duplication - Just One works
+
+gst-launch-1.0 videotestsrc ! glupload ! glcolorconvert ! glfiltercube ! tee name=t ! queue ! gtkglsink t. ! queue ! gtkglsink
+
+
+gtksink with glup+download - Both work
+
+gst-launch-1.0 videotestsrc ! glupload ! glfiltercube ! glcolorconvert ! gldownload ! tee name=t ! queue ! gtksink t. ! queue ! gtksink
+
+
+One gl sink, one gtk sink + download
+
+gst-launch-1.0 videotestsrc ! glupload ! glfiltercube ! glcolorconvert ! tee name=t ! queue ! gldownload ! gtksink t. ! queue ! glimagesink
