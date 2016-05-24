@@ -170,7 +170,8 @@ gst_hmd_warp_stop (GstBaseTransform * trans)
 {
   GstHmdWarp *self = GST_HMD_WARP (trans);
   /* blocking call, wait until the opengl thread has destroyed the shader */
-  gst_3d_shader_delete(self->shader);
+  if(self->shader != NULL)
+    gst_3d_shader_delete(self->shader);
   return GST_BASE_TRANSFORM_CLASS (parent_class)->stop (trans);
 }
 

@@ -66,11 +66,20 @@ init_hmd (Gst3DCamera * self)
             OHMD_PATH));
   }
 
-  self->device = ohmd_list_open_device (self->hmd_context, 0);
+  int picked_device = 0;
+
+  self->device = ohmd_list_open_device (self->hmd_context, picked_device);
 
   if (!self->device) {
-    GST_ERROR ("failed to open device: %s\n",
+    GST_ERROR ("Failed to open device: %s\n",
         ohmd_ctx_get_error (self->hmd_context));
+    GST_ERROR ("  vendor:  %s", ohmd_list_gets (self->hmd_context, picked_device,
+            OHMD_VENDOR));
+    GST_ERROR ("  product: %s", ohmd_list_gets (self->hmd_context, picked_device,
+            OHMD_PRODUCT));
+    GST_ERROR ("  path:    %s", ohmd_list_gets (self->hmd_context, picked_device,
+            OHMD_PATH));
+    GST_ERROR ("Make sure you have access rights and a working rules file for your headset in /usr/lib/udev/rules.d");
     return;
   }
 

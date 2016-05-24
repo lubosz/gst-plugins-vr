@@ -128,7 +128,10 @@ const char * gst_3d_shader_read (const char *file)
 
 void
 gst_3d_shader_delete(Gst3DShader * self) {
-  if (self->context && self->shader) {
+  if (!self)
+    return;
+
+  if (self->context != NULL && self->shader != NULL) {
     gst_gl_context_del_shader (self->context, self->shader);
     self->shader = NULL;
   }

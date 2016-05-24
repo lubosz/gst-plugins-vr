@@ -116,7 +116,7 @@ gst_vr_compositor_init (GstVRCompositor * self)
   self->render_mode = GL_TRIANGLE_STRIP;
   self->in_tex = 0;
   self->mesh = NULL;
-  self->camera = gst_3d_camera_new();
+  self->camera = NULL;
   
   self->left_color_tex = 0;
   self->left_fbo = 0;
@@ -128,7 +128,7 @@ gst_vr_compositor_init (GstVRCompositor * self)
   
   self->default_fbo = 0;
 
-  gst_vr_compositor_build_mvp (self);
+  // gst_vr_compositor_build_mvp (self);
 }
 
 static void
@@ -170,15 +170,20 @@ gst_vr_compositor_set_caps (GstGLFilter * filter, GstCaps * incaps,
 {
   GstVRCompositor *self = GST_VR_COMPOSITOR (filter);
 
-  self->camera->aspect =
-      (gdouble) GST_VIDEO_INFO_WIDTH (&filter->out_info) /
-      (gdouble) GST_VIDEO_INFO_HEIGHT (&filter->out_info);
-      
-  self->eye_width = 1920 / 2;
-  self->eye_height = 1080;
+  if (!self->camera)
+    self->camera = gst_3d_camera_new();
+    
+  if (!self->camera->device)
+    return FALSE;
   
-  //self->eye_width = GST_VIDEO_INFO_WIDTH (&filter->out_info) / 2;
-  //self->eye_height = GST_VIDEO_INFO_HEIGHT (&filter->out_info);
+  // int w = GST_VIDEO_INFO_WIDTH (&filter->out_info);
+  // int h = GST_VIDEO_INFO_HEIGHT (&filter->out_info);
+  int w = 1920;
+  int h = 1080;
+  
+  self->camera->aspect = (gdouble) w / (gdouble) h;
+  self->eye_width = w / 2;
+  self->eye_height = h;
   
   GST_DEBUG("eye %dx%d", self->eye_width, self->eye_height);
 
