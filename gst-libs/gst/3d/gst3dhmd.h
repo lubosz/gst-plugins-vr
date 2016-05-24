@@ -26,30 +26,29 @@
 #include <gst/gl/gstgl_fwd.h>
 
 G_BEGIN_DECLS
-
 #define GST_3D_TYPE_HMD            (gst_3d_hmd_get_type ())
 #define GST_3D_HMD(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), GST_3D_TYPE_HMD, Gst3DHmd))
 #define GST_3D_HMD_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), GST_3D_TYPE_HMD, Gst3DHmdClass))
 #define GST_IS_3D_HMD(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GST_3D_TYPE_HMD))
 #define GST_IS_3D_HMD_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), GST_3D_TYPE_HMD))
 #define GST_3D_HMD_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), GST_3D_TYPE_HMD, Gst3DHmdClass))
-typedef struct _Gst3DHmd  Gst3DHmd;
-typedef struct _Gst3DHmdClass  Gst3DHmdClass;
+typedef struct _Gst3DHmd Gst3DHmd;
+typedef struct _Gst3DHmdClass Gst3DHmdClass;
 
 struct _Gst3DHmd
 {
-  /*< private >*/
+  /*< private > */
   GstObject parent;
-  GstGLContext * context;
+  GstGLContext *context;
 };
 
-struct _Gst3DHmdClass {
+struct _Gst3DHmdClass
+{
   GstObjectClass parent_class;
 };
 
-Gst3DHmd * gst_3d_hmd_new            (GstGLContext * context);
-GType       gst_3d_hmd_get_type       (void);
+Gst3DHmd *gst_3d_hmd_new (GstGLContext * context);
+GType gst_3d_hmd_get_type (void);
 
 G_END_DECLS
-
 #endif /* __GST_3D_HMD_H__ */

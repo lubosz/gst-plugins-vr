@@ -26,30 +26,29 @@
 #include <gst/gl/gstgl_fwd.h>
 
 G_BEGIN_DECLS
-
 #define GST_3D_TYPE_RENDERER            (gst_3d_renderer_get_type ())
 #define GST_3D_RENDERER(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), GST_3D_TYPE_RENDERER, Gst3DRenderer))
 #define GST_3D_RENDERER_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), GST_3D_TYPE_RENDERER, Gst3DRendererClass))
 #define GST_IS_3D_RENDERER(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GST_3D_TYPE_RENDERER))
 #define GST_IS_3D_RENDERER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), GST_3D_TYPE_RENDERER))
 #define GST_3D_RENDERER_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), GST_3D_TYPE_RENDERER, Gst3DRendererClass))
-typedef struct _Gst3DRenderer  Gst3DRenderer;
-typedef struct _Gst3DRendererClass  Gst3DRendererClass;
+typedef struct _Gst3DRenderer Gst3DRenderer;
+typedef struct _Gst3DRendererClass Gst3DRendererClass;
 
 struct _Gst3DRenderer
 {
-  /*< private >*/
+  /*< private > */
   GstObject parent;
-  GstGLContext * context;
+  GstGLContext *context;
 };
 
-struct _Gst3DRendererClass {
+struct _Gst3DRendererClass
+{
   GstObjectClass parent_class;
 };
 
-Gst3DRenderer * gst_3d_renderer_new            (GstGLContext * context);
-GType       gst_3d_renderer_get_type       (void);
+Gst3DRenderer *gst_3d_renderer_new (GstGLContext * context);
+GType gst_3d_renderer_get_type (void);
 
 G_END_DECLS
-
 #endif /* __GST_3D_RENDERER_H__ */

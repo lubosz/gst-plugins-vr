@@ -80,7 +80,8 @@ gst_hmd_warp_class_init (GstHmdWarpClass * klass)
 {
   GObjectClass *gobject_class;
   GstElementClass *element_class;
-  GstBaseTransformClass *base_transform_class = GST_BASE_TRANSFORM_CLASS (klass);
+  GstBaseTransformClass *base_transform_class =
+      GST_BASE_TRANSFORM_CLASS (klass);
 
   gobject_class = (GObjectClass *) klass;
   element_class = GST_ELEMENT_CLASS (klass);
@@ -91,8 +92,7 @@ gst_hmd_warp_class_init (GstHmdWarpClass * klass)
   GST_GL_FILTER_CLASS (klass)->init_fbo = gst_hmd_warp_init_shader;
   GST_GL_FILTER_CLASS (klass)->display_reset_cb = gst_hmd_warp_reset_gl;
   GST_GL_FILTER_CLASS (klass)->set_caps = gst_hmd_warp_set_caps;
-  GST_GL_FILTER_CLASS (klass)->filter_texture =
-      gst_hmd_warp_filter_texture;
+  GST_GL_FILTER_CLASS (klass)->filter_texture = gst_hmd_warp_filter_texture;
   base_transform_class->stop = gst_hmd_warp_stop;
 
   gst_element_class_set_metadata (element_class, "HMD warp",
@@ -141,12 +141,16 @@ gst_hmd_warp_set_caps (GstGLFilter * filter, GstCaps * incaps,
   GstHmdWarp *self = GST_HMD_WARP (filter);
 
   graphene_vec2_init (&self->screen_size,
-    (gdouble) GST_VIDEO_INFO_WIDTH (&filter->out_info),
-    (gdouble) GST_VIDEO_INFO_HEIGHT (&filter->out_info));
+      (gdouble) GST_VIDEO_INFO_WIDTH (&filter->out_info),
+      (gdouble) GST_VIDEO_INFO_HEIGHT (&filter->out_info));
 
-  self->aspect = graphene_vec2_get_x (&self->screen_size) / graphene_vec2_get_y (&self->screen_size);
-      
-  GST_DEBUG("caps change, res: %dx%d", GST_VIDEO_INFO_WIDTH (&filter->out_info), GST_VIDEO_INFO_HEIGHT (&filter->out_info) );
+  self->aspect =
+      graphene_vec2_get_x (&self->screen_size) /
+      graphene_vec2_get_y (&self->screen_size);
+
+  GST_DEBUG ("caps change, res: %dx%d",
+      GST_VIDEO_INFO_WIDTH (&filter->out_info),
+      GST_VIDEO_INFO_HEIGHT (&filter->out_info));
 
   self->caps_change = TRUE;
 
@@ -162,7 +166,7 @@ gst_hmd_warp_reset_gl (GstGLFilter * filter)
     gst_object_unref (self->shader);
     self->shader = NULL;
   }
-  gst_object_unref(self->render_plane);
+  gst_object_unref (self->render_plane);
 }
 
 static gboolean
@@ -170,34 +174,38 @@ gst_hmd_warp_stop (GstBaseTransform * trans)
 {
   GstHmdWarp *self = GST_HMD_WARP (trans);
   /* blocking call, wait until the opengl thread has destroyed the shader */
-  if(self->shader != NULL)
-    gst_3d_shader_delete(self->shader);
+  if (self->shader != NULL)
+    gst_3d_shader_delete (self->shader);
   return GST_BASE_TRANSFORM_CLASS (parent_class)->stop (trans);
 }
 
-gboolean _init_gl(GstHmdWarp * self) {
+gboolean
+_init_gl (GstHmdWarp * self)
+{
 
   GstGLContext *context = GST_GL_BASE_FILTER (self)->context;
   GstGLFuncs *gl = context->gl_vtable;
   gboolean ret = TRUE;
 
-   if (!self->render_plane) {
-      self->shader = gst_3d_shader_new(context);
-      ret = gst_3d_shader_from_vert_frag(self->shader, "mvp_uv.vert", "warp.frag");
-      gst_3d_shader_bind(self->shader);
-      
-      self->render_plane = gst_3d_mesh_new(context);
-      gst_3d_mesh_init_buffers (self->render_plane);
-      gst_3d_shader_enable_attribs(self->shader);
-      gst_3d_mesh_upload_plane (self->render_plane, self->aspect);
-      gst_3d_mesh_bind_buffers (self->render_plane, self->shader->attr_position, self->shader->attr_uv);
+  if (!self->render_plane) {
+    self->shader = gst_3d_shader_new (context);
+    ret =
+        gst_3d_shader_from_vert_frag (self->shader, "mvp_uv.vert", "warp.frag");
+    gst_3d_shader_bind (self->shader);
 
-      gl->ClearColor (0.f, 0.f, 0.f, 0.f);
-      gl->ActiveTexture (GL_TEXTURE0);
-      gst_gl_shader_set_uniform_1i (self->shader->shader, "texture", 0);
-      
-      gst_gl_shader_use (self->shader->shader);
-      gst_3d_shader_upload_vec2(self->shader, &self->screen_size, "screen_size");
+    self->render_plane = gst_3d_mesh_new (context);
+    gst_3d_mesh_init_buffers (self->render_plane);
+    gst_3d_shader_enable_attribs (self->shader);
+    gst_3d_mesh_upload_plane (self->render_plane, self->aspect);
+    gst_3d_mesh_bind_buffers (self->render_plane, self->shader->attr_position,
+        self->shader->attr_uv);
+
+    gl->ClearColor (0.f, 0.f, 0.f, 0.f);
+    gl->ActiveTexture (GL_TEXTURE0);
+    gst_gl_shader_set_uniform_1i (self->shader->shader, "texture", 0);
+
+    gst_gl_shader_use (self->shader->shader);
+    gst_3d_shader_upload_vec2 (self->shader, &self->screen_size, "screen_size");
   }
   return ret;
 }
@@ -206,12 +214,11 @@ static gboolean
 gst_hmd_warp_init_shader (GstGLFilter * filter)
 {
   GstHmdWarp *self = GST_HMD_WARP (filter);
-  return _init_gl(self);;
+  return _init_gl (self);;
 }
 
 static gboolean
-gst_hmd_warp_filter_texture (GstGLFilter * filter, guint in_tex,
-    guint out_tex)
+gst_hmd_warp_filter_texture (GstGLFilter * filter, guint in_tex, guint out_tex)
 {
   GstHmdWarp *self = GST_HMD_WARP (filter);
 
@@ -240,11 +247,12 @@ gst_hmd_warp_callback (gpointer this)
   gl->BindTexture (GL_TEXTURE_2D, self->in_tex);
 
   graphene_matrix_t projection_ortho;
-  graphene_matrix_init_ortho (&projection_ortho, -self->aspect, self->aspect, -1.0, 1.0, -1.0, 1.0);
-  gst_3d_shader_upload_matrix(self->shader, &projection_ortho, "mvp");
-  gst_3d_mesh_bind(self->render_plane);
-  gst_3d_mesh_draw(self->render_plane);
-  
+  graphene_matrix_init_ortho (&projection_ortho, -self->aspect, self->aspect,
+      -1.0, 1.0, -1.0, 1.0);
+  gst_3d_shader_upload_matrix (self->shader, &projection_ortho, "mvp");
+  gst_3d_mesh_bind (self->render_plane);
+  gst_3d_mesh_draw (self->render_plane);
+
   gl->BindVertexArray (0);
   gl->BindTexture (GL_TEXTURE_2D, 0);
   gst_gl_context_clear_shader (context);

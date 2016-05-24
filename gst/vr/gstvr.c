@@ -34,16 +34,20 @@
 static gboolean
 plugin_init (GstPlugin * plugin)
 {
-  if (!gst_element_register (plugin, "vrcompositor", GST_RANK_NONE, gst_vr_compositor_get_type()))
-    return FALSE;
- 
-  if (!gst_element_register (plugin, "vrtestsrc", GST_RANK_NONE, gst_vr_test_src_get_type()))
+  if (!gst_element_register (plugin, "vrcompositor", GST_RANK_NONE,
+          gst_vr_compositor_get_type ()))
     return FALSE;
 
-  if (!gst_element_register (plugin, "hmdwarp", GST_RANK_NONE, gst_hmd_warp_get_type()))
+  if (!gst_element_register (plugin, "vrtestsrc", GST_RANK_NONE,
+          gst_vr_test_src_get_type ()))
     return FALSE;
 
-  if (!gst_element_register (plugin, "pointcloudbuilder", GST_RANK_NONE, gst_point_cloud_builder_get_type()))
+  if (!gst_element_register (plugin, "hmdwarp", GST_RANK_NONE,
+          gst_hmd_warp_get_type ()))
+    return FALSE;
+
+  if (!gst_element_register (plugin, "pointcloudbuilder", GST_RANK_NONE,
+          gst_point_cloud_builder_get_type ()))
     return FALSE;
 
   return TRUE;

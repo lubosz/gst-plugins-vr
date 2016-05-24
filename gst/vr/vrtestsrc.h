@@ -24,13 +24,15 @@
 
 typedef struct _GstVRTestSrc GstVRTestSrc;
 
-typedef enum {
-    GST_VR_TEST_SRC_MANDELBROT
+typedef enum
+{
+  GST_VR_TEST_SRC_MANDELBROT
 } GstVRTestSrcPattern;
 
 #include "gstvrtestsrc.h"
 
-struct BaseSrcImpl {
+struct BaseSrcImpl
+{
   GstVRTestSrc *src;
   GstGLContext *context;
   GstVideoInfo v_info;
@@ -39,12 +41,14 @@ struct BaseSrcImpl {
 struct SrcFuncs
 {
   GstVRTestSrcPattern pattern;
-  gpointer (*create) (GstVRTestSrc * src);
-  gboolean (*init) (gpointer impl, GstGLContext * context, GstVideoInfo * v_info);
-  gboolean (*fill_bound_fbo) (gpointer impl);
+    gpointer (*create) (GstVRTestSrc * src);
+    gboolean (*init) (gpointer impl, GstGLContext * context,
+      GstVideoInfo * v_info);
+    gboolean (*fill_bound_fbo) (gpointer impl);
   void (*free) (gpointer impl);
 };
 
-const struct SrcFuncs * gst_vr_test_src_get_src_funcs_for_pattern (GstVRTestSrcPattern pattern);
+const struct SrcFuncs
+    *gst_vr_test_src_get_src_funcs_for_pattern (GstVRTestSrcPattern pattern);
 
 #endif

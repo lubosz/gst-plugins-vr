@@ -150,10 +150,10 @@ gst_vr_test_src_class_init (GstVRTestSrcClass * klass)
   g_object_class_install_property (gobject_class, PROP_PATTERN,
       g_param_spec_enum ("pattern", "Pattern",
           "Type of test pattern to generate", GST_TYPE_VR_TEST_SRC_PATTERN,
-          GST_VR_TEST_SRC_MANDELBROT, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
-  g_object_class_install_property (gobject_class,
-      PROP_TIMESTAMP_OFFSET, g_param_spec_int64 ("timestamp-offset",
-          "Timestamp offset",
+          GST_VR_TEST_SRC_MANDELBROT,
+          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+  g_object_class_install_property (gobject_class, PROP_TIMESTAMP_OFFSET,
+      g_param_spec_int64 ("timestamp-offset", "Timestamp offset",
           "An offset added to timestamps set on buffers (in ns)", G_MININT64,
           G_MAXINT64, 0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
   g_object_class_install_property (gobject_class, PROP_IS_LIVE,

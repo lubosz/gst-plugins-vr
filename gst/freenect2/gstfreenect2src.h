@@ -72,24 +72,24 @@ struct _GstFreenect2Src
 
   /* Freenect2 variables */
 
-  libfreenect2::Freenect2 *freenect2;
-  libfreenect2::Freenect2Device *dev;
-  libfreenect2::PacketPipeline *pipeline;
+    libfreenect2::Freenect2 * freenect2;
+    libfreenect2::Freenect2Device * dev;
+    libfreenect2::PacketPipeline * pipeline;
 
-  libfreenect2::SyncMultiFrameListener *listener;
-  libfreenect2::FrameMap frames;
-  libfreenect2::Frame *undistorted; 
-  libfreenect2::Frame *registered;
+    libfreenect2::SyncMultiFrameListener * listener;
+    libfreenect2::FrameMap frames;
+    libfreenect2::Frame * undistorted;
+    libfreenect2::Frame * registered;
 
-  libfreenect2::Registration* registration;
+    libfreenect2::Registration * registration;
 
 
   /*
-  openni::Device *device;
-  openni::VideoStream *depth, *color;
-  openni::VideoMode depthVideoMode, colorVideoMode;
-  openni::PixelFormat depthpixfmt, colorpixfmt;
-  */
+     openni::Device *device;
+     openni::VideoStream *depth, *color;
+     openni::VideoMode depthVideoMode, colorVideoMode;
+     openni::PixelFormat depthpixfmt, colorpixfmt;
+   */
   int width, height, fps;
   //openni::VideoFrameRef *depthFrame, *colorFrame;
 };

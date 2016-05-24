@@ -19,7 +19,7 @@
  */
 
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 
 #include <string.h>
@@ -35,7 +35,8 @@
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
 G_DEFINE_TYPE_WITH_CODE (Gst3DRenderer, gst_3d_renderer, GST_TYPE_OBJECT,
-    GST_DEBUG_CATEGORY_INIT (gst_3d_renderer_debug, "3drenderer", 0, "renderer"));
+    GST_DEBUG_CATEGORY_INIT (gst_3d_renderer_debug, "3drenderer", 0,
+        "renderer"));
 
 void
 gst_3d_renderer_init (Gst3DRenderer * self)
@@ -62,7 +63,7 @@ gst_3d_renderer_finalize (GObject * object)
     gst_object_unref (self->context);
     self->context = NULL;
   }
-  
+
   G_OBJECT_CLASS (gst_3d_renderer_parent_class)->finalize (object);
 }
 

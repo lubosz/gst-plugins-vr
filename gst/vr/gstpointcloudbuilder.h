@@ -52,16 +52,16 @@ struct _GstPointCloudBuilder
 
   GList *pushed_buttons;
 
-  Gst3DMesh * mesh;
-  Gst3DMesh * render_plane;
-  
+  Gst3DMesh *mesh;
+  Gst3DMesh *render_plane;
+
   int pressed_mouse_button;
 
-  Gst3DShader * shader;
-  Gst3DCamera * camera;
-  
-  GstPad * srcpad;
-  
+  Gst3DShader *shader;
+  Gst3DCamera *camera;
+
+  GstPad *srcpad;
+
   GLuint left_color_tex, left_fbo;
   GLuint right_color_tex, right_fbo;
   GLint default_fbo;

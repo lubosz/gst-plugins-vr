@@ -19,7 +19,7 @@
  */
 
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 
 #include <string.h>
@@ -62,7 +62,7 @@ gst_3d_scene_finalize (GObject * object)
     gst_object_unref (self->context);
     self->context = NULL;
   }
-  
+
   G_OBJECT_CLASS (gst_3d_scene_parent_class)->finalize (object);
 }
 

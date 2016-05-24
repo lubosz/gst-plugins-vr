@@ -19,7 +19,7 @@
  */
 
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 
 #include <string.h>
@@ -82,7 +82,7 @@ gst_3d_mesh_finalize (GObject * object)
     gst_object_unref (self->context);
     self->context = NULL;
   }
-  
+
   G_OBJECT_CLASS (gst_3d_mesh_parent_class)->finalize (object);
 }
 
@@ -94,34 +94,39 @@ gst_3d_mesh_class_init (Gst3DMeshClass * klass)
 }
 
 
-gboolean gst_3d_mesh_has_buffers (Gst3DMesh * self) {
+gboolean
+gst_3d_mesh_has_buffers (Gst3DMesh * self)
+{
   if (self->vbo_positions)
     return TRUE;
   return FALSE;
 }
 
 void
-gst_3d_mesh_init_buffers (Gst3DMesh * self) {
-    g_return_if_fail (self != NULL);
-    g_return_if_fail (GST_IS_GL_CONTEXT (self->context));
+gst_3d_mesh_init_buffers (Gst3DMesh * self)
+{
+  g_return_if_fail (self != NULL);
+  g_return_if_fail (GST_IS_GL_CONTEXT (self->context));
 
-    GstGLFuncs *gl = self->context->gl_vtable;
+  GstGLFuncs *gl = self->context->gl_vtable;
 
 
-    gl->GenVertexArrays (1, &self->vao);
-    gl->BindVertexArray (self->vao);
+  gl->GenVertexArrays (1, &self->vao);
+  gl->BindVertexArray (self->vao);
 
-    gl->GenBuffers (1, &self->vbo_positions);
-    gl->GenBuffers (1, &self->vbo_uv);
-    gl->GenBuffers (1, &self->vbo_indices);
-    
-    GST_DEBUG("generating mesh. vao: %d pos: %d uv: %d index: %d", self->vao, self->vbo_positions, self->vbo_uv, self->vbo_indices);
+  gl->GenBuffers (1, &self->vbo_positions);
+  gl->GenBuffers (1, &self->vbo_uv);
+  gl->GenBuffers (1, &self->vbo_indices);
+
+  GST_DEBUG ("generating mesh. vao: %d pos: %d uv: %d index: %d", self->vao,
+      self->vbo_positions, self->vbo_uv, self->vbo_indices);
 }
 
 void
-gst_3d_mesh_bind (Gst3DMesh * self) {
-    GstGLFuncs *gl = self->context->gl_vtable;
-    gl->BindVertexArray (self->vao);
+gst_3d_mesh_bind (Gst3DMesh * self)
+{
+  GstGLFuncs *gl = self->context->gl_vtable;
+  gl->BindVertexArray (self->vao);
 }
 
 void
@@ -154,12 +159,13 @@ gst_3d_mesh_unbind_buffers (Gst3DMesh * self)
 
 
 void
-gst_3d_mesh_upload_sphere (Gst3DMesh * self, float radius, unsigned stacks, unsigned slices)
+gst_3d_mesh_upload_sphere (Gst3DMesh * self, float radius, unsigned stacks,
+    unsigned slices)
 {
   GLfloat *vertices;
   GLfloat *texcoords;
   GLushort *indices;
-  
+
   GstGLFuncs *gl = self->context->gl_vtable;
 
   self->vector_length = 3;
@@ -237,10 +243,11 @@ gst_3d_mesh_draw (Gst3DMesh * self)
 
 
 void
-gst_3d_mesh_draw_arrays(Gst3DMesh * self) {
+gst_3d_mesh_draw_arrays (Gst3DMesh * self)
+{
   GstGLFuncs *gl = self->context->gl_vtable;
   //gl->DrawElements (self->draw_mode, self->index_size, GL_UNSIGNED_SHORT, 0);
-  gl->DrawArrays(self->draw_mode, 0, self->index_size);
+  gl->DrawArrays (self->draw_mode, 0, self->index_size);
 }
 
 void
@@ -264,13 +271,12 @@ gst_3d_mesh_upload_plane (Gst3DMesh * self, float aspect)
   /* *INDENT-ON* */
   const GLushort indices[] = { 0, 1, 2, 3, 0 };
 
-    int vertex_count = 4;
+  int vertex_count = 4;
   self->vector_length = 4;
 
   gl->BindBuffer (GL_ARRAY_BUFFER, self->vbo_positions);
   gl->BufferData (GL_ARRAY_BUFFER,
-      vertex_count * 4 * sizeof (GLfloat), vertices,
-      GL_STATIC_DRAW);
+      vertex_count * 4 * sizeof (GLfloat), vertices, GL_STATIC_DRAW);
 
   // index
   self->index_size = sizeof (indices);
@@ -288,12 +294,13 @@ gst_3d_mesh_upload_plane (Gst3DMesh * self, float aspect)
 }
 
 void
-gst_3d_mesh_upload_point_plane (Gst3DMesh * self, unsigned width, unsigned height)
+gst_3d_mesh_upload_point_plane (Gst3DMesh * self, unsigned width,
+    unsigned height)
 {
   GLfloat *vertices;
   GLfloat *texcoords;
   GLuint *indices;
-  
+
   GstGLFuncs *gl = self->context->gl_vtable;
 
   self->vector_length = 3;
@@ -305,7 +312,7 @@ gst_3d_mesh_upload_point_plane (Gst3DMesh * self, unsigned width, unsigned heigh
 
   GLfloat *v = vertices;
   GLfloat *t = texcoords;
-  
+
   float w_step = 2.0 / (float) width;
   float h_step = 2.0 / (float) height;
 
@@ -318,22 +325,22 @@ gst_3d_mesh_upload_point_plane (Gst3DMesh * self, unsigned width, unsigned heigh
 
 
   for (int i = 0; i < width; i++) {
-  float curent_h = -1.0;
-  float curent_v = 0.0;
+    float curent_h = -1.0;
+    float curent_v = 0.0;
     for (int j = 0; j < height; j++) {
-      
+
       *v++ = curent_w;
       *v++ = curent_h;
       *v++ = 0;
 
       *t++ = curent_u;
       *t++ = curent_v;
-      
+
       curent_h += h_step;
       curent_v += v_step;
     }
-      curent_u += u_step;
-      curent_w += w_step;
+    curent_u += u_step;
+    curent_w += w_step;
   }
 
   gl->BindBuffer (GL_ARRAY_BUFFER, self->vbo_positions);
@@ -349,16 +356,15 @@ gst_3d_mesh_upload_point_plane (Gst3DMesh * self, unsigned width, unsigned heigh
 
   GLuint *indextemp = indices;
   for (int i = 0; i < self->index_size; i++) {
-      *indextemp++ = i;
+    *indextemp++ = i;
   }
-      GST_ERROR("wxh %d", self->index_size);
+  GST_ERROR ("wxh %d", self->index_size);
 
   // upload index
   /*
-*/
+   */
   gl->BindBuffer (GL_ELEMENT_ARRAY_BUFFER, self->vbo_indices);
   gl->BufferData (GL_ELEMENT_ARRAY_BUFFER, sizeof (GLuint) * self->index_size,
       indices, GL_STATIC_DRAW);
   self->draw_mode = GL_POINTS;
 }
-

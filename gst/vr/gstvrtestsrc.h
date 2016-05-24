@@ -32,7 +32,6 @@
 #include "vrtestsrc.h"
 
 G_BEGIN_DECLS
-
 #define GST_TYPE_VR_TEST_SRC \
     (gst_vr_test_src_get_type())
 #define GST_VR_TEST_SRC(obj) \
@@ -43,7 +42,6 @@ G_BEGIN_DECLS
     (G_TYPE_CHECK_INSTANCE_TYPE((obj),GST_TYPE_VR_TEST_SRC))
 #define GST_IS_VR_TEST_SRC_CLASS(klass) \
     (G_TYPE_CHECK_CLASS_TYPE((klass),GST_TYPE_VR_TEST_SRC))
-
 typedef struct _GstVRTestSrc GstVRTestSrc;
 typedef struct _GstVRTestSrcClass GstVRTestSrcClass;
 
@@ -52,45 +50,46 @@ typedef struct _GstVRTestSrcClass GstVRTestSrcClass;
  *
  * Opaque data structure.
  */
-struct _GstVRTestSrc {
-    GstPushSrc element;
+struct _GstVRTestSrc
+{
+  GstPushSrc element;
 
-    /*< private >*/
+  /*< private > */
 
-    /* type of output */
-    GstVRTestSrcPattern set_pattern;
-    GstVRTestSrcPattern active_pattern;
+  /* type of output */
+  GstVRTestSrcPattern set_pattern;
+  GstVRTestSrcPattern active_pattern;
 
-    /* video state */
-    GstVideoInfo out_info;
+  /* video state */
+  GstVideoInfo out_info;
 
-    GLuint fbo;
-    GLuint depthbuffer;
+  GLuint fbo;
+  GLuint depthbuffer;
 
-    GstGLShader *shader;
+  GstGLShader *shader;
 
-    GstBufferPool *pool;
+  GstBufferPool *pool;
 
-    GstGLDisplay *display;
-    GstGLContext *context, *other_context;
-    gint64 timestamp_offset;              /* base offset */
-    GstClockTime running_time;            /* total running time */
-    gint64 n_frames;                      /* total frames sent */
-    gboolean negotiated;
+  GstGLDisplay *display;
+  GstGLContext *context, *other_context;
+  gint64 timestamp_offset;      /* base offset */
+  GstClockTime running_time;    /* total running time */
+  gint64 n_frames;              /* total frames sent */
+  gboolean negotiated;
 
-    gboolean gl_result;
-    const struct SrcFuncs *src_funcs;
-    gpointer src_impl;
+  gboolean gl_result;
+  const struct SrcFuncs *src_funcs;
+  gpointer src_impl;
 
-    GstCaps *out_caps;
+  GstCaps *out_caps;
 };
 
-struct _GstVRTestSrcClass {
-    GstPushSrcClass parent_class;
+struct _GstVRTestSrcClass
+{
+  GstPushSrcClass parent_class;
 };
 
 GType gst_vr_test_src_get_type (void);
 
 G_END_DECLS
-
 #endif /* __GST_VR_TEST_SRC_H__ */

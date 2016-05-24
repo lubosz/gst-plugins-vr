@@ -26,30 +26,29 @@
 #include <gst/gl/gstgl_fwd.h>
 
 G_BEGIN_DECLS
-
 #define GST_3D_TYPE_SCENE            (gst_3d_scene_get_type ())
 #define GST_3D_SCENE(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), GST_3D_TYPE_SCENE, Gst3DScene))
 #define GST_3D_SCENE_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), GST_3D_TYPE_SCENE, Gst3DSceneClass))
 #define GST_IS_3D_SCENE(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GST_3D_TYPE_SCENE))
 #define GST_IS_3D_SCENE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), GST_3D_TYPE_SCENE))
 #define GST_3D_SCENE_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), GST_3D_TYPE_SCENE, Gst3DSceneClass))
-typedef struct _Gst3DScene  Gst3DScene;
-typedef struct _Gst3DSceneClass  Gst3DSceneClass;
+typedef struct _Gst3DScene Gst3DScene;
+typedef struct _Gst3DSceneClass Gst3DSceneClass;
 
 struct _Gst3DScene
 {
-  /*< private >*/
+  /*< private > */
   GstObject parent;
-  GstGLContext * context;
+  GstGLContext *context;
 };
 
-struct _Gst3DSceneClass {
+struct _Gst3DSceneClass
+{
   GstObjectClass parent_class;
 };
 
-Gst3DScene * gst_3d_scene_new            (GstGLContext * context);
-GType       gst_3d_scene_get_type       (void);
+Gst3DScene *gst_3d_scene_new (GstGLContext * context);
+GType gst_3d_scene_get_type (void);
 
 G_END_DECLS
-
 #endif /* __GST_3D_SCENE_H__ */

@@ -52,12 +52,12 @@ struct _GstVRCompositor
 
   GList *pushed_buttons;
 
-  Gst3DMesh * mesh;
-  Gst3DMesh * render_plane;
+  Gst3DMesh *mesh;
+  Gst3DMesh *render_plane;
 
-  Gst3DShader * shader;
-  Gst3DCamera * camera;
-  
+  Gst3DShader *shader;
+  Gst3DCamera *camera;
+
   GLuint left_color_tex, left_fbo;
   GLuint right_color_tex, right_fbo;
   GLint default_fbo;

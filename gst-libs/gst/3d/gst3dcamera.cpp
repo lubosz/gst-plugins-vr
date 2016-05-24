@@ -73,13 +73,14 @@ init_hmd (Gst3DCamera * self)
   if (!self->device) {
     GST_ERROR ("Failed to open device: %s\n",
         ohmd_ctx_get_error (self->hmd_context));
-    GST_ERROR ("  vendor:  %s", ohmd_list_gets (self->hmd_context, picked_device,
-            OHMD_VENDOR));
-    GST_ERROR ("  product: %s", ohmd_list_gets (self->hmd_context, picked_device,
-            OHMD_PRODUCT));
-    GST_ERROR ("  path:    %s", ohmd_list_gets (self->hmd_context, picked_device,
-            OHMD_PATH));
-    GST_ERROR ("Make sure you have access rights and a working rules file for your headset in /usr/lib/udev/rules.d");
+    GST_ERROR ("  vendor:  %s", ohmd_list_gets (self->hmd_context,
+            picked_device, OHMD_VENDOR));
+    GST_ERROR ("  product: %s", ohmd_list_gets (self->hmd_context,
+            picked_device, OHMD_PRODUCT));
+    GST_ERROR ("  path:    %s", ohmd_list_gets (self->hmd_context,
+            picked_device, OHMD_PATH));
+    GST_ERROR
+        ("Make sure you have access rights and a working rules file for your headset in /usr/lib/udev/rules.d");
     return;
   }
 
@@ -170,7 +171,7 @@ void
 gst_3d_camera_init (Gst3DCamera * self)
 {
   self->fov = 45.0;
-  self->aspect = 4.0/3.0;
+  self->aspect = 4.0 / 3.0;
   self->znear = 0.1;
   self->zfar = 100;
   self->hmd_context = NULL;
@@ -180,10 +181,10 @@ gst_3d_camera_init (Gst3DCamera * self)
   self->rotation_speed = 0.002;
   self->cursor_last_x = 0;
   self->cursor_last_y = 0;
-  
+
   self->theta = 5.0;
   self->phi = -5.0;
-  
+
   graphene_vec3_init (&self->eye, 0.f, 0.f, 1.f);
   graphene_vec3_init (&self->center, 0.f, 0.f, 0.f);
   graphene_vec3_init (&self->up, 0.f, 1.f, 0.f);
@@ -328,7 +329,8 @@ gst_3d_camera_update_view_mvp (Gst3DCamera * self)
       self->fov, self->aspect, self->znear, self->zfar);
 
   graphene_matrix_t view_matrix;
-  graphene_matrix_init_look_at (&view_matrix, &self->eye, &self->center, &self->up);
+  graphene_matrix_init_look_at (&view_matrix, &self->eye, &self->center,
+      &self->up);
 
   graphene_matrix_multiply (&view_matrix, &projection_matrix, &self->mvp);
 }
@@ -337,19 +339,24 @@ void
 gst_3d_camera_translate_arcball (Gst3DCamera * self, float z)
 {
   self->center_distance += z * self->scroll_speed;
-  GST_DEBUG("center distance: %f", self->center_distance);
+  GST_DEBUG ("center distance: %f", self->center_distance);
   gst_3d_camera_update_view_arcball (self);
 }
 
-void gst_3d_camera_rotate_arcball(Gst3DCamera * self, float x, float y) {
-    self->theta += y * self->rotation_speed;
-    self->phi += x * self->rotation_speed;
-    GST_DEBUG("theta: %f phi: %f", self->theta, self->phi);
-    gst_3d_camera_update_view_arcball(self);
+void
+gst_3d_camera_rotate_arcball (Gst3DCamera * self, float x, float y)
+{
+  self->theta += y * self->rotation_speed;
+  self->phi += x * self->rotation_speed;
+  GST_DEBUG ("theta: %f phi: %f", self->theta, self->phi);
+  gst_3d_camera_update_view_arcball (self);
 }
 
-static void print_graphene_vec3(const gchar* name, graphene_vec3_t * vec) {
-  GST_ERROR("%s %f %f %f", name, graphene_vec3_get_x (vec), graphene_vec3_get_y(vec), graphene_vec3_get_z(vec));  
+static void
+print_graphene_vec3 (const gchar * name, graphene_vec3_t * vec)
+{
+  GST_ERROR ("%s %f %f %f", name, graphene_vec3_get_x (vec),
+      graphene_vec3_get_y (vec), graphene_vec3_get_z (vec));
 }
 
 void
@@ -357,12 +364,12 @@ gst_3d_camera_update_view_arcball (Gst3DCamera * self)
 {
   // float radius = exp (self->center_distance);
   float radius = self->center_distance;
-  
+
   graphene_vec3_init (&self->eye,
       radius * sin (self->theta) * cos (self->phi),
       radius * -cos (self->theta),
       radius * sin (self->theta) * sin (self->phi));
-      
+
   // print_graphene_vec3("eye", &eye);
 
   graphene_matrix_t projection_matrix;
@@ -370,32 +377,33 @@ gst_3d_camera_update_view_arcball (Gst3DCamera * self)
       self->fov, self->aspect, self->znear, self->zfar);
 
   graphene_matrix_t view_matrix;
-  graphene_matrix_init_look_at (&view_matrix, &self->eye, &self->center, &self->up);
-  
+  graphene_matrix_init_look_at (&view_matrix, &self->eye, &self->center,
+      &self->up);
+
   // GST_ERROR("graphene");
   // graphene_matrix_print (&view_matrix);
 
   graphene_matrix_multiply (&view_matrix, &projection_matrix, &self->mvp);
-  
+
   glm::mat4 view;
-  glm::vec3 center2(0, 0, 0);
-  glm::vec3 up2(0, 1, 0);
+  glm::vec3 center2 (0, 0, 0);
+  glm::vec3 up2 (0, 1, 0);
 
-    glm::vec3 eye2(radius * sin(self->theta) * cos(self->phi),
-                  radius * -cos(self->theta),
-                  radius * sin(self->theta) * sin(self->phi));
-    
-    // GST_ERROR("%f %f %f", eye2[0], eye2[1], eye2[2]);
+  glm::vec3 eye2 (radius * sin (self->theta) * cos (self->phi),
+      radius * -cos (self->theta),
+      radius * sin (self->theta) * sin (self->phi));
 
-    view = glm::lookAt(eye2, center2, up2);
-    
-    
-      graphene_matrix_t viewmatrix2;
-      graphene_matrix_init_from_float (&viewmatrix2, &view[0][0]);
-      // GST_ERROR("glm");
-      // graphene_matrix_print (&viewmatrix2);
-      // GST_ERROR("==================");
-      
-      
-      graphene_matrix_multiply (&viewmatrix2, &projection_matrix, &self->mvp);
+  // GST_ERROR("%f %f %f", eye2[0], eye2[1], eye2[2]);
+
+  view = glm::lookAt (eye2, center2, up2);
+
+
+  graphene_matrix_t viewmatrix2;
+  graphene_matrix_init_from_float (&viewmatrix2, &view[0][0]);
+  // GST_ERROR("glm");
+  // graphene_matrix_print (&viewmatrix2);
+  // GST_ERROR("==================");
+
+
+  graphene_matrix_multiply (&viewmatrix2, &projection_matrix, &self->mvp);
 }
