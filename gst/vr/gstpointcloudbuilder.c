@@ -72,7 +72,7 @@ static gboolean gst_point_cloud_builder_src_event (GstBaseTransform * trans,
 
 static void gst_point_cloud_builder_reset_gl (GstGLFilter * filter);
 static gboolean gst_point_cloud_builder_stop (GstBaseTransform * trans);
-static gboolean gst_point_cloud_builder_init_shader (GstGLFilter * filter);
+static gboolean gst_point_cloud_builder_init_scene (GstGLFilter * filter);
 static void gst_point_cloud_builder_callback (gpointer stuff);
 
 static gboolean gst_point_cloud_builder_filter_texture (GstGLFilter * filter,
@@ -94,7 +94,7 @@ gst_point_cloud_builder_class_init (GstPointCloudBuilderClass * klass)
 
   base_transform_class->src_event = gst_point_cloud_builder_src_event;
 
-  GST_GL_FILTER_CLASS (klass)->init_fbo = gst_point_cloud_builder_init_shader;
+  GST_GL_FILTER_CLASS (klass)->init_fbo = gst_point_cloud_builder_init_scene;
   GST_GL_FILTER_CLASS (klass)->display_reset_cb =
       gst_point_cloud_builder_reset_gl;
   GST_GL_FILTER_CLASS (klass)->set_caps = gst_point_cloud_builder_set_caps;
@@ -130,13 +130,6 @@ gst_point_cloud_builder_init (GstPointCloudBuilder * self)
   self->default_fbo = 0;
 
   self->pressed_mouse_button = 0;
-}
-
-static void
-gst_point_cloud_builder_send_eos (GstElement * self)
-{
-  GstPad *sinkpad = gst_element_get_static_pad (self, "sink");
-  gst_pad_send_event (sinkpad, gst_event_new_eos ());
 }
 
 static void
@@ -204,7 +197,7 @@ gst_point_cloud_builder_src_event (GstBaseTransform * trans, GstEvent * event)
         const gchar *key = gst_structure_get_string (structure, "key");
         if (key != NULL) {
           if (g_strcmp0 (key, "Escape") == 0) {
-            gst_point_cloud_builder_send_eos (GST_ELEMENT (self));
+            gst_3d_renderer_send_eos (GST_ELEMENT (self));
           } else if (g_strcmp0 (key, "KP_Add") == 0) {
             gst_3d_camera_inc_eye_sep (self->camera);
           } else if (g_strcmp0 (key, "KP_Subtract") == 0) {
@@ -318,37 +311,27 @@ _create_fbo2 (GstPointCloudBuilder * self, GLuint * fbo, GLuint * color_tex)
 }
 
 static gboolean
-_init_gl (GstPointCloudBuilder * self)
+gst_point_cloud_builder_init_scene (GstGLFilter * filter)
 {
+  GstPointCloudBuilder *self = GST_POINT_CLOUD_BUILDER (filter);
   GstGLContext *context = GST_GL_BASE_FILTER (self)->context;
   GstGLFuncs *gl = context->gl_vtable;
   gboolean ret = TRUE;
+
   if (!self->mesh) {
     self->shader = gst_3d_shader_new (context);
-    ret =
-        gst_3d_shader_from_vert_frag (self->shader, "points.vert",
+    ret = gst_3d_shader_from_vert_frag (self->shader, "points.vert",
         "points.frag");
     gst_3d_shader_bind (self->shader);
-    self->render_plane = gst_3d_mesh_new (context);
-    gst_3d_mesh_init_buffers (self->render_plane);
-    gst_3d_shader_enable_attribs (self->shader);
-    gst_3d_mesh_upload_point_plane (self->render_plane, 512, 424);
 
-    gst_3d_mesh_bind_buffers (self->render_plane, self->shader->attr_position,
-        self->shader->attr_uv);
+    self->render_plane = gst_3d_mesh_new_point_plane (context, 512, 424);
+    gst_3d_mesh_bind_to_shader (self->render_plane, self->shader);
+
     gl->ClearColor (0.f, 0.f, 0.f, 0.f);
     gl->ActiveTexture (GL_TEXTURE0);
     gst_gl_shader_set_uniform_1i (self->shader->shader, "texture", 0);
   }
   return ret;
-}
-
-
-static gboolean
-gst_point_cloud_builder_init_shader (GstGLFilter * filter)
-{
-  GstPointCloudBuilder *self = GST_POINT_CLOUD_BUILDER (filter);
-  return _init_gl (self);
 }
 
 static gboolean

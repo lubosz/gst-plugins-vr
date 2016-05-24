@@ -71,9 +71,8 @@ static gboolean gst_vr_compositor_src_event (GstBaseTransform * trans,
 
 static void gst_vr_compositor_reset_gl (GstGLFilter * filter);
 static gboolean gst_vr_compositor_stop (GstBaseTransform * trans);
-static gboolean gst_vr_compositor_init_shader (GstGLFilter * filter);
-static void gst_vr_compositor_callback (gpointer stuff);
-static void gst_vr_compositor_build_mvp (GstVRCompositor * self);
+static gboolean gst_vr_compositor_init_scene (GstGLFilter * filter);
+static void gst_vr_compositor_draw (gpointer stuff);
 
 static gboolean gst_vr_compositor_filter_texture (GstGLFilter * filter,
     guint in_tex, guint out_tex);
@@ -94,7 +93,7 @@ gst_vr_compositor_class_init (GstVRCompositorClass * klass)
 
   base_transform_class->src_event = gst_vr_compositor_src_event;
 
-  GST_GL_FILTER_CLASS (klass)->init_fbo = gst_vr_compositor_init_shader;
+  GST_GL_FILTER_CLASS (klass)->init_fbo = gst_vr_compositor_init_scene;
   GST_GL_FILTER_CLASS (klass)->display_reset_cb = gst_vr_compositor_reset_gl;
   GST_GL_FILTER_CLASS (klass)->set_caps = gst_vr_compositor_set_caps;
   GST_GL_FILTER_CLASS (klass)->filter_texture =
@@ -127,29 +126,17 @@ gst_vr_compositor_init (GstVRCompositor * self)
   self->eye_height = 1;
 
   self->default_fbo = 0;
-
-  // gst_vr_compositor_build_mvp (self);
 }
-
-static void
-gst_vr_compositor_build_mvp (GstVRCompositor * self)
-{
-  gst_3d_camera_update_view (self->camera);
-}
-
 
 static void
 gst_vr_compositor_set_property (GObject * object, guint prop_id,
     const GValue * value, GParamSpec * pspec)
 {
-  GstVRCompositor *filter = GST_VR_COMPOSITOR (object);
-
   switch (prop_id) {
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
   }
-  gst_vr_compositor_build_mvp (filter);
 }
 
 
@@ -176,6 +163,7 @@ gst_vr_compositor_set_caps (GstGLFilter * filter, GstCaps * incaps,
   if (!self->camera->hmd->device)
     return FALSE;
 
+  // TODO: get resolution from HMD
   // int w = GST_VIDEO_INFO_WIDTH (&filter->out_info);
   // int h = GST_VIDEO_INFO_HEIGHT (&filter->out_info);
   int w = 1920;
@@ -189,7 +177,7 @@ gst_vr_compositor_set_caps (GstGLFilter * filter, GstCaps * incaps,
 
   self->caps_change = TRUE;
 
-  gst_vr_compositor_build_mvp (self);
+  gst_3d_camera_update_view (self->camera);
 
   return TRUE;
 }
@@ -256,8 +244,7 @@ gst_vr_compositor_src_event (GstBaseTransform * trans, GstEvent * event)
         const gchar *event_name = gst_structure_get_string (structure, "event");
         if (g_strcmp0 (event_name, "key-press") == 0)
           if (g_strcmp0 (key, "Escape") == 0) {
-            // TODO: send EOS or something
-            exit (0);
+            gst_3d_renderer_send_eos (GST_ELEMENT (self));
             // } else if (g_strcmp0 (key, "Tab") == 0) {
             //  _toggle_render_mode (self);
           } else if (g_strcmp0 (key, "KP_Add") == 0) {
@@ -310,77 +297,36 @@ gst_vr_compositor_stop (GstBaseTransform * trans)
   return GST_BASE_TRANSFORM_CLASS (parent_class)->stop (trans);
 }
 
-void
-_create_fbo (GstVRCompositor * self, GLuint * fbo, GLuint * color_tex)
-{
-  GstGLContext *context = GST_GL_BASE_FILTER (self)->context;
-  GstGLFuncs *gl = context->gl_vtable;
-
-  gl->GenTextures (1, color_tex);
-  gl->GenFramebuffers (1, fbo);
-
-  gl->BindTexture (GL_TEXTURE_2D, *color_tex);
-  gl->TexImage2D (GL_TEXTURE_2D, 0, GL_RGBA8, self->eye_width, self->eye_height,
-      0, GL_RGBA, GL_UNSIGNED_INT, NULL);
-  gl->TexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  gl->TexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  gl->TexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  gl->TexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  gl->BindFramebuffer (GL_FRAMEBUFFER_EXT, *fbo);
-  gl->FramebufferTexture2D (GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-      *color_tex, 0);
-
-  GLenum status = gl->CheckFramebufferStatus (GL_FRAMEBUFFER);
-
-  if (status != GL_FRAMEBUFFER_COMPLETE) {
-    GST_ERROR ("failed to create fbo %x\n", status);
-  }
-  gl->BindFramebuffer (GL_FRAMEBUFFER, 0);
-}
-
 static gboolean
-_init_gl (GstVRCompositor * self)
+gst_vr_compositor_init_scene (GstGLFilter * filter)
 {
+  GstVRCompositor *self = GST_VR_COMPOSITOR (filter);
+
   GstGLContext *context = GST_GL_BASE_FILTER (self)->context;
   GstGLFuncs *gl = context->gl_vtable;
   gboolean ret = TRUE;
   if (!self->mesh) {
     self->shader = gst_3d_shader_new (context);
-    ret =
-        gst_3d_shader_from_vert_frag (self->shader, "mvp_uv.vert",
+    ret = gst_3d_shader_from_vert_frag (self->shader, "mvp_uv.vert",
         "texture_uv.frag");
     gst_3d_shader_bind (self->shader);
 
-    self->mesh = gst_3d_mesh_new (context);
-    gst_3d_mesh_init_buffers (self->mesh);
-    gst_3d_shader_enable_attribs (self->shader);
-    gst_3d_mesh_upload_sphere (self->mesh, 10.0, 20, 20);
-    gst_3d_mesh_bind_buffers (self->mesh, self->shader->attr_position,
-        self->shader->attr_uv);
+    self->mesh = gst_3d_mesh_new_sphere (context, 10.0, 20, 20);
+    gst_3d_mesh_bind_to_shader (self->mesh, self->shader);
 
-    self->render_plane = gst_3d_mesh_new (context);
-    gst_3d_mesh_init_buffers (self->render_plane);
-    gst_3d_shader_enable_attribs (self->shader);
-    gst_3d_mesh_upload_plane (self->render_plane, self->camera->aspect);
-    gst_3d_mesh_bind_buffers (self->render_plane, self->shader->attr_position,
-        self->shader->attr_uv);
 
-    _create_fbo (self, &self->left_fbo, &self->left_color_tex);
-    _create_fbo (self, &self->right_fbo, &self->right_color_tex);
+    self->render_plane = gst_3d_mesh_new_plane (context, self->camera->aspect);
+    gst_3d_mesh_bind_to_shader (self->render_plane, self->shader);
+
+    gst_3d_renderer_create_fbo (gl, &self->left_fbo, &self->left_color_tex,
+        self->eye_width, self->eye_height);
+    gst_3d_renderer_create_fbo (gl, &self->right_fbo, &self->right_color_tex,
+        self->eye_width, self->eye_height);
     gl->ClearColor (0.f, 0.f, 0.f, 0.f);
     gl->ActiveTexture (GL_TEXTURE0);
     gst_gl_shader_set_uniform_1i (self->shader->shader, "texture", 0);
   }
   return ret;
-}
-
-static gboolean
-gst_vr_compositor_init_shader (GstGLFilter * filter)
-{
-  GstVRCompositor *self = GST_VR_COMPOSITOR (filter);
-
-  return _init_gl (self);
 }
 
 static gboolean
@@ -396,7 +342,7 @@ gst_vr_compositor_filter_texture (GstGLFilter * filter, guint in_tex,
       GST_VIDEO_INFO_WIDTH (&filter->out_info),
       GST_VIDEO_INFO_HEIGHT (&filter->out_info),
       filter->fbo, filter->depthbuffer,
-      out_tex, gst_vr_compositor_callback, (gpointer) self);
+      out_tex, gst_vr_compositor_draw, (gpointer) self);
 
   return TRUE;
 }
@@ -411,7 +357,7 @@ _toggle_render_mode (GstVRCompositor * self)
     self->render_mode = GL_TRIANGLES;
 }
 */
-
+/*
 void
 _process_input (GstVRCompositor * self)
 {
@@ -452,53 +398,28 @@ _process_input (GstVRCompositor * self)
     }
   }
 }
+*/
+static void
+_draw_eye (GstVRCompositor * self, GstGLFuncs * gl)
+{
+  gl->Viewport (0, 0, self->eye_width, self->eye_height);
+  gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  gst_3d_mesh_bind (self->mesh);
+  gst_3d_mesh_draw (self->mesh);
+}
 
 static void
-gst_vr_compositor_callback (gpointer this)
+_clear_state (GstGLContext * context, GstGLFuncs * gl)
 {
-  GstVRCompositor *self = GST_VR_COMPOSITOR (this);
-  GstGLContext *context = GST_GL_BASE_FILTER (this)->context;
-  GstGLFuncs *gl = context->gl_vtable;
+  gl->BindVertexArray (0);
+  gl->BindTexture (GL_TEXTURE_2D, 0);
+  gst_gl_context_clear_shader (context);
+}
 
-  _process_input (self);
-
-  if (self->default_fbo == 0)
-    gl->GetIntegerv (GL_DRAW_FRAMEBUFFER_BINDING, &self->default_fbo);
-
-  // LEFT EYE
-  gl->BindFramebuffer (GL_FRAMEBUFFER, self->left_fbo);
-
-  gl->Viewport (0, 0, self->eye_width, self->eye_height);
-  gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-  gst_gl_shader_use (self->shader->shader);
-  gl->BindTexture (GL_TEXTURE_2D, self->in_tex);
-
-  gst_vr_compositor_build_mvp (self);
-  gst_3d_shader_upload_matrix (self->shader, &self->camera->left_vp_matrix,
-      "mvp");
-  gst_3d_mesh_bind (self->mesh);
-  gst_3d_mesh_draw (self->mesh);
-
-
-  // RIGHT EYE
-  gl->BindFramebuffer (GL_FRAMEBUFFER, self->right_fbo);
-  gl->Viewport (0, 0, self->eye_width, self->eye_height);
-  gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-  gst_gl_shader_use (self->shader->shader);
-  gl->BindTexture (GL_TEXTURE_2D, self->in_tex);
-
-  gst_vr_compositor_build_mvp (self);
-  gst_3d_shader_upload_matrix (self->shader, &self->camera->right_vp_matrix,
-      "mvp");
-  gst_3d_mesh_bind (self->mesh);
-  gst_3d_mesh_draw (self->mesh);
-
-
-  // DRAW FRAMEBUFFERS ON PLANES
+static void
+_draw_framebuffers_on_planes (GstVRCompositor * self, GstGLFuncs * gl)
+{
   gl->BindFramebuffer (GL_FRAMEBUFFER, self->default_fbo);
-
   gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   graphene_matrix_t projection_ortho;
@@ -516,9 +437,38 @@ gst_vr_compositor_callback (gpointer this)
   gl->Viewport (self->eye_width, 0, self->eye_width, self->eye_height);
   glBindTexture (GL_TEXTURE_2D, self->right_color_tex);
   gst_3d_mesh_draw (self->render_plane);
+}
 
+static void
+gst_vr_compositor_draw (gpointer this)
+{
+  GstVRCompositor *self = GST_VR_COMPOSITOR (this);
+  GstGLContext *context = GST_GL_BASE_FILTER (this)->context;
+  GstGLFuncs *gl = context->gl_vtable;
 
-  gl->BindVertexArray (0);
-  gl->BindTexture (GL_TEXTURE_2D, 0);
-  gst_gl_context_clear_shader (context);
+  // _process_input (self);
+
+  gst_3d_camera_update_view (self->camera);
+  gst_gl_shader_use (self->shader->shader);
+  gl->BindTexture (GL_TEXTURE_2D, self->in_tex);
+
+  /* store current fbo id */
+  if (self->default_fbo == 0)
+    gl->GetIntegerv (GL_DRAW_FRAMEBUFFER_BINDING, &self->default_fbo);
+
+  // LEFT EYE
+  gl->BindFramebuffer (GL_FRAMEBUFFER, self->left_fbo);
+  gst_3d_shader_upload_matrix (self->shader, &self->camera->left_vp_matrix,
+      "mvp");
+  _draw_eye (self, gl);
+
+  // RIGHT EYE
+  gl->BindFramebuffer (GL_FRAMEBUFFER, self->right_fbo);
+  gst_3d_shader_upload_matrix (self->shader, &self->camera->right_vp_matrix,
+      "mvp");
+  _draw_eye (self, gl);
+
+  _draw_framebuffers_on_planes (self, gl);
+  _clear_state (context, gl);
+
 }

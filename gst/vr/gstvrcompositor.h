@@ -26,6 +26,7 @@
 #include "../../gst-libs/gst/3d/gst3dmesh.h"
 #include "../../gst-libs/gst/3d/gst3dcamera.h"
 #include "../../gst-libs/gst/3d/gst3dshader.h"
+#include "../../gst-libs/gst/3d/gst3drenderer.h"
 
 G_BEGIN_DECLS
 #define GST_TYPE_VR_COMPOSITOR            (gst_vr_compositor_get_type())

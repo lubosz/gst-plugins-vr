@@ -56,6 +56,39 @@ gst_3d_mesh_new (GstGLContext * context)
   return mesh;
 }
 
+Gst3DMesh *
+gst_3d_mesh_new_sphere (GstGLContext * context, float radius, unsigned stacks,
+    unsigned slices)
+{
+  g_return_val_if_fail (GST_IS_GL_CONTEXT (context), NULL);
+  Gst3DMesh *mesh = gst_3d_mesh_new (context);
+  gst_3d_mesh_init_buffers (mesh);
+  gst_3d_mesh_upload_sphere (mesh, 10.0, 20, 20);
+  return mesh;
+}
+
+Gst3DMesh *
+gst_3d_mesh_new_plane (GstGLContext * context, float aspect)
+{
+  g_return_val_if_fail (GST_IS_GL_CONTEXT (context), NULL);
+  Gst3DMesh *mesh = gst_3d_mesh_new (context);
+  gst_3d_mesh_init_buffers (mesh);
+  gst_3d_mesh_upload_plane (mesh, aspect);
+  return mesh;
+}
+
+
+Gst3DMesh *
+gst_3d_mesh_new_point_plane (GstGLContext * context, unsigned width,
+    unsigned height)
+{
+  g_return_val_if_fail (GST_IS_GL_CONTEXT (context), NULL);
+  Gst3DMesh *mesh = gst_3d_mesh_new (context);
+  gst_3d_mesh_init_buffers (mesh);
+  gst_3d_mesh_upload_point_plane (mesh, width, height);
+  return mesh;
+}
+
 static void
 gst_3d_mesh_finalize (GObject * object)
 {
@@ -246,8 +279,14 @@ void
 gst_3d_mesh_draw_arrays (Gst3DMesh * self)
 {
   GstGLFuncs *gl = self->context->gl_vtable;
-  //gl->DrawElements (self->draw_mode, self->index_size, GL_UNSIGNED_SHORT, 0);
   gl->DrawArrays (self->draw_mode, 0, self->index_size);
+}
+
+void
+gst_3d_mesh_bind_to_shader (Gst3DMesh * self, Gst3DShader * shader)
+{
+  gst_3d_mesh_bind_buffers (self, shader->attr_position, shader->attr_uv);
+  gst_3d_shader_enable_attribs (shader);
 }
 
 void
@@ -323,7 +362,6 @@ gst_3d_mesh_upload_point_plane (Gst3DMesh * self, unsigned width,
 
   float curent_u = 0.0;
 
-
   for (int i = 0; i < width; i++) {
     float curent_h = -1.0;
     float curent_v = 0.0;
@@ -361,8 +399,6 @@ gst_3d_mesh_upload_point_plane (Gst3DMesh * self, unsigned width,
   GST_ERROR ("wxh %d", self->index_size);
 
   // upload index
-  /*
-   */
   gl->BindBuffer (GL_ELEMENT_ARRAY_BUFFER, self->vbo_indices);
   gl->BufferData (GL_ELEMENT_ARRAY_BUFFER, sizeof (GLuint) * self->index_size,
       indices, GL_STATIC_DRAW);

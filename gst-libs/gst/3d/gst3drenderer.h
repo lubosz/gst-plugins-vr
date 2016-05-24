@@ -49,6 +49,8 @@ struct _Gst3DRendererClass
 
 Gst3DRenderer *gst_3d_renderer_new (GstGLContext * context);
 GType gst_3d_renderer_get_type (void);
+void gst_3d_renderer_send_eos (GstElement * element);
+void gst_3d_renderer_create_fbo (GstGLFuncs *gl, GLuint * fbo, GLuint * color_tex, int width, int height);
 
 G_END_DECLS
 #endif /* __GST_3D_RENDERER_H__ */

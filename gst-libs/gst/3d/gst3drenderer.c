@@ -73,3 +73,37 @@ gst_3d_renderer_class_init (Gst3DRendererClass * klass)
   GObjectClass *obj_class = G_OBJECT_CLASS (klass);
   obj_class->finalize = gst_3d_renderer_finalize;
 }
+
+void
+gst_3d_renderer_send_eos (GstElement * element)
+{
+  GstPad *sinkpad = gst_element_get_static_pad (element, "sink");
+  gst_pad_send_event (sinkpad, gst_event_new_eos ());
+}
+
+void
+gst_3d_renderer_create_fbo (GstGLFuncs * gl, GLuint * fbo, GLuint * color_tex,
+    int width, int height)
+{
+  gl->GenTextures (1, color_tex);
+  gl->GenFramebuffers (1, fbo);
+
+  gl->BindTexture (GL_TEXTURE_2D, *color_tex);
+  gl->TexImage2D (GL_TEXTURE_2D, 0, GL_RGBA8, width, height,
+      0, GL_RGBA, GL_UNSIGNED_INT, NULL);
+  gl->TexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  gl->TexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  gl->TexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  gl->TexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  gl->BindFramebuffer (GL_FRAMEBUFFER_EXT, *fbo);
+  gl->FramebufferTexture2D (GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+      *color_tex, 0);
+
+  GLenum status = gl->CheckFramebufferStatus (GL_FRAMEBUFFER);
+
+  if (status != GL_FRAMEBUFFER_COMPLETE) {
+    GST_ERROR ("failed to create fbo %x\n", status);
+  }
+  gl->BindFramebuffer (GL_FRAMEBUFFER, 0);
+}
