@@ -281,35 +281,6 @@ gst_point_cloud_builder_stop (GstBaseTransform * trans)
   return GST_BASE_TRANSFORM_CLASS (parent_class)->stop (trans);
 }
 
-void
-_create_fbo2 (GstPointCloudBuilder * self, GLuint * fbo, GLuint * color_tex)
-{
-  GstGLContext *context = GST_GL_BASE_FILTER (self)->context;
-  GstGLFuncs *gl = context->gl_vtable;
-
-  gl->GenTextures (1, color_tex);
-  gl->GenFramebuffers (1, fbo);
-
-  gl->BindTexture (GL_TEXTURE_2D, *color_tex);
-  gl->TexImage2D (GL_TEXTURE_2D, 0, GL_RGBA8, self->eye_width, self->eye_height,
-      0, GL_RGBA, GL_UNSIGNED_INT, NULL);
-  gl->TexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  gl->TexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  gl->TexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  gl->TexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  gl->BindFramebuffer (GL_FRAMEBUFFER_EXT, *fbo);
-  gl->FramebufferTexture2D (GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-      *color_tex, 0);
-
-  GLenum status = gl->CheckFramebufferStatus (GL_FRAMEBUFFER);
-
-  if (status != GL_FRAMEBUFFER_COMPLETE) {
-    GST_ERROR ("failed to create fbo %x\n", status);
-  }
-  gl->BindFramebuffer (GL_FRAMEBUFFER, 0);
-}
-
 static gboolean
 gst_point_cloud_builder_init_scene (GstGLFilter * filter)
 {

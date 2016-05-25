@@ -28,15 +28,17 @@ install_headers(
   'gst-libs/gst/3d/gst3dhmd.h',
   'gst-libs/gst/3d/gst3drenderer.h',
   'gst-libs/gst/3d/gst3dshader.h',
+  'gst-libs/gst/3d/gst3dglm.h',
   subdir : 'gstreamer-' + apiversion + '/gst/3d')
 
 
 gst_3d_lib = shared_library('gst3d-' + apiversion,
   'gst-libs/gst/3d/gst3dmesh.c',
-  'gst-libs/gst/3d/gst3dcamera.cpp',
+  'gst-libs/gst/3d/gst3dcamera.c',
   'gst-libs/gst/3d/gst3dhmd.c',
   'gst-libs/gst/3d/gst3drenderer.c',
   'gst-libs/gst/3d/gst3dshader.c',
+  'gst-libs/gst/3d/gst3dglm.cpp',
   install: true,
   dependencies: [glib_dep, gobject_dep, gst_dep, gst_gl_dep, gst_video_dep, graphene_dep, openhmd_dep, gio_dep],
   c_args: ['-Wno-pedantic'],

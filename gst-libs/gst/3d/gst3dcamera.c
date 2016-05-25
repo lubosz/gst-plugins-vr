@@ -31,10 +31,7 @@
 #include <gst/gl/gl.h>
 
 #include "gst3dcamera.h"
-
-//#define GLM_FORCE_LEFT_HANDED 1
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include "gst3dglm.h"
 
 #define GST_CAT_DEFAULT gst_3d_camera_debug
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -50,7 +47,7 @@ gst_3d_camera_init (Gst3DCamera * self)
   self->aspect = 4.0 / 3.0;
   self->znear = 0.1;
   self->zfar = 100;
-  self->hmd = gst_3d_hmd_new();
+  self->hmd = gst_3d_hmd_new ();
   self->center_distance = 2.5;
   self->scroll_speed = 0.05;
   self->rotation_speed = 0.002;
@@ -105,7 +102,7 @@ gst_3d_camera_dec_eye_sep (Gst3DCamera * self)
 void
 gst_3d_camera_update_view_from_quaternion (Gst3DCamera * self)
 {
-  gst_3d_hmd_update(self->hmd);
+  gst_3d_hmd_update (self->hmd);
 
   graphene_matrix_t left_eye_model_view;
   graphene_matrix_t left_eye_projection =
@@ -145,7 +142,7 @@ gst_3d_camera_update_view_from_quaternion (Gst3DCamera * self)
 void
 gst_3d_camera_update_view_from_matrix (Gst3DCamera * self)
 {
-  gst_3d_hmd_update(self->hmd);
+  gst_3d_hmd_update (self->hmd);
 
   graphene_matrix_t left_eye_model_view =
       gst_3d_hmd_get_matrix (self->hmd, OHMD_LEFT_EYE_GL_MODELVIEW_MATRIX);
@@ -237,25 +234,11 @@ gst_3d_camera_update_view_arcball (Gst3DCamera * self)
 
   graphene_matrix_multiply (&view_matrix, &projection_matrix, &self->mvp);
 
-  glm::mat4 view;
-  glm::vec3 center2 (0, 0, 0);
-  glm::vec3 up2 (0, 1, 0);
-
-  glm::vec3 eye2 (radius * sin (self->theta) * cos (self->phi),
-      radius * -cos (self->theta),
-      radius * sin (self->theta) * sin (self->phi));
-
-  // GST_ERROR("%f %f %f", eye2[0], eye2[1], eye2[2]);
-
-  view = glm::lookAt (eye2, center2, up2);
-
-
-  graphene_matrix_t viewmatrix2;
-  graphene_matrix_init_from_float (&viewmatrix2, &view[0][0]);
   // GST_ERROR("glm");
   // graphene_matrix_print (&viewmatrix2);
   // GST_ERROR("==================");
 
-
+  graphene_matrix_t viewmatrix2 =
+      gst_3d_glm_look_at (&self->eye, &self->center, &self->up);
   graphene_matrix_multiply (&viewmatrix2, &projection_matrix, &self->mvp);
 }
