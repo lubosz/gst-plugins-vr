@@ -127,30 +127,6 @@ _src_shader_init (gpointer impl, GstGLContext * context, GstVideoInfo * v_info)
   return TRUE;
 }
 
-static gboolean
-_src_shader_fill_bound_fbo (gpointer impl)
-{
-  struct SrcShader *src = impl;
-  const GstGLFuncs *gl;
-
-  g_return_val_if_fail (src->base.context, FALSE);
-  g_return_val_if_fail (src->shader, FALSE);
-  gl = src->base.context->gl_vtable;
-
-  gst_gl_shader_use (src->shader);
-
-  gl->BindVertexArray (src->vao);
-
-  gl->DrawElements (GL_TRIANGLES, src->n_indices, GL_UNSIGNED_SHORT,
-      (gpointer) (gintptr) src->index_offset);
-
-  gl->BindVertexArray (0);
-
-  gst_gl_context_clear_shader (src->base.context);
-
-  return TRUE;
-}
-
 static void
 _src_shader_deinit (gpointer impl)
 {
@@ -232,7 +208,24 @@ _src_mandelbrot_fill_bound_fbo (gpointer impl)
   gst_gl_shader_set_uniform_1f (src->shader, "time",
       (gfloat) src->base.src->running_time / GST_SECOND);
 
-  return _src_shader_fill_bound_fbo (impl);
+  const GstGLFuncs *gl;
+
+  g_return_val_if_fail (src->base.context, FALSE);
+  g_return_val_if_fail (src->shader, FALSE);
+  gl = src->base.context->gl_vtable;
+
+  gst_gl_shader_use (src->shader);
+
+  gl->BindVertexArray (src->vao);
+
+  gl->DrawElements (GL_TRIANGLES, src->n_indices, GL_UNSIGNED_SHORT,
+      (gpointer) (gintptr) src->index_offset);
+
+  gl->BindVertexArray (0);
+
+  gst_gl_context_clear_shader (src->base.context);
+
+  return TRUE;
 }
 
 static void
