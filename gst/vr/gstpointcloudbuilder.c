@@ -73,7 +73,7 @@ static gboolean gst_point_cloud_builder_src_event (GstBaseTransform * trans,
 static void gst_point_cloud_builder_reset_gl (GstGLFilter * filter);
 static gboolean gst_point_cloud_builder_stop (GstBaseTransform * trans);
 static gboolean gst_point_cloud_builder_init_scene (GstGLFilter * filter);
-static void gst_point_cloud_builder_callback (gpointer stuff);
+static void gst_point_cloud_builder_draw (gpointer stuff);
 
 static gboolean gst_point_cloud_builder_filter_texture (GstGLFilter * filter,
     guint in_tex, guint out_tex);
@@ -315,13 +315,13 @@ gst_point_cloud_builder_filter_texture (GstGLFilter * filter, guint in_tex,
       GST_VIDEO_INFO_WIDTH (&filter->out_info),
       GST_VIDEO_INFO_HEIGHT (&filter->out_info),
       filter->fbo, filter->depthbuffer,
-      out_tex, gst_point_cloud_builder_callback, (gpointer) self);
+      out_tex, gst_point_cloud_builder_draw, (gpointer) self);
 
   return TRUE;
 }
 
 static void
-gst_point_cloud_builder_callback (gpointer this)
+gst_point_cloud_builder_draw (gpointer this)
 {
   GstPointCloudBuilder *self = GST_POINT_CLOUD_BUILDER (this);
   GstGLContext *context = GST_GL_BASE_FILTER (this)->context;
