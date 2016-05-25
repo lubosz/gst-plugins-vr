@@ -129,8 +129,6 @@ gst_point_cloud_builder_init (GstPointCloudBuilder * self)
   self->eye_height = 1;
 
   self->default_fbo = 0;
-
-  self->pressed_mouse_button = 0;
 }
 
 static void
@@ -179,7 +177,6 @@ static gboolean
 gst_point_cloud_builder_src_event (GstBaseTransform * trans, GstEvent * event)
 {
   GstPointCloudBuilder *self = GST_POINT_CLOUD_BUILDER (trans);
-  GstStructure *structure;
 
   GST_DEBUG_OBJECT (trans, "handling %s event", GST_EVENT_TYPE_NAME (event));
 
@@ -187,71 +184,9 @@ gst_point_cloud_builder_src_event (GstBaseTransform * trans, GstEvent * event)
     case GST_EVENT_NAVIGATION:
       event =
           GST_EVENT (gst_mini_object_make_writable (GST_MINI_OBJECT (event)));
-
-      structure = (GstStructure *) gst_event_get_structure (event);
-
-      const gchar *event_name = gst_structure_get_string (structure, "event");
-
-      if (g_strcmp0 (event_name, "key-press") == 0) {
-        const gchar *key = gst_structure_get_string (structure, "key");
-        if (key != NULL) {
-          if (g_strcmp0 (key, "Escape") == 0) {
-            gst_3d_renderer_send_eos (GST_ELEMENT (self));
-          } else if (g_strcmp0 (key, "KP_Add") == 0) {
-            gst_3d_hmd_eye_sep_inc (self->camera->hmd);
-          } else if (g_strcmp0 (key, "KP_Subtract") == 0) {
-            gst_3d_hmd_eye_sep_dec (self->camera->hmd);
-          } else {
-            GST_DEBUG ("%s", key);
-          }
-        }
-      } else if (g_strcmp0 (event_name, "mouse-move") == 0) {
-        gdouble x, y;
-        gst_structure_get_double (structure, "pointer_x", &x);
-        gst_structure_get_double (structure, "pointer_y", &y);
-
-        // hanlde the mouse motion for zooming and rotating the view
-        gdouble dx, dy;
-        dx = x - GST_3D_CAMERA_ARCBALL (self->camera)->cursor_last_x;
-        dy = y - GST_3D_CAMERA_ARCBALL (self->camera)->cursor_last_y;
-
-        if (self->pressed_mouse_button == 1) {
-          // GST_DEBUG ("Rotating [%fx%f]", x, y);
-          gst_3d_camera_arcball_rotate (GST_3D_CAMERA_ARCBALL (self->camera),
-              dx, dy);
-        }
-        GST_3D_CAMERA_ARCBALL (self->camera)->cursor_last_x = x;
-        GST_3D_CAMERA_ARCBALL (self->camera)->cursor_last_y = y;
-      } else if (g_strcmp0 (event_name, "mouse-button-release") == 0) {
-        gint button;
-        gst_structure_get_int (structure, "button", &button);
-        self->pressed_mouse_button = 0;
-
-        if (button == 1) {
-          // GST_DEBUG("first button release");
-          gst_structure_get_double (structure, "pointer_x",
-              &GST_3D_CAMERA_ARCBALL (self->camera)->cursor_last_x);
-          gst_structure_get_double (structure, "pointer_y",
-              &GST_3D_CAMERA_ARCBALL (self->camera)->cursor_last_y);
-        } else if (button == 4) {
-          // GST_DEBUG("wheel up");
-          gst_3d_camera_arcball_translate (GST_3D_CAMERA_ARCBALL (self->camera),
-              -1.0);
-        } else if (button == 5) {
-          // GST_DEBUG("wheel down");
-          gst_3d_camera_arcball_translate (GST_3D_CAMERA_ARCBALL (self->camera),
-              1.0);
-        }
-        // GST_DEBUG ("release %d", button);
-      } else if (g_strcmp0 (event_name, "mouse-button-press") == 0) {
-        gint button;
-        gst_structure_get_int (structure, "button", &button);
-        // GST_DEBUG ("press %d", button);
-        self->pressed_mouse_button = button;
-        // } else if (g_strcmp0 (event_name, "key-release") == 0) {
-      } else {
-        GST_ERROR ("unknown event %s", event_name);
-      }
+      gst_3d_renderer_navigation_event (GST_ELEMENT (self), event);
+      gst_3d_camera_arcball_navigation_event (GST_3D_CAMERA_ARCBALL
+          (self->camera), event);
       break;
     default:
       break;

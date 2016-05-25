@@ -248,9 +248,9 @@ gst_vr_compositor_src_event (GstBaseTransform * trans, GstEvent * event)
             // } else if (g_strcmp0 (key, "Tab") == 0) {
             //  _toggle_render_mode (self);
           } else if (g_strcmp0 (key, "KP_Add") == 0) {
-            gst_3d_camera_inc_eye_sep (self->camera);
+            gst_3d_hmd_eye_sep_inc (self->camera->hmd);
           } else if (g_strcmp0 (key, "KP_Subtract") == 0) {
-            gst_3d_camera_dec_eye_sep (self->camera);
+            gst_3d_hmd_eye_sep_dec (self->camera->hmd);
           } else {
             GST_DEBUG ("%s", key);
             _press_key (self, key);

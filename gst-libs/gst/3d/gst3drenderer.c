@@ -107,3 +107,16 @@ gst_3d_renderer_create_fbo (GstGLFuncs * gl, GLuint * fbo, GLuint * color_tex,
   }
   gl->BindFramebuffer (GL_FRAMEBUFFER, 0);
 }
+
+void
+gst_3d_renderer_navigation_event (GstElement * element, GstEvent * event)
+{
+  GstStructure *structure = (GstStructure *) gst_event_get_structure (event);
+  const gchar *event_name = gst_structure_get_string (structure, "event");
+  if (g_strcmp0 (event_name, "key-press") == 0) {
+    const gchar *key = gst_structure_get_string (structure, "key");
+    if (key != NULL)
+      if (g_strcmp0 (key, "Escape") == 0)
+        gst_3d_renderer_send_eos (element);
+  }
+}

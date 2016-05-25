@@ -51,11 +51,7 @@ struct _GstPointCloudBuilder
 
   gboolean caps_change;
 
-  GList *pushed_buttons;
-
   Gst3DMesh *mesh;
-
-  int pressed_mouse_button;
 
   Gst3DShader *shader;
   Gst3DCamera *camera;
