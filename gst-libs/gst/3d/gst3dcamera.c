@@ -66,7 +66,6 @@ gst_3d_camera_finalize (GObject * object)
 {
   Gst3DCamera *self = GST_3D_CAMERA (object);
   g_return_if_fail (self != NULL);
-
   G_OBJECT_CLASS (gst_3d_camera_parent_class)->finalize (object);
 }
 
@@ -75,20 +74,6 @@ gst_3d_camera_class_init (Gst3DCameraClass * klass)
 {
   GObjectClass *obj_class = G_OBJECT_CLASS (klass);
   obj_class->finalize = gst_3d_camera_finalize;
-}
-
-void
-gst_3d_camera_inc_eye_sep (Gst3DCamera * self)
-{
-  self->hmd->eye_separation += .1;
-  GST_DEBUG ("separation: %f", self->hmd->eye_separation);
-}
-
-void
-gst_3d_camera_dec_eye_sep (Gst3DCamera * self)
-{
-  self->hmd->eye_separation -= .1;
-  GST_DEBUG ("separation: %f", self->hmd->eye_separation);
 }
 
 void
