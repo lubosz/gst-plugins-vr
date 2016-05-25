@@ -271,7 +271,6 @@ gst_point_cloud_builder_draw (gpointer this)
   gl->BindTexture (GL_TEXTURE_2D, self->in_tex);
 
   gst_3d_camera_arcball_update_view (GST_3D_CAMERA_ARCBALL (self->camera));
-
   gst_3d_shader_upload_matrix (self->shader, &self->camera->mvp, "mvp");
 
   gst_3d_mesh_bind (self->mesh);

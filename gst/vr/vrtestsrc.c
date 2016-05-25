@@ -25,10 +25,12 @@
 #include "vrtestsrc.h"
 
 #include "../../gst-libs/gst/3d/gst3dshader.h"
+#include "../../gst-libs/gst/3d/gst3dmesh.h"
+#include "../../gst-libs/gst/3d/gst3dcamera_arcball.h"
 
 #define MAX_ATTRIBUTES 4
 
-/* *INDENT-OFF* */
+/*
 static const GLfloat positions[] = {
      -1.0,  1.0,  0.0, 1.0,
       1.0,  1.0,  0.0, 1.0,
@@ -37,7 +39,6 @@ static const GLfloat positions[] = {
 };
 
 static const GLushort indices_quad[] = { 0, 1, 2, 0, 2, 3 };
-/* *INDENT-ON* */
 
 struct attribute
 {
@@ -45,22 +46,26 @@ struct attribute
   gint location;
   guint n_elements;
   GLenum element_type;
-  guint offset;                 /* in bytes */
-  guint stride;                 /* in bytes */
+  guint offset;                 // in bytes
+  guint stride;                 // in bytes
 };
+*/
 
 struct SrcShader
 {
   struct BaseSrcImpl base;
 
-  GstGLShader *shader;
+  Gst3DShader *shader;
 
   guint vao;
   guint vbo;
   guint vbo_indices;
 
+  Gst3DMesh *plane_mesh;
+  Gst3DCameraArcball *camera;
+
   guint n_attributes;
-  struct attribute attributes[MAX_ATTRIBUTES];
+  // struct attribute attributes[MAX_ATTRIBUTES];
 
   gconstpointer vertices;
   gsize vertices_size;
@@ -69,6 +74,7 @@ struct SrcShader
   guint n_indices;
 };
 
+/*
 static void
 _bind_buffer (struct SrcShader *src)
 {
@@ -79,7 +85,7 @@ _bind_buffer (struct SrcShader *src)
   gl->BindBuffer (GL_ELEMENT_ARRAY_BUFFER, src->vbo_indices);
   gl->BindBuffer (GL_ARRAY_BUFFER, src->vbo);
 
-  /* Load the vertex position */
+  // Load the vertex position
   for (i = 0; i < src->n_attributes; i++) {
     struct attribute *attr = &src->attributes[i];
 
@@ -126,7 +132,6 @@ _src_shader_init (gpointer impl, GstGLContext * context, GstVideoInfo * v_info)
 
   return TRUE;
 }
-
 static void
 _src_shader_deinit (gpointer impl)
 {
@@ -149,6 +154,30 @@ _src_shader_deinit (gpointer impl)
     gl->DeleteBuffers (1, &src->vbo_indices);
   src->vbo_indices = 0;
 }
+*/
+
+static gboolean
+_src_mandelbrot_src_event (gpointer impl, GstEvent * event)
+{
+  // GstPointCloudBuilder *self = GST_POINT_CLOUD_BUILDER (trans);
+
+  struct SrcShader *src = impl;
+
+  GST_DEBUG ("handling %s event", GST_EVENT_TYPE_NAME (event));
+
+  switch (GST_EVENT_TYPE (event)) {
+    case GST_EVENT_NAVIGATION:
+      event =
+          GST_EVENT (gst_mini_object_make_writable (GST_MINI_OBJECT (event)));
+      // gst_3d_renderer_navigation_event (GST_ELEMENT (self), event);
+      gst_3d_camera_arcball_navigation_event (src->camera, event);
+      break;
+    default:
+      break;
+  }
+  // return GST_BASE_TRANSFORM_CLASS (parent_class)->src_event (trans, event);
+  return TRUE;
+}
 
 static gboolean
 _src_mandelbrot_init (gpointer impl, GstGLContext * context,
@@ -159,20 +188,25 @@ _src_mandelbrot_init (gpointer impl, GstGLContext * context,
 
   src->base.context = context;
 
+  src->camera = gst_3d_camera_arcball_new ();
+
   if (src->shader)
     gst_object_unref (src->shader);
 
 
-  Gst3DShader *a3dshader =
+  src->shader =
       gst_3d_shader_new_vert_frag (context, "mandelbrot.vert",
       "mandelbrot.frag");
-  src->shader = a3dshader->shader;
 
   if (!src->shader) {
     GST_ERROR_OBJECT (src->base.src, "%s", error->message);
     return FALSE;
   }
 
+  src->plane_mesh = gst_3d_mesh_new_plane (context, 1.0);
+  gst_3d_mesh_bind_to_shader (src->plane_mesh, src->shader);
+
+/*
   src->n_attributes = 1;
 
   src->attributes[0].name = "position";
@@ -194,35 +228,42 @@ _src_mandelbrot_init (gpointer impl, GstGLContext * context,
   gst_gl_context_clear_shader (src->base.context);
 
   return _src_shader_init (impl, context, v_info);
+*/
+
+
+  return TRUE;
 }
 
 static gboolean
-_src_mandelbrot_fill_bound_fbo (gpointer impl)
+_src_mandelbrot_draw (gpointer impl)
 {
   struct SrcShader *src = impl;
 
   g_return_val_if_fail (src->base.context, FALSE);
+
+  //TODO: exit with an error message (shader compiler mostly)
+  if (!src->shader)
+    exit (0);
+
   g_return_val_if_fail (src->shader, FALSE);
 
-  gst_gl_shader_use (src->shader);
-  gst_gl_shader_set_uniform_1f (src->shader, "time",
+  gst_gl_shader_use (src->shader->shader);
+  gst_gl_shader_set_uniform_1f (src->shader->shader, "time",
       (gfloat) src->base.src->running_time / GST_SECOND);
 
-  const GstGLFuncs *gl;
+  gst_3d_camera_arcball_update_view (src->camera);
+  gst_3d_shader_upload_matrix (src->shader, &src->camera->mvp, "mvp");
 
-  g_return_val_if_fail (src->base.context, FALSE);
-  g_return_val_if_fail (src->shader, FALSE);
-  gl = src->base.context->gl_vtable;
+  gst_3d_mesh_bind (src->plane_mesh);
+  gst_3d_mesh_draw (src->plane_mesh);
 
-  gst_gl_shader_use (src->shader);
-
+/*
   gl->BindVertexArray (src->vao);
-
   gl->DrawElements (GL_TRIANGLES, src->n_indices, GL_UNSIGNED_SHORT,
       (gpointer) (gintptr) src->index_offset);
+*/
 
-  gl->BindVertexArray (0);
-
+  // gl->BindVertexArray (0);
   gst_gl_context_clear_shader (src->base.context);
 
   return TRUE;
@@ -236,7 +277,7 @@ _src_mandelbrot_free (gpointer impl)
   if (!src)
     return;
 
-  _src_shader_deinit (impl);
+  // _src_shader_deinit (impl);
 
   g_free (impl);
 }
@@ -255,7 +296,7 @@ static const struct SrcFuncs src_mandelbrot = {
   GST_VR_TEST_SRC_MANDELBROT,
   _src_mandelbrot_new,
   _src_mandelbrot_init,
-  _src_mandelbrot_fill_bound_fbo,
+  _src_mandelbrot_draw,
   _src_mandelbrot_free,
 };
 
