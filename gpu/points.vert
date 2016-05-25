@@ -1,7 +1,7 @@
 #version 330
 
 in vec3 position;
-in vec2 uv;
+// in vec2 uv;
 uniform mat4 mvp;
 out vec2 out_uv;
 uniform sampler2D texture;

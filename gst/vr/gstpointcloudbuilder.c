@@ -168,8 +168,6 @@ gst_point_cloud_builder_set_caps (GstGLFilter * filter, GstCaps * incaps,
   self->eye_width = GST_VIDEO_INFO_WIDTH (&filter->out_info);
   self->eye_height = GST_VIDEO_INFO_HEIGHT (&filter->out_info);
 
-  GST_ERROR ("eye %dx%d", self->eye_width, self->eye_height);
-
   self->caps_change = TRUE;
 
   return TRUE;
@@ -294,9 +292,8 @@ gst_point_cloud_builder_init_scene (GstGLFilter * filter)
     ret = gst_3d_shader_from_vert_frag (self->shader, "points.vert",
         "points.frag");
     gst_3d_shader_bind (self->shader);
-
-    self->render_plane = gst_3d_mesh_new_point_plane (context, 512, 424);
-    gst_3d_mesh_bind_to_shader (self->render_plane, self->shader);
+    self->mesh = gst_3d_mesh_new_point_plane (context, 512, 424);
+    gst_3d_mesh_bind_to_shader (self->mesh, self->shader);
 
     gl->ClearColor (0.f, 0.f, 0.f, 0.f);
     gl->ActiveTexture (GL_TEXTURE0);
@@ -339,8 +336,8 @@ gst_point_cloud_builder_callback (gpointer this)
 
   gst_3d_shader_upload_matrix (self->shader, &self->camera->mvp, "mvp");
 
-  gst_3d_mesh_bind (self->render_plane);
-  gst_3d_mesh_draw_arrays (self->render_plane);
+  gst_3d_mesh_bind (self->mesh);
+  gst_3d_mesh_draw_arrays (self->mesh);
 
   gl->BindVertexArray (0);
   gl->BindTexture (GL_TEXTURE_2D, 0);

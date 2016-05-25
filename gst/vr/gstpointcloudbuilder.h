@@ -54,7 +54,6 @@ struct _GstPointCloudBuilder
   GList *pushed_buttons;
 
   Gst3DMesh *mesh;
-  Gst3DMesh *render_plane;
 
   int pressed_mouse_button;
 

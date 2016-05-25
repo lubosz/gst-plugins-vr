@@ -175,10 +175,12 @@ gst_3d_mesh_bind_buffers (Gst3DMesh * self, GLint attr_position, GLint attr_uv)
       self->vector_length,
       GL_FLOAT, GL_FALSE, self->vector_length * sizeof (GLfloat), 0);
 
-  /* Load the texture coordinates */
-  gl->BindBuffer (GL_ARRAY_BUFFER, self->vbo_uv);
-  gl->VertexAttribPointer (attr_uv,
-      2, GL_FLOAT, GL_FALSE, 2 * sizeof (GLfloat), 0);
+  if (attr_uv != -1) {
+    gl->BindBuffer (GL_ARRAY_BUFFER, self->vbo_uv);
+    /* Load the texture coordinates */
+    gl->VertexAttribPointer (attr_uv,
+        2, GL_FLOAT, GL_FALSE, 2 * sizeof (GLfloat), 0);
+  }
 }
 
 void
@@ -384,11 +386,11 @@ gst_3d_mesh_upload_point_plane (Gst3DMesh * self, unsigned width,
   gl->BindBuffer (GL_ARRAY_BUFFER, self->vbo_positions);
   gl->BufferData (GL_ARRAY_BUFFER, sizeof (GLfloat) * vertex_count * 3,
       vertices, GL_STATIC_DRAW);
-
+/*
   gl->BindBuffer (GL_ARRAY_BUFFER, self->vbo_uv);
   gl->BufferData (GL_ARRAY_BUFFER, sizeof (GLfloat) * vertex_count * 2,
       texcoords, GL_STATIC_DRAW);
-
+*/
   self->index_size = width * height;
   indices = (GLuint *) malloc (sizeof (GLuint) * self->index_size);
 
@@ -396,7 +398,6 @@ gst_3d_mesh_upload_point_plane (Gst3DMesh * self, unsigned width,
   for (int i = 0; i < self->index_size; i++) {
     *indextemp++ = i;
   }
-  GST_ERROR ("wxh %d", self->index_size);
 
   // upload index
   gl->BindBuffer (GL_ELEMENT_ARRAY_BUFFER, self->vbo_indices);

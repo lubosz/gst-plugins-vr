@@ -88,7 +88,8 @@ gst_3d_shader_enable_attribs (Gst3DShader * self)
 {
   GstGLFuncs *gl = self->context->gl_vtable;
   gl->EnableVertexAttribArray (self->attr_position);
-  gl->EnableVertexAttribArray (self->attr_uv);
+  if (self->attr_uv != -1)
+    gl->EnableVertexAttribArray (self->attr_uv);
 }
 
 static void
