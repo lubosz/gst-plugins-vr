@@ -61,12 +61,10 @@ gst_3d_hmd_class_init (Gst3DHmdClass * klass)
   obj_class->finalize = gst_3d_hmd_finalize;
 }
 
-void
-gst_3d_hmd_init (Gst3DHmd * self)
+static void
+gst_3d_hmd_open_device (Gst3DHmd * self)
 {
-
-  self->device = NULL;
-
+  int picked_device = 0;
   self->hmd_context = ohmd_ctx_create ();
   int num_devices = ohmd_ctx_probe (self->hmd_context);
   if (num_devices < 0) {
@@ -87,8 +85,6 @@ gst_3d_hmd_init (Gst3DHmd * self)
             OHMD_PATH));
   }
 
-  int picked_device = 0;
-
   self->device = ohmd_list_open_device (self->hmd_context, picked_device);
 
   if (!self->device) {
@@ -104,18 +100,18 @@ gst_3d_hmd_init (Gst3DHmd * self)
         "file for your headset in /usr/lib/udev/rules.d");
     return;
   }
+}
 
-  int screen_width;
-  int screen_height;
-
-  float inch = 2.54;
-
+static void
+gst_3d_hmd_get_device_properties (Gst3DHmd * self)
+{
   ohmd_device_geti (self->device, OHMD_SCREEN_HORIZONTAL_RESOLUTION,
-      &screen_width);
+      &self->screen_width);
   ohmd_device_geti (self->device, OHMD_SCREEN_VERTICAL_RESOLUTION,
-      &screen_height);
+      &self->screen_height);
 
-  GST_DEBUG ("HMD screen resolution: %dx%d", screen_width, screen_height);
+  GST_DEBUG ("HMD screen resolution: %dx%d", self->screen_width,
+      self->screen_height);
 
   float screen_width_physical;
   float screen_height_physical;
@@ -129,10 +125,11 @@ gst_3d_hmd_init (Gst3DHmd * self)
       screen_width_physical * 100.0, screen_height_physical * 100.0);
 
   float x_pixels_per_cm =
-      (float) screen_width / (screen_width_physical * 100.0);
+      (float) self->screen_width / (screen_width_physical * 100.0);
   float y_pixels_per_cm =
-      (float) screen_height / (screen_height_physical * 100.0);
+      (float) self->screen_height / (screen_height_physical * 100.0);
 
+  const float inch = 2.54;
   GST_DEBUG ("HMD DPI %f x %f", x_pixels_per_cm / inch, y_pixels_per_cm / inch);
 
   float lens_x_separation;
@@ -146,33 +143,27 @@ gst_3d_hmd_init (Gst3DHmd * self)
   GST_DEBUG ("Horizontal Lens Separation: %.3fcm", lens_x_separation * 100.0);
   GST_DEBUG ("Vertical Lens Position: %.3fcm", lens_y_position * 100.0);
 
-  float left_fov;
-  float left_aspect;
-  float right_fov;
-  float right_aspect;
+  ohmd_device_getf (self->device, OHMD_LEFT_EYE_FOV, &self->left_fov);
+  ohmd_device_getf (self->device, OHMD_RIGHT_EYE_FOV, &self->right_fov);
+  GST_DEBUG ("FOV (left/right): %f %f", self->left_fov, self->right_fov);
 
-  ohmd_device_getf (self->device, OHMD_LEFT_EYE_FOV, &left_fov);
-  ohmd_device_getf (self->device, OHMD_LEFT_EYE_ASPECT_RATIO, &left_aspect);
-  ohmd_device_getf (self->device, OHMD_RIGHT_EYE_FOV, &right_fov);
-  ohmd_device_getf (self->device, OHMD_RIGHT_EYE_ASPECT_RATIO, &right_aspect);
+  ohmd_device_getf (self->device, OHMD_LEFT_EYE_ASPECT_RATIO,
+      &self->left_aspect);
+  ohmd_device_getf (self->device, OHMD_RIGHT_EYE_ASPECT_RATIO,
+      &self->right_aspect);
+  GST_DEBUG ("Aspect Ratio (left/right): %f %f", self->left_aspect,
+      self->right_aspect);
 
-  GST_DEBUG ("FOV (left/right): %f %f", left_fov, right_fov);
-  GST_DEBUG ("Aspect Ratio (left/right): %f %f", left_aspect, right_aspect);
-
-  float interpupillary_distance;
-  float zfar;
-  float znear;
-
-  ohmd_device_getf (self->device, OHMD_EYE_IPD, &interpupillary_distance);
-  GST_DEBUG ("interpupillary_distance %.3fcm", interpupillary_distance * 100.0);
+  ohmd_device_getf (self->device, OHMD_EYE_IPD, &self->interpupillary_distance);
+  GST_DEBUG ("interpupillary_distance %.3fcm",
+      self->interpupillary_distance * 100.0);
 
   //self->eye_separation = interpupillary_distance * 100.0 / 2.0;
   self->eye_separation = 0.65;
 
-  ohmd_device_getf (self->device, OHMD_PROJECTION_ZNEAR, &znear);
-  ohmd_device_getf (self->device, OHMD_PROJECTION_ZFAR, &zfar);
-
-  GST_DEBUG ("znear %f, zfar %f", znear, zfar);
+  ohmd_device_getf (self->device, OHMD_PROJECTION_ZNEAR, &self->znear);
+  ohmd_device_getf (self->device, OHMD_PROJECTION_ZFAR, &self->zfar);
+  GST_DEBUG ("znear %f, zfar %f", self->znear, self->zfar);
 
   /*
      float kappa[6];
@@ -185,6 +176,14 @@ gst_3d_hmd_init (Gst3DHmd * self)
      position[0], position[1], position[2]);
 
    */
+}
+
+void
+gst_3d_hmd_init (Gst3DHmd * self)
+{
+  self->device = NULL;
+  gst_3d_hmd_open_device (self);
+  gst_3d_hmd_get_device_properties (self);
 }
 
 graphene_matrix_t

@@ -44,6 +44,18 @@ struct _Gst3DHmd
   ohmd_device *device;
   ohmd_context *hmd_context;
   
+  int screen_width;
+  int screen_height;
+  
+  float left_fov;
+  float left_aspect;
+  float right_fov;
+  float right_aspect;
+  
+  float interpupillary_distance;
+  float zfar;
+  float znear;
+  
   gfloat eye_separation;
 };
 

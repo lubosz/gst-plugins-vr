@@ -250,7 +250,6 @@ _print_pressed_keys (Gst3DCamera * self)
 {
   GList *l;
   GST_DEBUG ("Pressed keys:");
-
   for (l = self->pushed_buttons; l != NULL; l = l->next)
     GST_DEBUG ("%s", (const gchar *) l->data);
 }
@@ -264,9 +263,7 @@ gst_3d_camera_navigation_event (Gst3DCamera * self, GstEvent * event)
   if (key != NULL) {
     const gchar *event_name = gst_structure_get_string (structure, "event");
     if (g_strcmp0 (event_name, "key-press") == 0)
-      if (g_strcmp0 (key, "Escape") == 0) {
-        gst_3d_renderer_send_eos (GST_ELEMENT (self));
-      } else if (g_strcmp0 (key, "KP_Add") == 0) {
+      if (g_strcmp0 (key, "KP_Add") == 0) {
         gst_3d_hmd_eye_sep_inc (self->hmd);
       } else if (g_strcmp0 (key, "KP_Subtract") == 0) {
         gst_3d_hmd_eye_sep_dec (self->hmd);

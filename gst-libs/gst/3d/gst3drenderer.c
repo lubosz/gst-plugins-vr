@@ -78,7 +78,8 @@ void
 gst_3d_renderer_send_eos (GstElement * element)
 {
   GstPad *sinkpad = gst_element_get_static_pad (element, "sink");
-  gst_pad_send_event (sinkpad, gst_event_new_eos ());
+  if (sinkpad)
+    gst_pad_send_event (sinkpad, gst_event_new_eos ());
 }
 
 void
