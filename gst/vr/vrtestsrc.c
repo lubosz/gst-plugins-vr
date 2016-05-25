@@ -95,23 +95,6 @@ _bind_buffer (struct SrcShader *src)
   }
 }
 
-static void
-_unbind_buffer (struct SrcShader *src)
-{
-  GstGLContext *context = src->base.context;
-  const GstGLFuncs *gl = context->gl_vtable;
-  gint i;
-
-  gl->BindBuffer (GL_ELEMENT_ARRAY_BUFFER, 0);
-  gl->BindBuffer (GL_ARRAY_BUFFER, 0);
-
-  for (i = 0; i < src->n_attributes; i++) {
-    struct attribute *attr = &src->attributes[i];
-
-    gl->DisableVertexAttribArray (attr->location);
-  }
-}
-
 static gboolean
 _src_shader_init (gpointer impl, GstGLContext * context, GstVideoInfo * v_info)
 {
@@ -121,10 +104,8 @@ _src_shader_init (gpointer impl, GstGLContext * context, GstVideoInfo * v_info)
   src->base.context = context;
 
   if (!src->vbo) {
-    if (gl->GenVertexArrays) {
-      gl->GenVertexArrays (1, &src->vao);
-      gl->BindVertexArray (src->vao);
-    }
+    gl->GenVertexArrays (1, &src->vao);
+    gl->BindVertexArray (src->vao);
 
     gl->GenBuffers (1, &src->vbo);
     gl->BindBuffer (GL_ARRAY_BUFFER, src->vbo);
@@ -136,10 +117,8 @@ _src_shader_init (gpointer impl, GstGLContext * context, GstVideoInfo * v_info)
     gl->BufferData (GL_ELEMENT_ARRAY_BUFFER, src->n_indices * sizeof (gushort),
         src->indices, GL_STATIC_DRAW);
 
-    if (gl->GenVertexArrays) {
-      _bind_buffer (src);
-      gl->BindVertexArray (0);
-    }
+    _bind_buffer (src);
+    gl->BindVertexArray (0);
 
     gl->BindBuffer (GL_ARRAY_BUFFER, 0);
     gl->BindBuffer (GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -160,18 +139,12 @@ _src_shader_fill_bound_fbo (gpointer impl)
 
   gst_gl_shader_use (src->shader);
 
-  if (gl->GenVertexArrays)
-    gl->BindVertexArray (src->vao);
-  else
-    _bind_buffer (src);
+  gl->BindVertexArray (src->vao);
 
   gl->DrawElements (GL_TRIANGLES, src->n_indices, GL_UNSIGNED_SHORT,
       (gpointer) (gintptr) src->index_offset);
 
-  if (gl->GenVertexArrays)
-    gl->BindVertexArray (0);
-  else
-    _unbind_buffer (src);
+  gl->BindVertexArray (0);
 
   gst_gl_context_clear_shader (src->base.context);
 
