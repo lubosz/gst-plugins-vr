@@ -227,8 +227,7 @@ gst_point_cloud_builder_init_scene (GstGLFilter * filter)
   gboolean ret = TRUE;
 
   if (!self->mesh) {
-    self->shader = gst_3d_shader_new (context);
-    ret = gst_3d_shader_from_vert_frag (self->shader, "points.vert",
+    self->shader = gst_3d_shader_new_vert_frag (context, "points.vert",
         "points.frag");
     gst_3d_shader_bind (self->shader);
     self->mesh = gst_3d_mesh_new_point_plane (context, 512, 424);

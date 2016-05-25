@@ -54,6 +54,16 @@ gst_3d_shader_new (GstGLContext * context)
   return shader;
 }
 
+Gst3DShader *
+gst_3d_shader_new_vert_frag (GstGLContext * context, const gchar * vertex,
+    const gchar * fragment)
+{
+  g_return_val_if_fail (GST_IS_GL_CONTEXT (context), NULL);
+  Gst3DShader *shader = gst_3d_shader_new (context);
+  gst_3d_shader_from_vert_frag (shader, vertex, fragment);
+  return shader;
+}
+
 static void
 gst_3d_shader_finalize (GObject * object)
 {

@@ -68,6 +68,10 @@ void gst_3d_shader_upload_matrix (Gst3DShader * self, graphene_matrix_t * mat,
     const gchar * name);
 void gst_3d_shader_upload_vec2 (Gst3DShader * self, graphene_vec2_t * vec,
     const gchar * name);
+    
+Gst3DShader *
+gst_3d_shader_new_vert_frag (GstGLContext * context, const gchar * vertex,
+    const gchar * fragment);
 
 G_END_DECLS
 #endif /* __GST_3D_SHADER_H__ */
