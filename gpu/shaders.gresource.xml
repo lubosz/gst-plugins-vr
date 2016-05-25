@@ -7,5 +7,7 @@
     <file>mvp_uv.vert</file>
     <file>points.vert</file>
     <file>points.frag</file>
+    <file>mandelbrot.vert</file>
+    <file>mandelbrot.frag</file>
   </gresource>
 </gresources>

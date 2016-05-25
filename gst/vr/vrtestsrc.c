@@ -24,6 +24,8 @@
 
 #include "vrtestsrc.h"
 
+#include "../../gst-libs/gst/3d/gst3dshader.h"
+
 #define MAX_ATTRIBUTES 4
 
 /* *INDENT-OFF* */
@@ -199,53 +201,6 @@ _src_shader_deinit (gpointer impl)
   src->vbo_indices = 0;
 }
 
-
-/* *INDENT-OFF* */
-static const gchar *mandelbrot_vertex_src = "attribute vec4 position;\n"
-    "uniform float aspect_ratio;\n"
-    "varying vec2 fractal_position;\n"
-    "void main()\n"
-    "{\n"
-    "  gl_Position = position;\n"
-    "  fractal_position = vec2(position.y * 0.5 - 0.3, aspect_ratio * position.x * 0.5);\n"
-    "  fractal_position *= 2.5;\n"
-    "}";
-
-static const gchar *mandelbrot_fragment_src = 
-    "#ifdef GL_ES\n"
-    "precision mediump float;\n"
-    "#endif\n"
-    "uniform float time;\n"
-    "varying vec2 fractal_position;\n"
-    "const vec4 K = vec4(1.0, 0.66, 0.33, 3.0);\n"
-    "vec4 hsv_to_rgb(float hue, float saturation, float value) {\n"
-    "  vec4 p = abs(fract(vec4(hue) + K) * 6.0 - K.wwww);\n"
-    "  return value * mix(K.xxxx, clamp(p - K.xxxx, 0.0, 1.0), saturation);\n"
-    "}\n"
-    "vec4 i_to_rgb(int i) {\n"
-    "  float hue = float(i) / 100.0 + sin(time);\n"
-    "  return hsv_to_rgb(hue, 0.5, 0.8);\n"
-    "}\n"
-    "vec2 pow_2_complex(vec2 c) {\n"
-    "  return vec2(c.x*c.x - c.y*c.y, 2.0 * c.x * c.y);\n"
-    "}\n"
-    "vec2 mandelbrot(vec2 c, vec2 c0) {\n"
-    "  return pow_2_complex(c) + c0;\n"
-    "}\n"
-    "vec4 iterate_pixel(vec2 position) {\n"
-    "  vec2 c = vec2(0);\n"
-    "  for (int i=0; i < 20; i++) {\n"
-    "    if (c.x*c.x + c.y*c.y > 2.0*2.0)\n"
-    "      return i_to_rgb(i);\n"
-    "    c = mandelbrot(c, position);\n"
-    "  }\n"
-    "  return vec4(0, 0, 0, 1);\n"
-    "}\n"
-    "void main() {\n"
-    "  gl_FragColor = iterate_pixel(fractal_position);\n"
-    "}";
-/* *INDENT-ON* */
-
 static gboolean
 _src_mandelbrot_init (gpointer impl, GstGLContext * context,
     GstVideoInfo * v_info)
@@ -257,15 +212,13 @@ _src_mandelbrot_init (gpointer impl, GstGLContext * context,
 
   if (src->shader)
     gst_object_unref (src->shader);
-  src->shader = gst_gl_shader_new_link_with_stages (context, &error,
-      gst_glsl_stage_new_with_string (context, GL_VERTEX_SHADER,
-          GST_GLSL_VERSION_NONE,
-          GST_GLSL_PROFILE_ES | GST_GLSL_PROFILE_COMPATIBILITY,
-          mandelbrot_vertex_src),
-      gst_glsl_stage_new_with_string (context, GL_FRAGMENT_SHADER,
-          GST_GLSL_VERSION_NONE,
-          GST_GLSL_PROFILE_ES | GST_GLSL_PROFILE_COMPATIBILITY,
-          mandelbrot_fragment_src), NULL);
+
+
+  Gst3DShader *a3dshader =
+      gst_3d_shader_new_vert_frag (context, "mandelbrot.vert",
+      "mandelbrot.frag");
+  src->shader = a3dshader->shader;
+
   if (!src->shader) {
     GST_ERROR_OBJECT (src->base.src, "%s", error->message);
     return FALSE;
