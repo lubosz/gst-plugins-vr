@@ -108,6 +108,17 @@ gst_3d_renderer_create_fbo (GstGLFuncs * gl, GLuint * fbo, GLuint * color_tex,
   gl->BindFramebuffer (GL_FRAMEBUFFER, 0);
 }
 
+/*
+void
+_toggle_render_mode (Gst3DRenderer * self)
+{
+  if (self->render_mode == GL_TRIANGLES)
+    self->render_mode = GL_LINES;
+  else
+    self->render_mode = GL_TRIANGLES;
+}
+*/
+
 void
 gst_3d_renderer_navigation_event (GstElement * element, GstEvent * event)
 {
@@ -118,5 +129,7 @@ gst_3d_renderer_navigation_event (GstElement * element, GstEvent * event)
     if (key != NULL)
       if (g_strcmp0 (key, "Escape") == 0)
         gst_3d_renderer_send_eos (element);
+    // else if (g_strcmp0 (key, "Tab") == 0)
+    //  _toggle_render_mode (self);
   }
 }

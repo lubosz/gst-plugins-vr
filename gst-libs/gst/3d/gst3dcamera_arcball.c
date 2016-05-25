@@ -143,20 +143,7 @@ gst_3d_camera_arcball_navigation_event (Gst3DCameraArcball * self,
 
   const gchar *event_name = gst_structure_get_string (structure, "event");
 
-  if (g_strcmp0 (event_name, "key-press") == 0) {
-    const gchar *key = gst_structure_get_string (structure, "key");
-    if (key != NULL) {
-      if (g_strcmp0 (key, "Escape") == 0) {
-        gst_3d_renderer_send_eos (GST_ELEMENT (self));
-      } else if (g_strcmp0 (key, "KP_Add") == 0) {
-        gst_3d_hmd_eye_sep_inc (GST_3D_CAMERA (self)->hmd);
-      } else if (g_strcmp0 (key, "KP_Subtract") == 0) {
-        gst_3d_hmd_eye_sep_dec (GST_3D_CAMERA (self)->hmd);
-      } else {
-        GST_DEBUG ("%s", key);
-      }
-    }
-  } else if (g_strcmp0 (event_name, "mouse-move") == 0) {
+  if (g_strcmp0 (event_name, "mouse-move") == 0) {
     gdouble x, y;
     gst_structure_get_double (structure, "pointer_x", &x);
     gst_structure_get_double (structure, "pointer_y", &y);
@@ -188,14 +175,9 @@ gst_3d_camera_arcball_navigation_event (Gst3DCameraArcball * self,
       // GST_DEBUG("wheel down");
       gst_3d_camera_arcball_translate (self, 1.0);
     }
-    // GST_DEBUG ("release %d", button);
   } else if (g_strcmp0 (event_name, "mouse-button-press") == 0) {
     gint button;
     gst_structure_get_int (structure, "button", &button);
-    // GST_DEBUG ("press %d", button);
     self->pressed_mouse_button = button;
-    // } else if (g_strcmp0 (event_name, "key-release") == 0) {
-  } else {
-    GST_ERROR ("unknown event %s", event_name);
   }
 }

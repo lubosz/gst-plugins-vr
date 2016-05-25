@@ -51,8 +51,6 @@ struct _GstVRCompositor
 
   gboolean caps_change;
 
-  GList *pushed_buttons;
-
   Gst3DMesh *mesh;
   Gst3DMesh *render_plane;
 

@@ -52,6 +52,8 @@ struct _Gst3DCamera
   gfloat xtranslation;
   gfloat ytranslation;
   gfloat ztranslation;
+  
+  GList *pushed_buttons;
 
   /* perspective */
   gfloat fov;
@@ -77,7 +79,7 @@ Gst3DCamera *gst_3d_camera_new (void);
 
 void gst_3d_camera_update_view (Gst3DCamera * self);
 void gst_3d_camera_update_view_mvp (Gst3DCamera * self);
-
+void gst_3d_camera_navigation_event (Gst3DCamera * self, GstEvent * event);
 
 GType gst_3d_camera_get_type (void);
 

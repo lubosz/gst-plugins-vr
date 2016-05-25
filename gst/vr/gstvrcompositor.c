@@ -41,6 +41,7 @@
 
 #include <gst/gl/gstglapi.h>
 #include <graphene-gobject.h>
+#include "../../gst-libs/gst/3d/gst3drenderer.h"
 
 
 #define GST_CAT_DEFAULT gst_vr_compositor_debug
@@ -173,8 +174,6 @@ gst_vr_compositor_set_caps (GstGLFilter * filter, GstCaps * incaps,
   self->eye_width = w / 2;
   self->eye_height = h;
 
-  GST_DEBUG ("eye %dx%d", self->eye_width, self->eye_height);
-
   self->caps_change = TRUE;
 
   gst_3d_camera_update_view (self->camera);
@@ -182,90 +181,18 @@ gst_vr_compositor_set_caps (GstGLFilter * filter, GstCaps * incaps,
   return TRUE;
 }
 
-void
-_release_key (GstVRCompositor * self, const gchar * key)
-{
-  GST_DEBUG ("Event: Release %s", key);
-
-  GList *l = self->pushed_buttons;
-  while (l != NULL) {
-    GList *next = l->next;
-    if (g_strcmp0 (l->data, key) == 0) {
-      g_free (l->data);
-      self->pushed_buttons = g_list_delete_link (self->pushed_buttons, l);
-    }
-    l = next;
-  }
-}
-
-void
-_press_key (GstVRCompositor * self, const gchar * key)
-{
-  GList *l;
-  gboolean already_pushed = FALSE;
-
-  GST_DEBUG ("Event: Press %s", key);
-
-  for (l = self->pushed_buttons; l != NULL; l = l->next)
-    if (g_strcmp0 (l->data, key) == 0)
-      already_pushed = TRUE;
-
-  if (!already_pushed)
-    self->pushed_buttons = g_list_append (self->pushed_buttons, g_strdup (key));
-}
-
-void
-_print_pressed_keys (GstVRCompositor * self)
-{
-  GList *l;
-  GST_DEBUG ("Pressed keys:");
-
-  for (l = self->pushed_buttons; l != NULL; l = l->next)
-    GST_DEBUG ("%s", (const gchar *) l->data);
-}
-
 static gboolean
 gst_vr_compositor_src_event (GstBaseTransform * trans, GstEvent * event)
 {
   GstVRCompositor *self = GST_VR_COMPOSITOR (trans);
-  GstStructure *structure;
-
   GST_DEBUG_OBJECT (trans, "handling %s event", GST_EVENT_TYPE_NAME (event));
 
   switch (GST_EVENT_TYPE (event)) {
     case GST_EVENT_NAVIGATION:
       event =
           GST_EVENT (gst_mini_object_make_writable (GST_MINI_OBJECT (event)));
-
-      structure = (GstStructure *) gst_event_get_structure (event);
-
-      const gchar *key = gst_structure_get_string (structure, "key");
-      if (key != NULL) {
-        const gchar *event_name = gst_structure_get_string (structure, "event");
-        if (g_strcmp0 (event_name, "key-press") == 0)
-          if (g_strcmp0 (key, "Escape") == 0) {
-            gst_3d_renderer_send_eos (GST_ELEMENT (self));
-            // } else if (g_strcmp0 (key, "Tab") == 0) {
-            //  _toggle_render_mode (self);
-          } else if (g_strcmp0 (key, "KP_Add") == 0) {
-            gst_3d_hmd_eye_sep_inc (self->camera->hmd);
-          } else if (g_strcmp0 (key, "KP_Subtract") == 0) {
-            gst_3d_hmd_eye_sep_dec (self->camera->hmd);
-          } else {
-            GST_DEBUG ("%s", key);
-            _press_key (self, key);
-          }
-
-        /*
-           // reset rotation and position
-           float zero[] = {0, 0, 0, 1};
-           ohmd_device_setf(hmd, OHMD_ROTATION_QUAT, zero);
-           ohmd_device_setf(hmd, OHMD_POSITION_VECTOR, zero);
-         */
-
-        else if (g_strcmp0 (event_name, "key-release") == 0)
-          _release_key (self, key);
-      }
+      gst_3d_renderer_navigation_event (GST_ELEMENT (self), event);
+      gst_3d_camera_navigation_event (self->camera, event);
       break;
     default:
       break;
@@ -347,58 +274,6 @@ gst_vr_compositor_filter_texture (GstGLFilter * filter, guint in_tex,
   return TRUE;
 }
 
-/*
-void
-_toggle_render_mode (GstVRCompositor * self)
-{
-  if (self->render_mode == GL_TRIANGLES)
-    self->render_mode = GL_LINES;
-  else
-    self->render_mode = GL_TRIANGLES;
-}
-*/
-/*
-void
-_process_input (GstVRCompositor * self)
-{
-  //_print_pressed_keys (self);
-
-  gfloat fast_modifier = 1.0;
-  GList *l;
-  for (l = self->pushed_buttons; l != NULL; l = l->next)
-    if (g_strcmp0 (l->data, "Shift_L") == 0)
-      fast_modifier = 3.0;
-
-
-  gfloat distance = 0.01 * fast_modifier;
-
-  for (l = self->pushed_buttons; l != NULL; l = l->next) {
-    if (g_strcmp0 (l->data, "w") == 0) {
-      self->camera->ztranslation += distance;
-      continue;
-    } else if (g_strcmp0 (l->data, "s") == 0) {
-      self->camera->ztranslation -= distance;
-      continue;
-    }
-
-    if (g_strcmp0 (l->data, "a") == 0) {
-      self->camera->xtranslation += distance;
-      continue;
-    } else if (g_strcmp0 (l->data, "d") == 0) {
-      self->camera->xtranslation -= distance;
-      continue;
-    }
-
-    if (g_strcmp0 (l->data, "space") == 0) {
-      self->camera->ytranslation += distance;
-      continue;
-    } else if (g_strcmp0 (l->data, "Control_L") == 0) {
-      self->camera->ytranslation -= distance;
-      continue;
-    }
-  }
-}
-*/
 static void
 _draw_eye (GstVRCompositor * self, GstGLFuncs * gl)
 {
@@ -445,8 +320,6 @@ gst_vr_compositor_draw (gpointer this)
   GstVRCompositor *self = GST_VR_COMPOSITOR (this);
   GstGLContext *context = GST_GL_BASE_FILTER (this)->context;
   GstGLFuncs *gl = context->gl_vtable;
-
-  // _process_input (self);
 
   gst_3d_camera_update_view (self->camera);
   gst_gl_shader_use (self->shader->shader);
