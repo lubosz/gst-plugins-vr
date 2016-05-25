@@ -219,26 +219,18 @@ gst_3d_camera_update_view_arcball (Gst3DCamera * self)
       radius * -cos (self->theta),
       radius * sin (self->theta) * sin (self->phi));
 
-  // print_graphene_vec3("eye", &eye);
-
   graphene_matrix_t projection_matrix;
   graphene_matrix_init_perspective (&projection_matrix,
       self->fov, self->aspect, self->znear, self->zfar);
 
-  graphene_matrix_t view_matrix;
-  graphene_matrix_init_look_at (&view_matrix, &self->eye, &self->center,
-      &self->up);
+  /*
+     graphene_matrix_t view_matrix;
+     graphene_matrix_init_look_at (&view_matrix, &self->eye, &self->center,
+     &self->up);
+   */
 
-  // GST_ERROR("graphene");
-  // graphene_matrix_print (&view_matrix);
+  graphene_matrix_t view_matrix =
+      gst_3d_glm_look_at (&self->eye, &self->center, &self->up);
 
   graphene_matrix_multiply (&view_matrix, &projection_matrix, &self->mvp);
-
-  // GST_ERROR("glm");
-  // graphene_matrix_print (&viewmatrix2);
-  // GST_ERROR("==================");
-
-  graphene_matrix_t viewmatrix2 =
-      gst_3d_glm_look_at (&self->eye, &self->center, &self->up);
-  graphene_matrix_multiply (&viewmatrix2, &projection_matrix, &self->mvp);
 }
