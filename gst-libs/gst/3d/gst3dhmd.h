@@ -56,6 +56,9 @@ Gst3DHmd *gst_3d_hmd_new (void);
 GType gst_3d_hmd_get_type (void);
 graphene_matrix_t gst_3d_hmd_get_matrix (Gst3DHmd * self, ohmd_float_value type);
 graphene_quaternion_t gst_3d_hmd_get_quaternion (Gst3DHmd * self);
+void gst_3d_hmd_eye_sep_inc (Gst3DHmd * self);
+void gst_3d_hmd_eye_sep_dec (Gst3DHmd * self);
+
 void gst_3d_hmd_update (Gst3DHmd * self);
 
 G_END_DECLS

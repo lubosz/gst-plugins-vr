@@ -218,3 +218,17 @@ gst_3d_hmd_update (Gst3DHmd * self)
   g_return_if_fail (self->device);
   ohmd_ctx_update (self->hmd_context);
 }
+
+void
+gst_3d_hmd_eye_sep_inc (Gst3DHmd * self)
+{
+  self->eye_separation += .1;
+  GST_DEBUG ("separation: %f", self->eye_separation);
+}
+
+void
+gst_3d_hmd_eye_sep_dec (Gst3DHmd * self)
+{
+  self->eye_separation -= .1;
+  GST_DEBUG ("separation: %f", self->eye_separation);
+}

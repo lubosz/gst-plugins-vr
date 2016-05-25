@@ -38,6 +38,7 @@
 #endif
 
 #include "gstpointcloudbuilder.h"
+#include "../../gst-libs/gst/3d/gst3dcamera_arcball.h"
 
 #include <gst/gl/gstglapi.h>
 #include <graphene-gobject.h>
@@ -117,7 +118,7 @@ gst_point_cloud_builder_init (GstPointCloudBuilder * self)
   self->render_mode = GL_TRIANGLE_STRIP;
   self->in_tex = 0;
   self->mesh = NULL;
-  self->camera = gst_3d_camera_new ();
+  self->camera = GST_3D_CAMERA (gst_3d_camera_arcball_new ());
 
   self->left_color_tex = 0;
   self->left_fbo = 0;
@@ -197,9 +198,9 @@ gst_point_cloud_builder_src_event (GstBaseTransform * trans, GstEvent * event)
           if (g_strcmp0 (key, "Escape") == 0) {
             gst_3d_renderer_send_eos (GST_ELEMENT (self));
           } else if (g_strcmp0 (key, "KP_Add") == 0) {
-            gst_3d_camera_inc_eye_sep (self->camera);
+            gst_3d_hmd_eye_sep_inc (self->camera->hmd);
           } else if (g_strcmp0 (key, "KP_Subtract") == 0) {
-            gst_3d_camera_dec_eye_sep (self->camera);
+            gst_3d_hmd_eye_sep_dec (self->camera->hmd);
           } else {
             GST_DEBUG ("%s", key);
           }
@@ -211,15 +212,16 @@ gst_point_cloud_builder_src_event (GstBaseTransform * trans, GstEvent * event)
 
         // hanlde the mouse motion for zooming and rotating the view
         gdouble dx, dy;
-        dx = x - self->camera->cursor_last_x;
-        dy = y - self->camera->cursor_last_y;
+        dx = x - GST_3D_CAMERA_ARCBALL (self->camera)->cursor_last_x;
+        dy = y - GST_3D_CAMERA_ARCBALL (self->camera)->cursor_last_y;
 
         if (self->pressed_mouse_button == 1) {
           // GST_DEBUG ("Rotating [%fx%f]", x, y);
-          gst_3d_camera_rotate_arcball (self->camera, dx, dy);
+          gst_3d_camera_arcball_rotate (GST_3D_CAMERA_ARCBALL (self->camera),
+              dx, dy);
         }
-        self->camera->cursor_last_x = x;
-        self->camera->cursor_last_y = y;
+        GST_3D_CAMERA_ARCBALL (self->camera)->cursor_last_x = x;
+        GST_3D_CAMERA_ARCBALL (self->camera)->cursor_last_y = y;
       } else if (g_strcmp0 (event_name, "mouse-button-release") == 0) {
         gint button;
         gst_structure_get_int (structure, "button", &button);
@@ -228,15 +230,17 @@ gst_point_cloud_builder_src_event (GstBaseTransform * trans, GstEvent * event)
         if (button == 1) {
           // GST_DEBUG("first button release");
           gst_structure_get_double (structure, "pointer_x",
-              &self->camera->cursor_last_x);
+              &GST_3D_CAMERA_ARCBALL (self->camera)->cursor_last_x);
           gst_structure_get_double (structure, "pointer_y",
-              &self->camera->cursor_last_y);
+              &GST_3D_CAMERA_ARCBALL (self->camera)->cursor_last_y);
         } else if (button == 4) {
           // GST_DEBUG("wheel up");
-          gst_3d_camera_translate_arcball (self->camera, -1.0);
+          gst_3d_camera_arcball_translate (GST_3D_CAMERA_ARCBALL (self->camera),
+              -1.0);
         } else if (button == 5) {
           // GST_DEBUG("wheel down");
-          gst_3d_camera_translate_arcball (self->camera, 1.0);
+          gst_3d_camera_arcball_translate (GST_3D_CAMERA_ARCBALL (self->camera),
+              1.0);
         }
         // GST_DEBUG ("release %d", button);
       } else if (g_strcmp0 (event_name, "mouse-button-press") == 0) {
@@ -332,7 +336,7 @@ gst_point_cloud_builder_draw (gpointer this)
   gst_gl_shader_use (self->shader->shader);
   gl->BindTexture (GL_TEXTURE_2D, self->in_tex);
 
-  gst_3d_camera_update_view_arcball (self->camera);
+  gst_3d_camera_arcball_update_view (GST_3D_CAMERA_ARCBALL (self->camera));
 
   gst_3d_shader_upload_matrix (self->shader, &self->camera->mvp, "mvp");
 

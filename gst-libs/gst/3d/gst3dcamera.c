@@ -48,14 +48,6 @@ gst_3d_camera_init (Gst3DCamera * self)
   self->znear = 0.1;
   self->zfar = 100;
   self->hmd = gst_3d_hmd_new ();
-  self->center_distance = 2.5;
-  self->scroll_speed = 0.05;
-  self->rotation_speed = 0.002;
-  self->cursor_last_x = 0;
-  self->cursor_last_y = 0;
-
-  self->theta = 5.0;
-  self->phi = -5.0;
 
   graphene_vec3_init (&self->eye, 0.f, 0.f, 1.f);
   graphene_vec3_init (&self->center, 0.f, 0.f, 0.f);
@@ -182,23 +174,6 @@ gst_3d_camera_update_view_mvp (Gst3DCamera * self)
   graphene_matrix_multiply (&view_matrix, &projection_matrix, &self->mvp);
 }
 
-void
-gst_3d_camera_translate_arcball (Gst3DCamera * self, float z)
-{
-  self->center_distance += z * self->scroll_speed;
-  GST_DEBUG ("center distance: %f", self->center_distance);
-  gst_3d_camera_update_view_arcball (self);
-}
-
-void
-gst_3d_camera_rotate_arcball (Gst3DCamera * self, float x, float y)
-{
-  self->theta += y * self->rotation_speed;
-  self->phi += x * self->rotation_speed;
-  GST_DEBUG ("theta: %f phi: %f", self->theta, self->phi);
-  gst_3d_camera_update_view_arcball (self);
-}
-
 /*
 static void
 print_graphene_vec3 (const gchar * name, graphene_vec3_t * vec)
@@ -207,30 +182,3 @@ print_graphene_vec3 (const gchar * name, graphene_vec3_t * vec)
       graphene_vec3_get_y (vec), graphene_vec3_get_z (vec));
 }
 */
-
-void
-gst_3d_camera_update_view_arcball (Gst3DCamera * self)
-{
-  // float radius = exp (self->center_distance);
-  float radius = self->center_distance;
-
-  graphene_vec3_init (&self->eye,
-      radius * sin (self->theta) * cos (self->phi),
-      radius * -cos (self->theta),
-      radius * sin (self->theta) * sin (self->phi));
-
-  graphene_matrix_t projection_matrix;
-  graphene_matrix_init_perspective (&projection_matrix,
-      self->fov, self->aspect, self->znear, self->zfar);
-
-  /*
-     graphene_matrix_t view_matrix;
-     graphene_matrix_init_look_at (&view_matrix, &self->eye, &self->center,
-     &self->up);
-   */
-
-  graphene_matrix_t view_matrix =
-      gst_3d_glm_look_at (&self->eye, &self->center, &self->up);
-
-  graphene_matrix_multiply (&view_matrix, &projection_matrix, &self->mvp);
-}

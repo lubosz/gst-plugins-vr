@@ -35,6 +35,7 @@ install_headers(
 gst_3d_lib = shared_library('gst3d-' + apiversion,
   'gst-libs/gst/3d/gst3dmesh.c',
   'gst-libs/gst/3d/gst3dcamera.c',
+  'gst-libs/gst/3d/gst3dcamera_arcball.c',
   'gst-libs/gst/3d/gst3dhmd.c',
   'gst-libs/gst/3d/gst3drenderer.c',
   'gst-libs/gst/3d/gst3dshader.c',
