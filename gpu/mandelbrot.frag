@@ -1,10 +1,12 @@
-#ifdef GL_ES
-precision mediump float;
-#endif
+#version 330
+
+in vec2 fractal_position;
+in vec2 out_uv;
 
 uniform float time;
-varying vec2 fractal_position;
+
 const vec4 K = vec4(1.0, 0.66, 0.33, 3.0);
+
 
 vec4 hsv_to_rgb(float hue, float saturation, float value) {
   vec4 p = abs(fract(vec4(hue) + K) * 6.0 - K.wwww);
@@ -36,4 +38,5 @@ vec4 iterate_pixel(vec2 position) {
 
 void main() {
   gl_FragColor = iterate_pixel(fractal_position);
+  //gl_FragColor = vec4(fractal_position,0,1);
 }

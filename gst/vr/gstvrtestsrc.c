@@ -107,9 +107,14 @@ static gboolean gst_vr_test_src_stop (GstBaseSrc * basesrc);
 static gboolean gst_vr_test_src_decide_allocation (GstBaseSrc * basesrc,
     GstQuery * query);
 
-static void gst_vr_test_src_callback (gpointer stuff);
+static void gst_vr_test_src_draw (gpointer stuff);
+
+static gboolean gst_vr_test_src_event (GstBaseSrc * src, GstEvent * event);
 
 static gboolean gst_vr_test_src_init_shader (GstVRTestSrc * gstvrtestsrc);
+
+static gboolean gst_vr_test_src_decide_allocation (GstBaseSrc * basesrc,
+    GstQuery * query);
 
 #define GST_TYPE_VR_TEST_SRC_PATTERN (gst_vr_test_src_pattern_get_type ())
 static GType
@@ -179,8 +184,16 @@ gst_vr_test_src_class_init (GstVRTestSrcClass * klass)
   gstbasesrc_class->stop = gst_vr_test_src_stop;
   gstbasesrc_class->fixate = gst_vr_test_src_fixate;
   gstbasesrc_class->decide_allocation = gst_vr_test_src_decide_allocation;
+  //gstbasesrc_class->event = gst_vr_test_src_event;
 
   gstpushsrc_class->fill = gst_vr_test_src_fill;
+}
+
+static gboolean
+gst_vr_test_src_event (GstBaseSrc * src, GstEvent * event)
+{
+  GST_ERROR_OBJECT (event, "he have an event");
+  return TRUE;
 }
 
 static void
@@ -470,8 +483,7 @@ gst_vr_test_src_fill (GstPushSrc * psrc, GstBuffer * buffer)
   out_tex = *(guint *) out_frame.data[0];
 
   if (!gst_gl_context_use_fbo_v2 (src->context, width, height, src->fbo,
-          src->depthbuffer, out_tex, gst_vr_test_src_callback,
-          (gpointer) src)) {
+          src->depthbuffer, out_tex, gst_vr_test_src_draw, (gpointer) src)) {
     gst_video_frame_unmap (&out_frame);
     goto gl_error;
   }
@@ -719,7 +731,7 @@ context_error:
 
 //opengl scene
 static void
-gst_vr_test_src_callback (gpointer stuff)
+gst_vr_test_src_draw (gpointer stuff)
 {
   GstVRTestSrc *src = GST_VR_TEST_SRC (stuff);
   const struct SrcFuncs *funcs;

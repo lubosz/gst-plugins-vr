@@ -233,8 +233,7 @@ gst_vr_compositor_init_scene (GstGLFilter * filter)
   GstGLFuncs *gl = context->gl_vtable;
   gboolean ret = TRUE;
   if (!self->mesh) {
-    self->shader = gst_3d_shader_new (context);
-    ret = gst_3d_shader_from_vert_frag (self->shader, "mvp_uv.vert",
+    self->shader = gst_3d_shader_new_vert_frag (context, "mvp_uv.vert",
         "texture_uv.frag");
     gst_3d_shader_bind (self->shader);
 
