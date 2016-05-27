@@ -47,6 +47,7 @@
 #include "gstvrtestsrc.h"
 #include "gstvrtestsrc.h"
 //#include <gst/gst-i18n-plugin.h>
+#include "../../gst-libs/gst/3d/gst3drenderer.h"
 
 #define USE_PEER_BUFFERALLOC
 #define SUPPORTED_GL_APIS (GST_GL_API_OPENGL | GST_GL_API_OPENGL3 | GST_GL_API_GLES2)
@@ -168,7 +169,7 @@ gst_vr_test_src_class_init (GstVRTestSrcClass * klass)
 
   gst_element_class_set_metadata (element_class, "VR test source",
       "Source/Video", "Creates a test video stream",
-      "David A. Schleef <ds@schleef.org>");
+      "Lubosz Sarnecki <lubosz.sarnecki@collabora.co.uk>");
 
   gst_element_class_add_static_pad_template (element_class, &src_factory);
 
@@ -184,7 +185,7 @@ gst_vr_test_src_class_init (GstVRTestSrcClass * klass)
   gstbasesrc_class->stop = gst_vr_test_src_stop;
   gstbasesrc_class->fixate = gst_vr_test_src_fixate;
   gstbasesrc_class->decide_allocation = gst_vr_test_src_decide_allocation;
-  //gstbasesrc_class->event = gst_vr_test_src_event;
+  gstbasesrc_class->event = gst_vr_test_src_event;
 
   gstpushsrc_class->fill = gst_vr_test_src_fill;
 }
@@ -192,7 +193,20 @@ gst_vr_test_src_class_init (GstVRTestSrcClass * klass)
 static gboolean
 gst_vr_test_src_event (GstBaseSrc * src, GstEvent * event)
 {
-  GST_ERROR_OBJECT (event, "he have an event");
+  GstVRTestSrc *self = GST_VR_TEST_SRC (src);
+
+  GST_DEBUG ("handling %s event", GST_EVENT_TYPE_NAME (event));
+
+  switch (GST_EVENT_TYPE (event)) {
+    case GST_EVENT_NAVIGATION:
+      event =
+          GST_EVENT (gst_mini_object_make_writable (GST_MINI_OBJECT (event)));
+      gst_3d_renderer_navigation_event (GST_ELEMENT (self), event);
+      gst_3d_camera_arcball_navigation_event (self->camera, event);
+      break;
+    default:
+      break;
+  }
   return TRUE;
 }
 
@@ -202,6 +216,8 @@ gst_vr_test_src_init (GstVRTestSrc * src)
   gst_vr_test_src_set_pattern (src, GST_VR_TEST_SRC_MANDELBROT);
 
   src->timestamp_offset = 0;
+
+  src->camera = gst_3d_camera_arcball_new ();
 
   /* we operate in time */
   gst_base_src_set_format (GST_BASE_SRC (src), GST_FORMAT_TIME);
