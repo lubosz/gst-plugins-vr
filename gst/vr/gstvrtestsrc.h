@@ -30,6 +30,7 @@
 #include <gst/gl/gl.h>
 
 #include "vrtestsrc.h"
+#include "../../gst-libs/gst/3d/gst3dcamera_arcball.h"
 
 G_BEGIN_DECLS
 #define GST_TYPE_VR_TEST_SRC \
@@ -69,6 +70,8 @@ struct _GstVRTestSrc
   GstGLShader *shader;
 
   GstBufferPool *pool;
+  
+  Gst3DCameraArcball * camera;
 
   GstGLDisplay *display;
   GstGLContext *context, *other_context;

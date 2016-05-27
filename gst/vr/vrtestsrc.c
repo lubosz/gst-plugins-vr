@@ -167,14 +167,16 @@ _src_mandelbrot_src_event (gpointer impl, GstEvent * event)
 
   switch (GST_EVENT_TYPE (event)) {
     case GST_EVENT_NAVIGATION:
-      event =
-          GST_EVENT (gst_mini_object_make_writable (GST_MINI_OBJECT (event)));
-      // gst_3d_renderer_navigation_event (GST_ELEMENT (self), event);
-      gst_3d_camera_arcball_navigation_event (src->camera, event);
+      //event =
+      //    GST_EVENT (gst_mini_object_make_writable (GST_MINI_OBJECT (event)));
+      //gst_3d_renderer_navigation_event (GST_ELEMENT (src), event);
+      //gst_3d_camera_arcball_navigation_event (src->camera, event);
       break;
     default:
       break;
   }
+
+  gst_event_unref (event);
   // return GST_BASE_TRANSFORM_CLASS (parent_class)->src_event (trans, event);
   return TRUE;
 }
@@ -244,15 +246,21 @@ _src_mandelbrot_draw (gpointer impl)
   //TODO: exit with an error message (shader compiler mostly)
   if (!src->shader)
     exit (0);
-
   g_return_val_if_fail (src->shader, FALSE);
+
+  GstGLFuncs *gl = src->base.context->gl_vtable;
+
+  // gl->Viewport (0, 0, self->eye_width, self->eye_height);
+  gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   gst_gl_shader_use (src->shader->shader);
   gst_gl_shader_set_uniform_1f (src->shader->shader, "time",
       (gfloat) src->base.src->running_time / GST_SECOND);
 
-  gst_3d_camera_arcball_update_view (src->camera);
-  gst_3d_shader_upload_matrix (src->shader, &src->camera->mvp, "mvp");
+  Gst3DCameraArcball *camera = src->base.src->camera;
+
+  gst_3d_camera_arcball_update_view (camera);
+  gst_3d_shader_upload_matrix (src->shader, &camera->mvp, "mvp");
 
   gst_3d_mesh_bind (src->plane_mesh);
   gst_3d_mesh_draw (src->plane_mesh);
