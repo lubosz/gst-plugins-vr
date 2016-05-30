@@ -37,6 +37,18 @@ G_BEGIN_DECLS
 typedef struct _Gst3DMesh Gst3DMesh;
 typedef struct _Gst3DMeshClass Gst3DMeshClass;
 
+
+struct Gst3DAttributeBuffer
+{
+  const gchar *name;
+  gint location;
+  guint n_elements;
+  GLenum element_type;
+  guint offset;                 // in bytes
+  guint stride;                 // in bytes
+};
+
+
 struct _Gst3DMesh
 {
   /*< private > */
@@ -44,9 +56,12 @@ struct _Gst3DMesh
 
   GstGLContext *context;
 
+  GList *attribute_buffers;
+
   GLuint vao;
   GLuint vbo_indices;
   GLuint vbo_positions;
+  GLuint vbo_color;
   GLuint vbo_uv;
 
   unsigned index_size;
@@ -80,6 +95,8 @@ void gst_3d_mesh_upload_sphere (Gst3DMesh * self, float radius, unsigned stacks,
 void gst_3d_mesh_upload_plane (Gst3DMesh * self, float aspect);
 void gst_3d_mesh_upload_point_plane (Gst3DMesh * self, unsigned width,
     unsigned height);
+void gst_3d_mesh_upload_line (Gst3DMesh * self, graphene_vec3_t *from, graphene_vec3_t *to,  graphene_vec3_t *color);
+    
 void gst_3d_mesh_draw_arrays (Gst3DMesh * self);
 void gst_3d_mesh_bind_to_shader (Gst3DMesh * self, Gst3DShader * shader);
 

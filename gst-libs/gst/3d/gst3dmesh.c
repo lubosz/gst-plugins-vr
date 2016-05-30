@@ -334,6 +334,39 @@ gst_3d_mesh_upload_plane (Gst3DMesh * self, float aspect)
   self->draw_mode = GL_TRIANGLE_STRIP;
 }
 
+
+void
+gst_3d_mesh_upload_line (Gst3DMesh * self, graphene_vec3_t *from, graphene_vec3_t *to,  graphene_vec3_t *color)
+{
+  GstGLFuncs *gl = self->context->gl_vtable;
+
+  /* *INDENT-OFF* */
+  GLfloat vertices[] = {
+     graphene_vec3_get_x(from), graphene_vec3_get_y(from), graphene_vec3_get_z(from), 1.0,
+     graphene_vec3_get_x(to), graphene_vec3_get_y(to), graphene_vec3_get_z(to), 1.0
+  };
+  GLfloat colors[] = {
+     graphene_vec3_get_x(color), graphene_vec3_get_y(color), graphene_vec3_get_z(color),
+     graphene_vec3_get_x(color), graphene_vec3_get_y(color), graphene_vec3_get_z(color)
+  };
+  /* *INDENT-ON* */
+
+  int vertex_count = 2;
+  self->vector_length = 4;
+
+  gl->BindBuffer (GL_ARRAY_BUFFER, self->vbo_positions);
+  gl->BufferData (GL_ARRAY_BUFFER,
+      vertex_count * 4 * sizeof (GLfloat), vertices, GL_STATIC_DRAW);
+
+  // load colors
+  gl->BindBuffer (GL_ARRAY_BUFFER, self->vbo_color);
+  gl->BufferData (GL_ARRAY_BUFFER,
+      vertex_count * 3 * sizeof (GLfloat), colors, GL_STATIC_DRAW);
+
+  self->draw_mode = GL_LINES;
+}
+
+
 void
 gst_3d_mesh_upload_point_plane (Gst3DMesh * self, unsigned width,
     unsigned height)
