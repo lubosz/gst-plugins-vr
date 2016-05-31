@@ -42,12 +42,8 @@ struct Gst3DAttributeBuffer
 {
   const gchar *name;
   gint location;
-  // guint n_elements;
   size_t element_size;
   guint vector_length;
-  // GLenum element_type;
-  // guint offset;                 // in bytes
-  // guint stride;                 // in bytes
 };
 
 
@@ -60,17 +56,11 @@ struct _Gst3DMesh
 
   GList *attribute_buffers;
 
-  GLuint vao;
-  GLuint vbo_indices;
-  /*
-  GLuint vbo_positions;
-  GLuint vbo_color;
-  GLuint vbo_uv;
-  */
-  unsigned index_size;
-  // unsigned vector_length;
-  
-  int vertex_count;
+  guint vao;
+  guint vbo_indices;
+
+  guint index_size;
+  guint vertex_count;
 
   GLenum draw_mode;
 };
