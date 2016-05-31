@@ -30,6 +30,7 @@
 #include <gst/gl/gl.h>
 
 #include "gst3dnode.h"
+#include "gst3dmesh.h"
 
 #define GST_CAT_DEFAULT gst_3d_node_debug
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -71,4 +72,52 @@ gst_3d_node_class_init (Gst3DNodeClass * klass)
 {
   GObjectClass *obj_class = G_OBJECT_CLASS (klass);
   obj_class->finalize = gst_3d_node_finalize;
+}
+
+Gst3DNode *
+gst_3d_node_new_debug_axes (GstGLContext * context)
+{
+  g_return_val_if_fail (GST_IS_GL_CONTEXT (context), NULL);
+  Gst3DNode *node = g_object_new (GST_3D_TYPE_NODE, NULL);
+  node->context = gst_object_ref (context);
+
+  node->shader =
+      gst_3d_shader_new_vert_frag (context, "mvp_color.vert", "color.frag");
+
+  gst_gl_shader_use (node->shader->shader);
+
+  graphene_vec3_t from, to, color;
+  graphene_vec3_init (&from, 0.f, 0.f, 0.f);
+  graphene_vec3_init (&to, 1.f, 0.f, 0.f);
+  graphene_vec3_init (&color, 1.f, 0.f, 0.f);
+  Gst3DMesh *x_axis = gst_3d_mesh_new_line (context, &from, &to, &color);
+  gst_3d_mesh_bind_shader (x_axis, node->shader);
+  node->meshes = g_list_append (node->meshes, x_axis);
+
+  graphene_vec3_init (&from, 0.f, 0.f, 0.f);
+  graphene_vec3_init (&to, 0.f, 1.f, 0.f);
+  graphene_vec3_init (&color, 0.f, 1.f, 0.f);
+  Gst3DMesh *y_axis = gst_3d_mesh_new_line (context, &from, &to, &color);
+  gst_3d_mesh_bind_shader (y_axis, node->shader);
+  node->meshes = g_list_append (node->meshes, y_axis);
+
+  graphene_vec3_init (&from, 0.f, 0.f, 0.f);
+  graphene_vec3_init (&to, 0.f, 0.f, 1.f);
+  graphene_vec3_init (&color, 0.f, 0.f, 1.f);
+  Gst3DMesh *z_axis = gst_3d_mesh_new_line (context, &from, &to, &color);
+  gst_3d_mesh_bind_shader (z_axis, node->shader);
+  node->meshes = g_list_append (node->meshes, z_axis);
+
+  return node;
+}
+
+void
+gst_3d_node_draw (Gst3DNode * self)
+{
+  GList *l;
+  for (l = self->meshes; l != NULL; l = l->next) {
+    Gst3DMesh *mesh = (Gst3DMesh *) l->data;
+    gst_3d_mesh_bind (mesh);
+    gst_3d_mesh_draw (mesh);
+  }
 }

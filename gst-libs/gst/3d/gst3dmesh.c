@@ -98,6 +98,16 @@ gst_3d_mesh_new_line (GstGLContext * context, graphene_vec3_t * from,
   return mesh;
 }
 
+Gst3DMesh *
+gst_3d_mesh_new_cube (GstGLContext * context)
+{
+  g_return_val_if_fail (GST_IS_GL_CONTEXT (context), NULL);
+  Gst3DMesh *mesh = gst_3d_mesh_new (context);
+  gst_3d_mesh_init_buffers (mesh);
+  gst_3d_mesh_upload_cube (mesh);
+  return mesh;
+}
+
 static void
 gst_3d_mesh_finalize (GObject * object)
 {
@@ -261,6 +271,111 @@ gst_3d_mesh_upload_plane (Gst3DMesh * self, float aspect)
 
   gst_3d_mesh_append_attribute_buffer (self, "position", sizeof (GLfloat), 4,
       vertices);
+  gst_3d_mesh_append_attribute_buffer (self, "uv", sizeof (GLfloat), 2, uvs);
+
+  // index
+  self->index_size = sizeof (indices);
+  gl->BindBuffer (GL_ELEMENT_ARRAY_BUFFER, self->vbo_indices);
+  gl->BufferData (GL_ELEMENT_ARRAY_BUFFER, self->index_size, indices,
+      GL_STATIC_DRAW);
+}
+
+void
+gst_3d_mesh_upload_cube (Gst3DMesh * self)
+{
+  GstGLFuncs *gl = self->context->gl_vtable;
+
+  /* *INDENT-OFF* */
+  GLfloat positions[] = {
+   /*|     Vertex     | TexCoord |*/ 
+      /* front face */
+       1.0,  1.0, -1.0,
+       1.0, -1.0, -1.0,
+      -1.0, -1.0, -1.0,
+      -1.0,  1.0, -1.0,
+      /* back face */
+       1.0,  1.0,  1.0,
+      -1.0,  1.0,  1.0,
+      -1.0, -1.0,  1.0,
+       1.0, -1.0,  1.0,
+      /* right face */
+       1.0,  1.0,  1.0,
+       1.0, -1.0,  1.0,
+       1.0, -1.0, -1.0,
+       1.0,  1.0, -1.0,
+      /* left face */
+      -1.0,  1.0,  1.0,
+      -1.0,  1.0, -1.0,
+      -1.0, -1.0, -1.0,
+      -1.0, -1.0,  1.0,
+      /* top face */
+       1.0, -1.0,  1.0,
+      -1.0, -1.0,  1.0,
+      -1.0, -1.0, -1.0,
+       1.0, -1.0, -1.0,
+      /* bottom face */
+       1.0,  1.0,  1.0,
+       1.0,  1.0, -1.0,
+      -1.0,  1.0, -1.0,
+      -1.0,  1.0,  1.0
+  };
+
+  /* *INDENT-OFF* */
+  GLfloat uvs[] = {
+   /*|     Vertex     | TexCoord |*/ 
+      /* front face */
+       1.0, 0.0,
+       1.0, 1.0,
+       0.0, 1.0,
+       0.0, 0.0,
+      /* back face */
+       1.0, 0.0,
+       0.0, 0.0,
+       0.0, 1.0,
+       1.0, 1.0,
+      /* right face */
+       1.0, 0.0,
+       0.0, 0.0,
+       0.0, 1.0,
+       1.0, 1.0,
+      /* left face */
+       1.0, 0.0,
+       1.0, 1.0,
+       0.0, 1.0,
+       0.0, 0.0,
+      /* top face */
+       1.0, 0.0,
+       0.0, 0.0,
+       0.0, 1.0,
+       1.0, 1.0,
+      /* bottom face */
+       1.0, 0.0,
+       1.0, 1.0,
+       0.0, 1.0,
+       0.0, 0.0
+  };
+
+  GLushort indices[] = {
+      0, 1, 2,
+      0, 2, 3,
+      4, 5, 6,
+      4, 6, 7,
+      8, 9, 10,
+      8, 10, 11,
+      12, 13, 14,
+      12, 14, 15,
+      16, 17, 18,
+      16, 18, 19,
+      20, 21, 22,
+      20, 22, 23
+  };
+  /* *INDENT-ON* */
+
+  self->vertex_count = 4 * 6;
+  self->draw_mode = GL_TRIANGLES;
+
+  gst_3d_mesh_append_attribute_buffer (self, "position", sizeof (GLfloat), 3,
+      positions);
   gst_3d_mesh_append_attribute_buffer (self, "uv", sizeof (GLfloat), 2, uvs);
 
   // index

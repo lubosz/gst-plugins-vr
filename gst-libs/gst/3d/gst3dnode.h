@@ -24,6 +24,7 @@
 
 #include <gst/gst.h>
 #include <gst/gl/gstgl_fwd.h>
+#include "gst3dshader.h"
 
 G_BEGIN_DECLS
 #define GST_3D_TYPE_NODE            (gst_3d_node_get_type ())
@@ -40,6 +41,9 @@ struct _Gst3DNode
   /*< private > */
   GstObject parent;
   GstGLContext *context;
+  
+  GList *meshes;
+  Gst3DShader *shader;
 };
 
 struct _Gst3DNodeClass
@@ -49,6 +53,10 @@ struct _Gst3DNodeClass
 
 Gst3DNode *gst_3d_node_new (GstGLContext * context);
 GType gst_3d_node_get_type (void);
+
+Gst3DNode *gst_3d_node_new_debug_axes (GstGLContext * context);
+
+void gst_3d_node_draw (Gst3DNode * self);
 
 G_END_DECLS
 #endif /* __GST_3D_NODE_H__ */

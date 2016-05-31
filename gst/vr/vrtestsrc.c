@@ -27,24 +27,13 @@
 #include "../../gst-libs/gst/3d/gst3dshader.h"
 #include "../../gst-libs/gst/3d/gst3dmesh.h"
 #include "../../gst-libs/gst/3d/gst3dcamera_arcball.h"
-
-// #define MAX_ATTRIBUTES 4
+#include "../../gst-libs/gst/3d/gst3dnode.h"
 
 struct SrcShader
 {
   struct BaseSrcImpl base;
-
-  Gst3DShader *shader;
-
-  GList *axesDebugMeshes;
-
-  guint vao;
-  guint vbo;
-  guint vbo_indices;
-
   Gst3DCameraArcball *camera;
-
-  guint n_attributes;
+  GList *nodes;
 };
 
 /*
@@ -74,41 +63,13 @@ _src_mandelbrot_src_event (gpointer impl, GstEvent * event)
 }
 */
 
-static void
-_create_debug_axes (struct SrcShader *src)
-{
-  graphene_vec3_t from, to, color;
-  graphene_vec3_init (&from, 0.f, 0.f, 0.f);
-  graphene_vec3_init (&to, 1.f, 0.f, 0.f);
-  graphene_vec3_init (&color, 1.f, 0.f, 0.f);
-  Gst3DMesh *x_axis =
-      gst_3d_mesh_new_line (src->base.context, &from, &to, &color);
-  gst_3d_mesh_bind_shader (x_axis, src->shader);
-  src->axesDebugMeshes = g_list_append (src->axesDebugMeshes, x_axis);
-
-  graphene_vec3_init (&from, 0.f, 0.f, 0.f);
-  graphene_vec3_init (&to, 0.f, 1.f, 0.f);
-  graphene_vec3_init (&color, 0.f, 1.f, 0.f);
-  Gst3DMesh *y_axis =
-      gst_3d_mesh_new_line (src->base.context, &from, &to, &color);
-  gst_3d_mesh_bind_shader (y_axis, src->shader);
-  src->axesDebugMeshes = g_list_append (src->axesDebugMeshes, y_axis);
-
-  graphene_vec3_init (&from, 0.f, 0.f, 0.f);
-  graphene_vec3_init (&to, 0.f, 0.f, 1.f);
-  graphene_vec3_init (&color, 0.f, 0.f, 1.f);
-  Gst3DMesh *z_axis =
-      gst_3d_mesh_new_line (src->base.context, &from, &to, &color);
-  gst_3d_mesh_bind_shader (z_axis, src->shader);
-  src->axesDebugMeshes = g_list_append (src->axesDebugMeshes, z_axis);
-}
 
 static gboolean
 _src_mandelbrot_init (gpointer impl, GstGLContext * context,
     GstVideoInfo * v_info)
 {
   struct SrcShader *src = impl;
-  GError *error = NULL;
+  // GError *error = NULL;
 
   src->base.context = context;
 
@@ -116,27 +77,38 @@ _src_mandelbrot_init (gpointer impl, GstGLContext * context,
 
   src->camera = gst_3d_camera_arcball_new ();
 
+/*
   if (src->shader)
     gst_object_unref (src->shader);
+*/
 
 
-  src->shader =
-      gst_3d_shader_new_vert_frag (context, "mvp_color.vert", "color.frag");
 
-  if (!src->shader) {
-    GST_ERROR_OBJECT (src->base.src, "%s", error->message);
-    return FALSE;
-  }
-  //src->plane_mesh = gst_3d_mesh_new_plane (context, 1.0);
+
+  // Gst3DMesh * plane_mesh = gst_3d_mesh_new_plane (context, 1.0);
+  Gst3DMesh *plane_mesh = gst_3d_mesh_new_cube (context);
+  Gst3DNode *plane_node = gst_3d_node_new (context);
+  plane_node->meshes = g_list_append (plane_node->meshes, plane_mesh);
+  plane_node->shader =
+      gst_3d_shader_new_vert_frag (context, "mvp_uv.vert", "debug_uv.frag");
+  gst_gl_shader_use (plane_node->shader->shader);
+  gst_3d_mesh_bind_shader (plane_mesh, plane_node->shader);
+
+  src->nodes = g_list_append (src->nodes, plane_node);
+
+
+  Gst3DNode *axes_node = gst_3d_node_new_debug_axes (context);
+  src->nodes = g_list_append (src->nodes, axes_node);
+
   //src->plane_mesh = gst_3d_mesh_new_sphere (context, 2.0, 20, 20);
   // src->plane_mesh->draw_mode = GL_LINES;
 
-  _create_debug_axes (src);
+  // _create_debug_axes (src);
 
-
-  gl->Enable (GL_CULL_FACE);
+  gl->Disable (GL_CULL_FACE);
 
 /*
+  gst_gl_shader_use (axes_node->shader->shader);
   gst_gl_shader_use (src->shader);
   gst_gl_shader_set_uniform_1f (src->shader, "aspect_ratio",
       (gfloat) GST_VIDEO_INFO_WIDTH (v_info) /
@@ -156,35 +128,37 @@ _src_mandelbrot_draw (gpointer impl)
   g_return_val_if_fail (src->base.context, FALSE);
 
   //TODO: exit with an error message (shader compiler mostly)
-  if (!src->shader)
-    exit (0);
-  g_return_val_if_fail (src->shader, FALSE);
+  // if (!src->shader)
+  //  exit (0);
+  // g_return_val_if_fail (src->shader, FALSE);
 
   GstGLFuncs *gl = src->base.context->gl_vtable;
 
   // gl->Viewport (0, 0, self->eye_width, self->eye_height);
   gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  gst_gl_shader_use (src->shader->shader);
-  gst_gl_shader_set_uniform_1f (src->shader->shader, "time",
-      (gfloat) src->base.src->running_time / GST_SECOND);
-
+  /*
+     gst_gl_shader_use (src->shader->shader);
+     gst_gl_shader_set_uniform_1f (src->shader->shader, "time",
+     (gfloat) src->base.src->running_time / GST_SECOND);
+   */
   Gst3DCameraArcball *camera = src->base.src->camera;
 
   gst_3d_camera_arcball_update_view (camera);
-  gst_3d_shader_upload_matrix (src->shader, &camera->mvp, "mvp");
+  gl->Enable (GL_DEPTH_TEST);
 
   GList *l;
-  for (l = src->axesDebugMeshes; l != NULL; l = l->next) {
-    Gst3DMesh *mesh = (Gst3DMesh *) l->data;
-    gst_3d_mesh_bind (mesh);
-    gst_3d_mesh_draw (mesh);
+  for (l = src->nodes; l != NULL; l = l->next) {
+    Gst3DNode *node = (Gst3DNode *) l->data;
+    gst_gl_shader_use (node->shader->shader);
+    gst_3d_shader_upload_matrix (node->shader, &camera->mvp, "mvp");
+    gst_3d_node_draw (node);
   }
-
+  gl->Disable (GL_DEPTH_TEST);
   //gst_3d_mesh_draw_arrays(src->plane_mesh);
 
   // gl->BindVertexArray (0);
-  gst_gl_context_clear_shader (src->base.context);
+  // gst_gl_context_clear_shader (src->base.context);
 
   return TRUE;
 }
