@@ -239,11 +239,11 @@ gst_vr_compositor_init_scene (GstGLFilter * filter)
     gst_3d_shader_bind (self->shader);
 
     self->mesh = gst_3d_mesh_new_sphere (context, 10.0, 20, 20);
-    gst_3d_mesh_bind_to_shader (self->mesh, self->shader);
+    gst_3d_mesh_bind_shader (self->mesh, self->shader);
 
 
     self->render_plane = gst_3d_mesh_new_plane (context, self->camera->aspect);
-    gst_3d_mesh_bind_to_shader (self->render_plane, self->shader);
+    gst_3d_mesh_bind_shader (self->render_plane, self->shader);
 
     gst_3d_renderer_create_fbo (gl, &self->left_fbo, &self->left_color_tex,
         self->eye_width, self->eye_height);

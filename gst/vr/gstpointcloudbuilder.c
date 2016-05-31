@@ -231,7 +231,7 @@ gst_point_cloud_builder_init_scene (GstGLFilter * filter)
         "points.frag");
     gst_3d_shader_bind (self->shader);
     self->mesh = gst_3d_mesh_new_point_plane (context, 512, 424);
-    gst_3d_mesh_bind_to_shader (self->mesh, self->shader);
+    gst_3d_mesh_bind_shader (self->mesh, self->shader);
 
     gl->ClearColor (0.f, 0.f, 0.f, 0.f);
     gl->ActiveTexture (GL_TEXTURE0);

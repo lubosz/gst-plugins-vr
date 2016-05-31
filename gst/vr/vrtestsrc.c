@@ -83,7 +83,7 @@ _create_debug_axes (struct SrcShader *src)
   graphene_vec3_init (&color, 1.f, 0.f, 0.f);
   Gst3DMesh *x_axis =
       gst_3d_mesh_new_line (src->base.context, &from, &to, &color);
-  gst_3d_mesh_bind_to_shader (x_axis, src->shader);
+  gst_3d_mesh_bind_shader (x_axis, src->shader);
   src->axesDebugMeshes = g_list_append (src->axesDebugMeshes, x_axis);
 
   graphene_vec3_init (&from, 0.f, 0.f, 0.f);
@@ -91,7 +91,7 @@ _create_debug_axes (struct SrcShader *src)
   graphene_vec3_init (&color, 0.f, 1.f, 0.f);
   Gst3DMesh *y_axis =
       gst_3d_mesh_new_line (src->base.context, &from, &to, &color);
-  gst_3d_mesh_bind_to_shader (y_axis, src->shader);
+  gst_3d_mesh_bind_shader (y_axis, src->shader);
   src->axesDebugMeshes = g_list_append (src->axesDebugMeshes, y_axis);
 
   graphene_vec3_init (&from, 0.f, 0.f, 0.f);
@@ -99,7 +99,7 @@ _create_debug_axes (struct SrcShader *src)
   graphene_vec3_init (&color, 0.f, 0.f, 1.f);
   Gst3DMesh *z_axis =
       gst_3d_mesh_new_line (src->base.context, &from, &to, &color);
-  gst_3d_mesh_bind_to_shader (z_axis, src->shader);
+  gst_3d_mesh_bind_shader (z_axis, src->shader);
   src->axesDebugMeshes = g_list_append (src->axesDebugMeshes, z_axis);
 }
 

@@ -42,9 +42,7 @@ gst_3d_mesh_init (Gst3DMesh * self)
 {
   self->index_size = 0;
   self->vao = 0;
-  self->vbo_positions = 0;
   self->vbo_indices = 0;
-  self->vbo_uv = 0;
 }
 
 Gst3DMesh *
@@ -112,11 +110,12 @@ gst_3d_mesh_finalize (GObject * object)
     self->vao = 0;
   }
 
+/*
   if (self->vbo_positions) {
     gl->DeleteBuffers (1, &self->vbo_positions);
     self->vbo_positions = 0;
   }
-
+*/
   if (self->vbo_indices) {
     gl->DeleteBuffers (1, &self->vbo_indices);
     self->vbo_indices = 0;
@@ -135,15 +134,6 @@ gst_3d_mesh_class_init (Gst3DMeshClass * klass)
 {
   GObjectClass *obj_class = G_OBJECT_CLASS (klass);
   obj_class->finalize = gst_3d_mesh_finalize;
-}
-
-
-gboolean
-gst_3d_mesh_has_buffers (Gst3DMesh * self)
-{
-  if (self->vbo_positions)
-    return TRUE;
-  return FALSE;
 }
 
 void
@@ -216,12 +206,6 @@ gst_3d_mesh_draw_arrays (Gst3DMesh * self)
 {
   GstGLFuncs *gl = self->context->gl_vtable;
   gl->DrawArrays (self->draw_mode, 0, self->index_size);
-}
-
-void
-gst_3d_mesh_bind_to_shader (Gst3DMesh * self, Gst3DShader * shader)
-{
-  gst_3d_mesh_bind_shader (self, shader);
 }
 
 void

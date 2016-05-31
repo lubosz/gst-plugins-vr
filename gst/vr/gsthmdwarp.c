@@ -193,22 +193,16 @@ _init_gl (GstHmdWarp * self)
         gst_3d_shader_from_vert_frag (self->shader, "mvp_uv.vert", "warp.frag");
     gst_3d_shader_bind (self->shader);
 
-    self->render_plane = gst_3d_mesh_new (context);
-    gst_3d_mesh_init_buffers (self->render_plane);
-    // gst_3d_shader_enable_attribs (self->shader);
-    gst_3d_mesh_upload_plane (self->render_plane, self->aspect);
+    self->render_plane = gst_3d_mesh_new_plane (context, self->aspect);
 
-
-    /*
-       gst_3d_mesh_bind_buffers (self->render_plane, self->shader->attr_position,
-       self->shader->attr_uv);
-     */
     gl->ClearColor (0.f, 0.f, 0.f, 0.f);
     gl->ActiveTexture (GL_TEXTURE0);
     gst_gl_shader_set_uniform_1i (self->shader->shader, "texture", 0);
 
     gst_gl_shader_use (self->shader->shader);
     gst_3d_shader_upload_vec2 (self->shader, &self->screen_size, "screen_size");
+
+    gst_3d_mesh_bind_shader (self->render_plane, self->shader);
   }
   return ret;
 }
