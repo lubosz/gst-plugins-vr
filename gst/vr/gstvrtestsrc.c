@@ -199,8 +199,6 @@ gst_vr_test_src_event (GstBaseSrc * src, GstEvent * event)
 
   switch (GST_EVENT_TYPE (event)) {
     case GST_EVENT_NAVIGATION:
-      event =
-          GST_EVENT (gst_mini_object_make_writable (GST_MINI_OBJECT (event)));
       gst_3d_renderer_navigation_event (GST_ELEMENT (self), event);
       gst_3d_camera_arcball_navigation_event (self->camera, event);
       break;

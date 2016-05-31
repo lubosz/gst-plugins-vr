@@ -28,28 +28,7 @@
 #include "../../gst-libs/gst/3d/gst3dmesh.h"
 #include "../../gst-libs/gst/3d/gst3dcamera_arcball.h"
 
-#define MAX_ATTRIBUTES 4
-
-/*
-static const GLfloat positions[] = {
-     -1.0,  1.0,  0.0, 1.0,
-      1.0,  1.0,  0.0, 1.0,
-      1.0, -1.0,  0.0, 1.0,
-     -1.0, -1.0,  0.0, 1.0,
-};
-
-static const GLushort indices_quad[] = { 0, 1, 2, 0, 2, 3 };
-
-struct attribute
-{
-  const gchar *name;
-  gint location;
-  guint n_elements;
-  GLenum element_type;
-  guint offset;                 // in bytes
-  guint stride;                 // in bytes
-};
-*/
+// #define MAX_ATTRIBUTES 4
 
 struct SrcShader
 {
@@ -67,11 +46,13 @@ struct SrcShader
   guint n_attributes;
   // struct attribute attributes[MAX_ATTRIBUTES];
 
+/*
   gconstpointer vertices;
   gsize vertices_size;
   const gushort *indices;
   guint index_offset;
   guint n_indices;
+*/
 };
 
 /*
@@ -156,6 +137,7 @@ _src_shader_deinit (gpointer impl)
 }
 */
 
+/*
 static gboolean
 _src_mandelbrot_src_event (gpointer impl, GstEvent * event)
 {
@@ -176,10 +158,11 @@ _src_mandelbrot_src_event (gpointer impl, GstEvent * event)
       break;
   }
 
-  gst_event_unref (event);
+  // gst_event_unref (event);
   // return GST_BASE_TRANSFORM_CLASS (parent_class)->src_event (trans, event);
   return TRUE;
 }
+*/
 
 static gboolean
 _src_mandelbrot_init (gpointer impl, GstGLContext * context,
