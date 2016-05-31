@@ -85,6 +85,7 @@ gst_3d_shader_class_init (Gst3DShaderClass * klass)
   obj_class->finalize = gst_3d_shader_finalize;
 }
 
+/*
 void
 gst_3d_shader_disable_attribs (Gst3DShader * self)
 {
@@ -109,12 +110,12 @@ _bind_attribs (Gst3DShader * self)
       gst_gl_shader_get_attribute_location (self->shader, "position");
   self->attr_uv = gst_gl_shader_get_attribute_location (self->shader, "uv");
 }
-
+*/
 void
 gst_3d_shader_bind (Gst3DShader * self)
 {
   gst_gl_shader_use (self->shader);
-  _bind_attribs (self);
+  // _bind_attribs (self);
 }
 
 const char *

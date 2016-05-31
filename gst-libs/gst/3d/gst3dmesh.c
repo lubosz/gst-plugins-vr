@@ -156,15 +156,7 @@ gst_3d_mesh_init_buffers (Gst3DMesh * self)
 
   gl->GenVertexArrays (1, &self->vao);
   gl->BindVertexArray (self->vao);
-
   gl->GenBuffers (1, &self->vbo_indices);
-/*
-  gl->GenBuffers (1, &self->vbo_positions);
-  gl->GenBuffers (1, &self->vbo_uv);
-
-  GST_DEBUG ("generating mesh. vao: %d pos: %d uv: %d index: %d", self->vao,
-      self->vbo_positions, self->vbo_uv, self->vbo_indices);
-*/
 }
 
 void
@@ -175,56 +167,31 @@ gst_3d_mesh_bind (Gst3DMesh * self)
 }
 
 void
-gst_3d_mesh_bind_buffers (Gst3DMesh * self, GLint attr_position, GLint attr_uv)
+gst_3d_mesh_bind_shader (Gst3DMesh * self, Gst3DShader * shader)
 {
   GstGLFuncs *gl = self->context->gl_vtable;
-
-
 
   GList *l;
   for (l = self->attribute_buffers; l != NULL; l = l->next) {
     struct Gst3DAttributeBuffer *buf = (struct Gst3DAttributeBuffer *) l->data;
     GST_ERROR ("%s: location: %d length: %d size: %zu", buf->name,
         buf->location, buf->vector_length, buf->element_size);
-    //GST_ERROR ("buffer: %s", buf->name);
-    //GST_ERROR ("location: %d", buf->location);
 
-    /*
-     */
     gl->BindBuffer (GL_ARRAY_BUFFER, buf->location);
 
-    GLint attrib_location;
+    GLint attrib_location =
+        gst_gl_shader_get_attribute_location (shader->shader, buf->name);
 
-    gchar *name = g_strdup (buf->name);
-
-    if (g_strcmp0 (name, "position") == 0) {
-      attrib_location = attr_position;
-      GST_ERROR ("POS buf");
-    } else if (g_strcmp0 (name, "uv") == 0) {
-      attr_position = attr_uv;
-      GST_ERROR ("UV buf");
+    if (attrib_location != -1) {
+      gl->VertexAttribPointer (attrib_location, buf->vector_length, GL_FLOAT,
+          GL_FALSE, buf->vector_length * sizeof (GLfloat), 0);
+      gl->EnableVertexAttribArray (attrib_location);
+    } else {
+      GST_ERROR ("could not find attribute %s in shader.", buf->name);
     }
-    gl->VertexAttribPointer (attrib_location, buf->vector_length, GL_FLOAT,
-        GL_FALSE, buf->vector_length * sizeof (GLfloat), 0);
   }
 
   gl->BindBuffer (GL_ELEMENT_ARRAY_BUFFER, self->vbo_indices);
-
-/*
-  // Load the vertex positions
-  gl->BindBuffer (GL_ARRAY_BUFFER, self->vbo_positions);
-  gl->VertexAttribPointer (attr_position,
-      self->vector_length,
-      GL_FLOAT, GL_FALSE, self->vector_length * sizeof (GLfloat), 0);
-
-  if (attr_uv != -1) {
-    gl->BindBuffer (GL_ARRAY_BUFFER, self->vbo_uv);
-    // Load the texture coordinates
-    gl->VertexAttribPointer (attr_uv,
-        2, GL_FLOAT, GL_FALSE, 2 * sizeof (GLfloat), 0);
-  }
-
-*/
 }
 
 void
@@ -331,8 +298,8 @@ gst_3d_mesh_draw_arrays (Gst3DMesh * self)
 void
 gst_3d_mesh_bind_to_shader (Gst3DMesh * self, Gst3DShader * shader)
 {
-  gst_3d_mesh_bind_buffers (self, shader->attr_position, shader->attr_uv);
-  gst_3d_shader_enable_attribs (shader);
+  gst_3d_mesh_bind_shader (self, shader);
+  // gst_3d_shader_enable_attribs (shader);
 }
 
 

@@ -58,8 +58,10 @@ GType gst_3d_shader_get_type (void);
 
 const char *gst_3d_shader_read (const char *file);
 void gst_3d_shader_bind (Gst3DShader * self);
+/*
 void gst_3d_shader_disable_attribs (Gst3DShader * self);
 void gst_3d_shader_enable_attribs (Gst3DShader * self);
+*/	
 gboolean gst_3d_shader_from_vert_frag (Gst3DShader * self, const gchar * vertex,
     const gchar * fragment);
 void gst_3d_shader_delete (Gst3DShader * self);

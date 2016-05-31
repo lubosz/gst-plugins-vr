@@ -92,8 +92,8 @@ Gst3DMesh * gst_3d_mesh_new_line (GstGLContext * context, graphene_vec3_t *from,
 void gst_3d_mesh_init_buffers (Gst3DMesh * self);
 gboolean gst_3d_mesh_has_buffers (Gst3DMesh * self);
 void gst_3d_mesh_unbind_buffers (Gst3DMesh * self);
-void gst_3d_mesh_bind_buffers (Gst3DMesh * self, GLint attr_position,
-    GLint attr_uv);
+void gst_3d_mesh_bind_shader (Gst3DMesh * self, Gst3DShader * shader);
+void gst_3d_mesh_bind_to_shader (Gst3DMesh * self, Gst3DShader * shader);
 void gst_3d_mesh_bind (Gst3DMesh * self);
 void gst_3d_mesh_draw (Gst3DMesh * self);
 void gst_3d_mesh_upload_sphere (Gst3DMesh * self, float radius, unsigned stacks,
@@ -104,7 +104,6 @@ void gst_3d_mesh_upload_point_plane (Gst3DMesh * self, unsigned width,
 void gst_3d_mesh_upload_line (Gst3DMesh * self, graphene_vec3_t *from, graphene_vec3_t *to,  graphene_vec3_t *color);
     
 void gst_3d_mesh_draw_arrays (Gst3DMesh * self);
-void gst_3d_mesh_bind_to_shader (Gst3DMesh * self, Gst3DShader * shader);
 
 void
 gst_3d_mesh_append_attribute_buffer(Gst3DMesh * self, const gchar* name, size_t element_size, guint vector_length, GLfloat *vertices);

@@ -195,11 +195,14 @@ _init_gl (GstHmdWarp * self)
 
     self->render_plane = gst_3d_mesh_new (context);
     gst_3d_mesh_init_buffers (self->render_plane);
-    gst_3d_shader_enable_attribs (self->shader);
+    // gst_3d_shader_enable_attribs (self->shader);
     gst_3d_mesh_upload_plane (self->render_plane, self->aspect);
-    gst_3d_mesh_bind_buffers (self->render_plane, self->shader->attr_position,
-        self->shader->attr_uv);
 
+
+    /*
+       gst_3d_mesh_bind_buffers (self->render_plane, self->shader->attr_position,
+       self->shader->attr_uv);
+     */
     gl->ClearColor (0.f, 0.f, 0.f, 0.f);
     gl->ActiveTexture (GL_TEXTURE0);
     gst_gl_shader_set_uniform_1i (self->shader->shader, "texture", 0);
