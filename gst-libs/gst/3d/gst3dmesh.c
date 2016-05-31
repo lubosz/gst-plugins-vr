@@ -184,8 +184,8 @@ gst_3d_mesh_bind_buffers (Gst3DMesh * self, GLint attr_position, GLint attr_uv)
   GList *l;
   for (l = self->attribute_buffers; l != NULL; l = l->next) {
     struct Gst3DAttributeBuffer *buf = (struct Gst3DAttributeBuffer *) l->data;
-    GST_ERROR ("buffer: %s, %d, %d, %zu", buf->name, buf->location,
-        buf->vector_length, buf->element_size);
+    GST_ERROR ("%s: location: %d length: %d size: %zu", buf->name,
+        buf->location, buf->vector_length, buf->element_size);
     //GST_ERROR ("buffer: %s", buf->name);
     //GST_ERROR ("location: %d", buf->location);
 
@@ -195,12 +195,16 @@ gst_3d_mesh_bind_buffers (Gst3DMesh * self, GLint attr_position, GLint attr_uv)
 
     GLint attrib_location;
 
-    if (g_strcmp0 (l->data, "position") == 0) {
+    gchar *name = g_strdup (buf->name);
+
+    if (g_strcmp0 (name, "position") == 0) {
       attrib_location = attr_position;
-    } else if (g_strcmp0 (l->data, "uv") == 0) {
+      GST_ERROR ("POS buf");
+    } else if (g_strcmp0 (name, "uv") == 0) {
       attr_position = attr_uv;
+      GST_ERROR ("UV buf");
     }
-    gl->VertexAttribPointer (attrib_location, self->vector_length, GL_FLOAT,
+    gl->VertexAttribPointer (attrib_location, buf->vector_length, GL_FLOAT,
         GL_FALSE, buf->vector_length * sizeof (GLfloat), 0);
   }
 
@@ -346,6 +350,33 @@ struct Gst3DAttributeBuffer
 */
 
 void
+gst_3d_mesh_append_attribute_buffer (Gst3DMesh * self, const gchar * name,
+    size_t element_size, guint vector_length, GLfloat * vertices)
+{
+  struct Gst3DAttributeBuffer *position_buffer =
+      malloc (sizeof (struct Gst3DAttributeBuffer));
+
+  GstGLFuncs *gl = self->context->gl_vtable;
+
+  position_buffer->name = name;
+  position_buffer->element_size = element_size;
+  position_buffer->vector_length = vector_length;
+
+  gl->GenBuffers (1, &position_buffer->location);
+
+  GST_ERROR ("generated %s buffer #%d", position_buffer->name,
+      position_buffer->location);
+
+  gl->BindBuffer (GL_ARRAY_BUFFER, position_buffer->location);
+  gl->BufferData (GL_ARRAY_BUFFER,
+      self->vertex_count * position_buffer->vector_length *
+      position_buffer->element_size, vertices, GL_STATIC_DRAW);
+
+  self->attribute_buffers =
+      g_list_append (self->attribute_buffers, position_buffer);
+}
+
+void
 gst_3d_mesh_upload_plane (Gst3DMesh * self, float aspect)
 {
   GstGLFuncs *gl = self->context->gl_vtable;
@@ -367,53 +398,17 @@ gst_3d_mesh_upload_plane (Gst3DMesh * self, float aspect)
   const GLushort indices[] = { 0, 1, 2, 3, 0 };
 
   self->vertex_count = 4;
-  //self->vector_length = 4;
+  self->draw_mode = GL_TRIANGLE_STRIP;
 
-  struct Gst3DAttributeBuffer position_buffer;
-  position_buffer.name = "position";
-  position_buffer.element_type = GL_FLOAT;
-  position_buffer.element_size = sizeof (GLfloat);
-  position_buffer.vector_length = 4;
-
-  gl->GenBuffers (1, &position_buffer.location);
-
-  GST_ERROR ("generated position buffer %d", position_buffer.location);
-
-  gl->BindBuffer (GL_ARRAY_BUFFER, position_buffer.location);
-  gl->BufferData (GL_ARRAY_BUFFER,
-      self->vertex_count * position_buffer.vector_length * sizeof (GLfloat),
-      vertices, GL_STATIC_DRAW);
-
-
-  self->attribute_buffers =
-      g_list_append (self->attribute_buffers, &position_buffer);
-
+  gst_3d_mesh_append_attribute_buffer (self, "position", sizeof (GLfloat), 4,
+      vertices);
+  gst_3d_mesh_append_attribute_buffer (self, "uv", sizeof (GLfloat), 2, uvs);
 
   // index
   self->index_size = sizeof (indices);
-
   gl->BindBuffer (GL_ELEMENT_ARRAY_BUFFER, self->vbo_indices);
   gl->BufferData (GL_ELEMENT_ARRAY_BUFFER, self->index_size, indices,
       GL_STATIC_DRAW);
-
-  struct Gst3DAttributeBuffer uv_buffer;
-  uv_buffer.name = "uv";
-  uv_buffer.element_type = GL_FLOAT;
-  uv_buffer.element_size = sizeof (GLfloat);
-  uv_buffer.vector_length = 2;
-
-  gl->GenBuffers (1, &uv_buffer.location);
-  GST_ERROR ("generated uv buffer %d", uv_buffer.location);
-
-  // load uv coords
-  gl->BindBuffer (GL_ARRAY_BUFFER, uv_buffer.location);
-  gl->BufferData (GL_ARRAY_BUFFER,
-      4 * 2 * sizeof (GLfloat), uvs, GL_STATIC_DRAW);
-  GST_ERROR ("done loading uv buffer");
-
-  self->attribute_buffers = g_list_append (self->attribute_buffers, &uv_buffer);
-
-  self->draw_mode = GL_TRIANGLE_STRIP;
 }
 
 

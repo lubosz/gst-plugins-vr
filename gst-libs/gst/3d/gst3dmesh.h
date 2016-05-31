@@ -106,6 +106,9 @@ void gst_3d_mesh_upload_line (Gst3DMesh * self, graphene_vec3_t *from, graphene_
 void gst_3d_mesh_draw_arrays (Gst3DMesh * self);
 void gst_3d_mesh_bind_to_shader (Gst3DMesh * self, Gst3DShader * shader);
 
+void
+gst_3d_mesh_append_attribute_buffer(Gst3DMesh * self, const gchar* name, size_t element_size, guint vector_length, GLfloat *vertices);
+
 GType gst_3d_mesh_get_type (void);
 
 G_END_DECLS
