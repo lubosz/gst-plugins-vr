@@ -5,10 +5,12 @@
     <file>texture_uv.frag</file>
     <file>warp.frag</file>
     <file>mvp_uv.vert</file>
+    <file>mvp_color.vert</file>
     <file>points.vert</file>
     <file>points.frag</file>
     <file>mandelbrot.vert</file>
     <file>mandelbrot.frag</file>
     <file>debug_uv.frag</file>
+    <file>color.frag</file>
   </gresource>
 </gresources>

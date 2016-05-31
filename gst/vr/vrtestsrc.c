@@ -36,11 +36,12 @@ struct SrcShader
 
   Gst3DShader *shader;
 
+  GList *axesDebugMeshes;
+
   guint vao;
   guint vbo;
   guint vbo_indices;
 
-  Gst3DMesh *plane_mesh;
   Gst3DCameraArcball *camera;
 
   guint n_attributes;
@@ -73,6 +74,35 @@ _src_mandelbrot_src_event (gpointer impl, GstEvent * event)
 }
 */
 
+static void
+_create_debug_axes (struct SrcShader *src)
+{
+  graphene_vec3_t from, to, color;
+  graphene_vec3_init (&from, 0.f, 0.f, 0.f);
+  graphene_vec3_init (&to, 1.f, 0.f, 0.f);
+  graphene_vec3_init (&color, 1.f, 0.f, 0.f);
+  Gst3DMesh *x_axis =
+      gst_3d_mesh_new_line (src->base.context, &from, &to, &color);
+  gst_3d_mesh_bind_to_shader (x_axis, src->shader);
+  src->axesDebugMeshes = g_list_append (src->axesDebugMeshes, x_axis);
+
+  graphene_vec3_init (&from, 0.f, 0.f, 0.f);
+  graphene_vec3_init (&to, 0.f, 1.f, 0.f);
+  graphene_vec3_init (&color, 0.f, 1.f, 0.f);
+  Gst3DMesh *y_axis =
+      gst_3d_mesh_new_line (src->base.context, &from, &to, &color);
+  gst_3d_mesh_bind_to_shader (y_axis, src->shader);
+  src->axesDebugMeshes = g_list_append (src->axesDebugMeshes, y_axis);
+
+  graphene_vec3_init (&from, 0.f, 0.f, 0.f);
+  graphene_vec3_init (&to, 0.f, 0.f, 1.f);
+  graphene_vec3_init (&color, 0.f, 0.f, 1.f);
+  Gst3DMesh *z_axis =
+      gst_3d_mesh_new_line (src->base.context, &from, &to, &color);
+  gst_3d_mesh_bind_to_shader (z_axis, src->shader);
+  src->axesDebugMeshes = g_list_append (src->axesDebugMeshes, z_axis);
+}
+
 static gboolean
 _src_mandelbrot_init (gpointer impl, GstGLContext * context,
     GstVideoInfo * v_info)
@@ -91,17 +121,18 @@ _src_mandelbrot_init (gpointer impl, GstGLContext * context,
 
 
   src->shader =
-      gst_3d_shader_new_vert_frag (context, "mvp_uv.vert", "debug_uv.frag");
+      gst_3d_shader_new_vert_frag (context, "mvp_color.vert", "color.frag");
 
   if (!src->shader) {
     GST_ERROR_OBJECT (src->base.src, "%s", error->message);
     return FALSE;
   }
   //src->plane_mesh = gst_3d_mesh_new_plane (context, 1.0);
-  src->plane_mesh = gst_3d_mesh_new_sphere (context, 2.0, 20, 20);
-  src->plane_mesh->draw_mode = GL_LINES;
+  //src->plane_mesh = gst_3d_mesh_new_sphere (context, 2.0, 20, 20);
+  // src->plane_mesh->draw_mode = GL_LINES;
 
-  gst_3d_mesh_bind_to_shader (src->plane_mesh, src->shader);
+  _create_debug_axes (src);
+
 
   gl->Enable (GL_CULL_FACE);
 
@@ -143,8 +174,14 @@ _src_mandelbrot_draw (gpointer impl)
   gst_3d_camera_arcball_update_view (camera);
   gst_3d_shader_upload_matrix (src->shader, &camera->mvp, "mvp");
 
-  gst_3d_mesh_bind (src->plane_mesh);
-  gst_3d_mesh_draw (src->plane_mesh);
+  GList *l;
+  for (l = src->axesDebugMeshes; l != NULL; l = l->next) {
+    Gst3DMesh *mesh = (Gst3DMesh *) l->data;
+    gst_3d_mesh_bind (mesh);
+    gst_3d_mesh_draw (mesh);
+  }
+
+  //gst_3d_mesh_draw_arrays(src->plane_mesh);
 
   // gl->BindVertexArray (0);
   gst_gl_context_clear_shader (src->base.context);

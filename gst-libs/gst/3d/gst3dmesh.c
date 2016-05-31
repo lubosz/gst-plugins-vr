@@ -174,7 +174,7 @@ gst_3d_mesh_bind_shader (Gst3DMesh * self, Gst3DShader * shader)
   GList *l;
   for (l = self->attribute_buffers; l != NULL; l = l->next) {
     struct Gst3DAttributeBuffer *buf = (struct Gst3DAttributeBuffer *) l->data;
-    GST_ERROR ("%s: location: %d length: %d size: %zu", buf->name,
+    GST_DEBUG ("%s: location: %d length: %d size: %zu", buf->name,
         buf->location, buf->vector_length, buf->element_size);
 
     gl->BindBuffer (GL_ARRAY_BUFFER, buf->location);
@@ -187,7 +187,7 @@ gst_3d_mesh_bind_shader (Gst3DMesh * self, Gst3DShader * shader)
           GL_FALSE, buf->vector_length * sizeof (GLfloat), 0);
       gl->EnableVertexAttribArray (attrib_location);
     } else {
-      GST_ERROR ("could not find attribute %s in shader.", buf->name);
+      GST_WARNING ("could not find attribute %s in shader.", buf->name);
     }
   }
 
@@ -222,22 +222,7 @@ void
 gst_3d_mesh_bind_to_shader (Gst3DMesh * self, Gst3DShader * shader)
 {
   gst_3d_mesh_bind_shader (self, shader);
-  // gst_3d_shader_enable_attribs (shader);
 }
-
-
-/*
-struct Gst3DAttributeBuffer
-{
-  const gchar *name;
-  gint location;
-  guint vector_length;
-  GLenum element_type;
-  guint offset;                 // in bytes
-  guint stride;                 // in bytes
-};
-
-*/
 
 void
 gst_3d_mesh_append_attribute_buffer (Gst3DMesh * self, const gchar * name,
@@ -254,7 +239,7 @@ gst_3d_mesh_append_attribute_buffer (Gst3DMesh * self, const gchar * name,
 
   gl->GenBuffers (1, &position_buffer->location);
 
-  GST_ERROR ("generated %s buffer #%d", position_buffer->name,
+  GST_DEBUG ("generated %s buffer #%d", position_buffer->name,
       position_buffer->location);
 
   gl->BindBuffer (GL_ARRAY_BUFFER, position_buffer->location);
@@ -308,30 +293,35 @@ gst_3d_mesh_upload_line (Gst3DMesh * self, graphene_vec3_t * from,
 {
   GstGLFuncs *gl = self->context->gl_vtable;
 
-  /* *INDENT-OFF* */
   GLfloat vertices[] = {
-     graphene_vec3_get_x(from), graphene_vec3_get_y(from), graphene_vec3_get_z(from), 1.0,
-     graphene_vec3_get_x(to), graphene_vec3_get_y(to), graphene_vec3_get_z(to), 1.0
+    graphene_vec3_get_x (from), graphene_vec3_get_y (from),
+    graphene_vec3_get_z (from), 1.0,
+    graphene_vec3_get_x (to), graphene_vec3_get_y (to),
+    graphene_vec3_get_z (to), 1.0
   };
   GLfloat colors[] = {
-     graphene_vec3_get_x(color), graphene_vec3_get_y(color), graphene_vec3_get_z(color),
-     graphene_vec3_get_x(color), graphene_vec3_get_y(color), graphene_vec3_get_z(color)
+    graphene_vec3_get_x (color), graphene_vec3_get_y (color),
+    graphene_vec3_get_z (color),
+    graphene_vec3_get_x (color), graphene_vec3_get_y (color),
+    graphene_vec3_get_z (color)
   };
-  /* *INDENT-ON* */
 
-  int vertex_count = 2;
-  self->vector_length = 4;
-
-  gl->BindBuffer (GL_ARRAY_BUFFER, self->vbo_positions);
-  gl->BufferData (GL_ARRAY_BUFFER,
-      vertex_count * 4 * sizeof (GLfloat), vertices, GL_STATIC_DRAW);
-
-  // load colors
-  gl->BindBuffer (GL_ARRAY_BUFFER, self->vbo_color);
-  gl->BufferData (GL_ARRAY_BUFFER,
-      vertex_count * 3 * sizeof (GLfloat), colors, GL_STATIC_DRAW);
-
+  self->vertex_count = 2;
   self->draw_mode = GL_LINES;
+
+  gst_3d_mesh_append_attribute_buffer (self, "position", sizeof (GLfloat), 4,
+      vertices);
+  gst_3d_mesh_append_attribute_buffer (self, "color", sizeof (GLfloat), 3,
+      colors);
+
+  const GLushort indices[] = { 0, 1 };
+
+  // index
+  self->index_size = sizeof (indices);
+  gl->BindBuffer (GL_ELEMENT_ARRAY_BUFFER, self->vbo_indices);
+  gl->BufferData (GL_ELEMENT_ARRAY_BUFFER, self->index_size, indices,
+      GL_STATIC_DRAW);
+
 }
 
 
