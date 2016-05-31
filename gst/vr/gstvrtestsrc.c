@@ -235,7 +235,7 @@ gst_vr_test_src_fixate (GstBaseSrc * bsrc, GstCaps * caps)
 
   gst_structure_fixate_field_nearest_int (structure, "width", 1920);
   gst_structure_fixate_field_nearest_int (structure, "height", 1080);
-  gst_structure_fixate_field_nearest_fraction (structure, "framerate", 75, 1);
+  gst_structure_fixate_field_nearest_fraction (structure, "framerate", 144, 1);
 
   caps = GST_BASE_SRC_CLASS (parent_class)->fixate (bsrc, caps);
 

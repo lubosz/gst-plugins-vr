@@ -42,7 +42,9 @@ struct Gst3DAttributeBuffer
 {
   const gchar *name;
   gint location;
-  guint n_elements;
+  // guint n_elements;
+  size_t element_size;
+  guint vector_length;
   GLenum element_type;
   guint offset;                 // in bytes
   guint stride;                 // in bytes
@@ -66,6 +68,8 @@ struct _Gst3DMesh
 
   unsigned index_size;
   unsigned vector_length;
+  
+  int vertex_count;
 
   GLenum draw_mode;
 };
@@ -82,6 +86,8 @@ Gst3DMesh * gst_3d_mesh_new_plane (GstGLContext * context, float aspect);
 
 Gst3DMesh * gst_3d_mesh_new_point_plane (GstGLContext * context, unsigned width,
     unsigned height);
+
+Gst3DMesh * gst_3d_mesh_new_line (GstGLContext * context, graphene_vec3_t *from, graphene_vec3_t *to,  graphene_vec3_t *color);
 
 void gst_3d_mesh_init_buffers (Gst3DMesh * self);
 gboolean gst_3d_mesh_has_buffers (Gst3DMesh * self);
