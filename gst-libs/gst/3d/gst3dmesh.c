@@ -63,7 +63,7 @@ gst_3d_mesh_new_sphere (GstGLContext * context, float radius, unsigned stacks,
   g_return_val_if_fail (GST_IS_GL_CONTEXT (context), NULL);
   Gst3DMesh *mesh = gst_3d_mesh_new (context);
   gst_3d_mesh_init_buffers (mesh);
-  gst_3d_mesh_upload_sphere (mesh, 10.0, 20, 20);
+  gst_3d_mesh_upload_sphere (mesh, radius, stacks, slices);
   return mesh;
 }
 
@@ -203,83 +203,6 @@ gst_3d_mesh_unbind_buffers (Gst3DMesh * self)
   gl->BindBuffer (GL_ARRAY_BUFFER, 0);
 }
 
-
-void
-gst_3d_mesh_upload_sphere (Gst3DMesh * self, float radius, unsigned stacks,
-    unsigned slices)
-{
-  GLfloat *vertices;
-  GLfloat *texcoords;
-  GLushort *indices;
-
-  GstGLFuncs *gl = self->context->gl_vtable;
-
-  self->vector_length = 3;
-  int vertex_count = (slices + 1) * stacks;
-  const int component_size = sizeof (GLfloat) * vertex_count;
-
-  vertices = (GLfloat *) malloc (component_size * 3);
-  texcoords = (GLfloat *) malloc (component_size * 2);
-
-  GLfloat *v = vertices;
-  GLfloat *t = texcoords;
-
-  float const J = 1. / (float) (stacks - 1);
-  float const I = 1. / (float) (slices - 1);
-
-  for (int i = 0; i < slices + 1; i++) {
-    float const theta = M_PI * i * I;
-    for (int j = 0; j < stacks; j++) {
-      float const phi = 2 * M_PI * j * J;
-
-      float const x = sin (theta) * cos (phi);
-      float const y = -cos (theta);
-      float const z = sin (phi) * sin (theta);
-
-      *v++ = x * radius;
-      *v++ = y * radius;
-      *v++ = z * radius;
-
-      *t++ = j * J;
-      *t++ = i * I;
-    }
-  }
-
-  gl->BindBuffer (GL_ARRAY_BUFFER, self->vbo_positions);
-  gl->BufferData (GL_ARRAY_BUFFER, sizeof (GLfloat) * vertex_count * 3,
-      vertices, GL_STATIC_DRAW);
-
-  gl->BindBuffer (GL_ARRAY_BUFFER, self->vbo_uv);
-  gl->BufferData (GL_ARRAY_BUFFER, sizeof (GLfloat) * vertex_count * 2,
-      texcoords, GL_STATIC_DRAW);
-
-  int vau = 0;
-  self->index_size = slices * stacks * 2 * 3;
-  indices = (GLushort *) malloc (sizeof (GLushort) * self->index_size);
-
-  GLushort *indextemp = indices;
-  for (int i = 0; i < slices; i++) {
-    for (int j = 0; j < stacks; j++) {
-      int next = (j + 1) % stacks;
-      *indextemp++ = vau + j;
-      *indextemp++ = vau + next;
-      *indextemp++ = vau + j + stacks;
-
-      *indextemp++ = vau + next;
-      *indextemp++ = vau + next + stacks;
-      *indextemp++ = vau + j + stacks;
-    }
-    vau += stacks;
-  }
-
-  // upload index
-  gl->BindBuffer (GL_ELEMENT_ARRAY_BUFFER, self->vbo_indices);
-  gl->BufferData (GL_ELEMENT_ARRAY_BUFFER, sizeof (GLushort) * self->index_size,
-      indices, GL_STATIC_DRAW);
-
-  self->draw_mode = GL_TRIANGLES;
-}
-
 void
 gst_3d_mesh_draw (Gst3DMesh * self)
 {
@@ -417,61 +340,57 @@ gst_3d_mesh_upload_point_plane (Gst3DMesh * self, unsigned width,
     unsigned height)
 {
   GLfloat *vertices;
-  GLfloat *texcoords;
+  // GLfloat *texcoords;
   GLuint *indices;
 
   GstGLFuncs *gl = self->context->gl_vtable;
 
-  self->vector_length = 3;
-  int vertex_count = width * height;
-  const int component_size = sizeof (GLfloat) * vertex_count;
+  self->vertex_count = width * height;
+  const int component_size = sizeof (GLfloat) * self->vertex_count;
 
   vertices = (GLfloat *) malloc (component_size * 3);
-  texcoords = (GLfloat *) malloc (component_size * 2);
+  // texcoords = (GLfloat *) malloc (component_size * 2);
 
   GLfloat *v = vertices;
-  GLfloat *t = texcoords;
+  // GLfloat *t = texcoords;
 
   float w_step = 2.0 / (float) width;
   float h_step = 2.0 / (float) height;
 
   float curent_w = -1.0;
-
+/*
   float u_step = 1.0 / (float) width;
   float v_step = 1.0 / (float) height;
 
   float curent_u = 0.0;
+*/
 
   for (int i = 0; i < width; i++) {
     float curent_h = -1.0;
-    float curent_v = 0.0;
+    // float curent_v = 0.0;
     for (int j = 0; j < height; j++) {
 
       *v++ = curent_w;
       *v++ = curent_h;
       *v++ = 0;
 
-      *t++ = curent_u;
-      *t++ = curent_v;
-
       curent_h += h_step;
-      curent_v += v_step;
+      /*
+       *t++ = curent_u;
+       *t++ = curent_v;
+       curent_v += v_step;
+       */
     }
-    curent_u += u_step;
+    // curent_u += u_step;
     curent_w += w_step;
   }
 
-  gl->BindBuffer (GL_ARRAY_BUFFER, self->vbo_positions);
-  gl->BufferData (GL_ARRAY_BUFFER, sizeof (GLfloat) * vertex_count * 3,
-      vertices, GL_STATIC_DRAW);
-/*
-  gl->BindBuffer (GL_ARRAY_BUFFER, self->vbo_uv);
-  gl->BufferData (GL_ARRAY_BUFFER, sizeof (GLfloat) * vertex_count * 2,
-      texcoords, GL_STATIC_DRAW);
-*/
-  self->index_size = width * height;
-  indices = (GLuint *) malloc (sizeof (GLuint) * self->index_size);
+  gst_3d_mesh_append_attribute_buffer (self, "position", sizeof (GLfloat), 3,
+      vertices);
 
+  // linear index. TODO: do not use index at all here.
+  self->index_size = self->vertex_count;
+  indices = (GLuint *) malloc (sizeof (GLuint) * self->index_size);
   GLuint *indextemp = indices;
   for (int i = 0; i < self->index_size; i++) {
     *indextemp++ = i;
@@ -482,4 +401,76 @@ gst_3d_mesh_upload_point_plane (Gst3DMesh * self, unsigned width,
   gl->BufferData (GL_ELEMENT_ARRAY_BUFFER, sizeof (GLuint) * self->index_size,
       indices, GL_STATIC_DRAW);
   self->draw_mode = GL_POINTS;
+}
+
+void
+gst_3d_mesh_upload_sphere (Gst3DMesh * self, float radius, unsigned stacks,
+    unsigned slices)
+{
+  GLfloat *positions;
+  GLfloat *uvs;
+  GLushort *indices;
+
+  GstGLFuncs *gl = self->context->gl_vtable;
+
+  self->vertex_count = (slices + 1) * stacks;
+  const int component_size = sizeof (GLfloat) * self->vertex_count;
+
+  positions = (GLfloat *) malloc (component_size * 3);
+  uvs = (GLfloat *) malloc (component_size * 2);
+
+  GLfloat *v = positions;
+  GLfloat *t = uvs;
+
+  float const J = 1. / (float) (stacks - 1);
+  float const I = 1. / (float) (slices - 1);
+
+  for (int i = 0; i < slices + 1; i++) {
+    float const theta = M_PI * i * I;
+    for (int j = 0; j < stacks; j++) {
+      float const phi = 2 * M_PI * j * J;
+
+      float const x = sin (theta) * cos (phi);
+      float const y = -cos (theta);
+      float const z = sin (phi) * sin (theta);
+
+      *v++ = x * radius;
+      *v++ = y * radius;
+      *v++ = z * radius;
+
+      *t++ = j * J;
+      *t++ = i * I;
+    }
+  }
+
+  gst_3d_mesh_append_attribute_buffer (self, "position", sizeof (GLfloat), 3,
+      positions);
+  gst_3d_mesh_append_attribute_buffer (self, "uv", sizeof (GLfloat), 2, uvs);
+
+  /* index */
+  int vau = 0;
+  self->index_size = slices * stacks * 2 * 3;
+  indices = (GLushort *) malloc (sizeof (GLushort) * self->index_size);
+
+  GLushort *indextemp = indices;
+  for (int i = 0; i < slices; i++) {
+    for (int j = 0; j < stacks; j++) {
+      int next = (j + 1) % stacks;
+      *indextemp++ = vau + j;
+      *indextemp++ = vau + next;
+      *indextemp++ = vau + j + stacks;
+
+      *indextemp++ = vau + next;
+      *indextemp++ = vau + next + stacks;
+      *indextemp++ = vau + j + stacks;
+    }
+    vau += stacks;
+  }
+
+  // upload index
+  gl->BindBuffer (GL_ELEMENT_ARRAY_BUFFER, self->vbo_indices);
+  gl->BufferData (GL_ELEMENT_ARRAY_BUFFER, sizeof (GLushort) * self->index_size,
+      indices, GL_STATIC_DRAW);
+
+  self->draw_mode = GL_TRIANGLES;
 }

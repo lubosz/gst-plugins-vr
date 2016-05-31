@@ -9,5 +9,6 @@
     <file>points.frag</file>
     <file>mandelbrot.vert</file>
     <file>mandelbrot.frag</file>
+    <file>debug_uv.frag</file>
   </gresource>
 </gresources>

@@ -44,9 +44,10 @@ void
 gst_3d_camera_init (Gst3DCamera * self)
 {
   self->fov = 45.0;
-  self->aspect = 4.0 / 3.0;
-  self->znear = 0.1;
-  self->zfar = 100;
+  //self->aspect = 4.0 / 3.0;
+  self->aspect = 1920.0 / 1080.0;
+  self->znear = 0.01;
+  self->zfar = 1000.0;
   self->hmd = gst_3d_hmd_new ();
 
   graphene_vec3_init (&self->eye, 0.f, 0.f, 1.f);
