@@ -164,6 +164,7 @@ gst_vr_compositor_set_caps (GstGLFilter * filter, GstCaps * incaps,
   if (!self->camera->hmd->device)
     return FALSE;
 
+
   // int w = GST_VIDEO_INFO_WIDTH (&filter->out_info);
   // int h = GST_VIDEO_INFO_HEIGHT (&filter->out_info);
   /* for example 1920x1080 for Oculus DK2 */

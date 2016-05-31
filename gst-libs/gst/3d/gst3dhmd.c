@@ -183,7 +183,8 @@ gst_3d_hmd_init (Gst3DHmd * self)
 {
   self->device = NULL;
   gst_3d_hmd_open_device (self);
-  gst_3d_hmd_get_device_properties (self);
+  if (self->device)
+    gst_3d_hmd_get_device_properties (self);
 }
 
 graphene_matrix_t

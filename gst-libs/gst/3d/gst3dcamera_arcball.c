@@ -57,8 +57,8 @@ gst_3d_camera_arcball_init (Gst3DCameraArcball * self)
   self->cursor_last_x = 0;
   self->cursor_last_y = 0;
 
-  self->theta = 5.0;
-  self->phi = -5.0;
+  self->theta = -5.0;
+  self->phi = 5.0;
 
   self->pressed_mouse_button = 0;
 
