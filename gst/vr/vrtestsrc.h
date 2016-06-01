@@ -1,5 +1,6 @@
 /* GStreamer
  * Copyright (C) <2003> David A. Schleef <ds@schleef.org>
+ * Copyright (C) 2016 Lubosz Sarnecki <lubosz.sarnecki@collabora.co.uk>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -26,19 +27,19 @@ typedef struct _GstVRTestSrc GstVRTestSrc;
 
 typedef enum
 {
-  GST_VR_TEST_SRC_MANDELBROT
+  GST_VR_TEST_SCENE_GEOMETRY
 } GstVRTestSrcPattern;
 
 #include "gstvrtestsrc.h"
 
-struct BaseSrcImpl
+struct BaseSceneImpl
 {
   GstVRTestSrc *src;
   GstGLContext *context;
   GstVideoInfo v_info;
 };
 
-struct SrcFuncs
+struct SceneFuncs
 {
   GstVRTestSrcPattern pattern;
     gpointer (*create) (GstVRTestSrc * src);
@@ -48,7 +49,7 @@ struct SrcFuncs
   void (*free) (gpointer impl);
 };
 
-const struct SrcFuncs
+const struct SceneFuncs
     *gst_vr_test_src_get_src_funcs_for_pattern (GstVRTestSrcPattern pattern);
 
 #endif

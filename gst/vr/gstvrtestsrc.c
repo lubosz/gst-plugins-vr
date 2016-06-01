@@ -4,6 +4,7 @@
  * Copyright (C) 2002,2007 David A. Schleef <ds@schleef.org>
  * Copyright (C) 2008 Julien Isorce <julien.isorce@gmail.com>
  * Copyright (C) 2015 Matthew Waters <matthew@centricular.com>
+ * Copyright (C) 2016 Lubosz Sarnecki <lubosz.sarnecki@collabora.co.uk>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -123,7 +124,7 @@ gst_vr_test_src_pattern_get_type (void)
 {
   static GType vr_test_src_pattern_type = 0;
   static const GEnumValue pattern_types[] = {
-    {GST_VR_TEST_SRC_MANDELBROT, "Mandelbrot Fractal", "mandelbrot"},
+    {GST_VR_TEST_SCENE_GEOMETRY, "Mandelbrot Fractal", "mandelbrot"},
     {0, NULL, NULL}
   };
 
@@ -156,7 +157,7 @@ gst_vr_test_src_class_init (GstVRTestSrcClass * klass)
   g_object_class_install_property (gobject_class, PROP_PATTERN,
       g_param_spec_enum ("pattern", "Pattern",
           "Type of test pattern to generate", GST_TYPE_VR_TEST_SRC_PATTERN,
-          GST_VR_TEST_SRC_MANDELBROT,
+          GST_VR_TEST_SCENE_GEOMETRY,
           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
   g_object_class_install_property (gobject_class, PROP_TIMESTAMP_OFFSET,
       g_param_spec_int64 ("timestamp-offset", "Timestamp offset",
@@ -211,7 +212,7 @@ gst_vr_test_src_event (GstBaseSrc * src, GstEvent * event)
 static void
 gst_vr_test_src_init (GstVRTestSrc * src)
 {
-  gst_vr_test_src_set_pattern (src, GST_VR_TEST_SRC_MANDELBROT);
+  gst_vr_test_src_set_pattern (src, GST_VR_TEST_SCENE_GEOMETRY);
 
   src->timestamp_offset = 0;
 
@@ -748,7 +749,7 @@ static void
 gst_vr_test_src_draw (gpointer stuff)
 {
   GstVRTestSrc *src = GST_VR_TEST_SRC (stuff);
-  const struct SrcFuncs *funcs;
+  const struct SceneFuncs *funcs;
 
   funcs = src->src_funcs;
 

@@ -1,6 +1,7 @@
 /* GStreamer
  * Copyright (C) <1999> Erik Walthinsen <omega@cse.ogi.edu>
  * Copyright (C) <2016> Matthew Waters <matthew@centricular.com>
+ * Copyright (C) 2016 Lubosz Sarnecki <lubosz.sarnecki@collabora.co.uk>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -29,20 +30,20 @@
 #include "../../gst-libs/gst/3d/gst3dcamera_arcball.h"
 #include "../../gst-libs/gst/3d/gst3dnode.h"
 
-struct SrcShader
+struct GeometryScene
 {
-  struct BaseSrcImpl base;
+  struct BaseSceneImpl base;
   Gst3DCameraArcball *camera;
   GList *nodes;
 };
 
 /*
 static gboolean
-_src_mandelbrot_src_event (gpointer impl, GstEvent * event)
+_scene_geometry_src_event (gpointer impl, GstEvent * event)
 {
   // GstPointCloudBuilder *self = GST_POINT_CLOUD_BUILDER (trans);
 
-  struct SrcShader *src = impl;
+  struct GeometryScene *self = impl;
 
   GST_DEBUG ("handling %s event", GST_EVENT_TYPE_NAME (event));
 
@@ -50,40 +51,43 @@ _src_mandelbrot_src_event (gpointer impl, GstEvent * event)
     case GST_EVENT_NAVIGATION:
       //event =
       //    GST_EVENT (gst_mini_object_make_writable (GST_MINI_OBJECT (event)));
-      //gst_3d_renderer_navigation_event (GST_ELEMENT (src), event);
-      //gst_3d_camera_arcball_navigation_event (src->camera, event);
+      //gst_3d_renderer_navigation_event (GST_ELEMENT (self), event);
+      //gst_3d_camera_arcball_navigation_event (self->camera, event);
       break;
     default:
       break;
   }
 
   // gst_event_unref (event);
-  // return GST_BASE_TRANSFORM_CLASS (parent_class)->src_event (trans, event);
+  // return GST_BASE_TRANSFORM_CLASS (parent_class)->self_event (trans, event);
   return TRUE;
 }
 */
 
 
+static void
+_scene_append_node (Gst3DMesh * mesh, Gst3DShader * shader)
+{
+
+}
+
 static gboolean
-_src_mandelbrot_init (gpointer impl, GstGLContext * context,
+_scene_geometry_init (gpointer impl, GstGLContext * context,
     GstVideoInfo * v_info)
 {
-  struct SrcShader *src = impl;
+  struct GeometryScene *self = impl;
   // GError *error = NULL;
 
-  src->base.context = context;
+  self->base.context = context;
 
   GstGLFuncs *gl = context->gl_vtable;
 
-  src->camera = gst_3d_camera_arcball_new ();
+  self->camera = gst_3d_camera_arcball_new ();
 
 /*
-  if (src->shader)
-    gst_object_unref (src->shader);
+  if (self->shader)
+    gst_object_unref (self->shader);
 */
-
-
-
 
   // Gst3DMesh * plane_mesh = gst_3d_mesh_new_plane (context, 1.0);
   Gst3DMesh *plane_mesh = gst_3d_mesh_new_cube (context);
@@ -94,26 +98,26 @@ _src_mandelbrot_init (gpointer impl, GstGLContext * context,
   gst_gl_shader_use (plane_node->shader->shader);
   gst_3d_mesh_bind_shader (plane_mesh, plane_node->shader);
 
-  src->nodes = g_list_append (src->nodes, plane_node);
+  self->nodes = g_list_append (self->nodes, plane_node);
 
 
   Gst3DNode *axes_node = gst_3d_node_new_debug_axes (context);
-  src->nodes = g_list_append (src->nodes, axes_node);
+  self->nodes = g_list_append (self->nodes, axes_node);
 
-  //src->plane_mesh = gst_3d_mesh_new_sphere (context, 2.0, 20, 20);
-  // src->plane_mesh->draw_mode = GL_LINES;
+  //self->plane_mesh = gst_3d_mesh_new_sphere (context, 2.0, 20, 20);
+  // self->plane_mesh->draw_mode = GL_LINES;
 
-  // _create_debug_axes (src);
+  // _create_debug_axes (self);
 
   gl->Disable (GL_CULL_FACE);
 
 /*
   gst_gl_shader_use (axes_node->shader->shader);
-  gst_gl_shader_use (src->shader);
-  gst_gl_shader_set_uniform_1f (src->shader, "aspect_ratio",
+  gst_gl_shader_use (self->shader);
+  gst_gl_shader_set_uniform_1f (self->shader, "aspect_ratio",
       (gfloat) GST_VIDEO_INFO_WIDTH (v_info) /
       (gfloat) GST_VIDEO_INFO_HEIGHT (v_info));
-  gst_gl_context_clear_shader (src->base.context);
+  gst_gl_context_clear_shader (self->base.context);
 */
 
 
@@ -121,83 +125,79 @@ _src_mandelbrot_init (gpointer impl, GstGLContext * context,
 }
 
 static gboolean
-_src_mandelbrot_draw (gpointer impl)
+_scene_geometry_draw (gpointer impl)
 {
-  struct SrcShader *src = impl;
+  struct GeometryScene *self = impl;
 
-  g_return_val_if_fail (src->base.context, FALSE);
+  g_return_val_if_fail (self->base.context, FALSE);
 
   //TODO: exit with an error message (shader compiler mostly)
-  // if (!src->shader)
+  // if (!self->shader)
   //  exit (0);
-  // g_return_val_if_fail (src->shader, FALSE);
+  // g_return_val_if_fail (self->shader, FALSE);
 
-  GstGLFuncs *gl = src->base.context->gl_vtable;
+  GstGLFuncs *gl = self->base.context->gl_vtable;
 
   // gl->Viewport (0, 0, self->eye_width, self->eye_height);
   gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   /*
-     gst_gl_shader_use (src->shader->shader);
-     gst_gl_shader_set_uniform_1f (src->shader->shader, "time",
-     (gfloat) src->base.src->running_time / GST_SECOND);
+     gst_gl_shader_use (self->shader->shader);
+     gst_gl_shader_set_uniform_1f (self->shader->shader, "time",
+     (gfloat) self->base.src->running_time / GST_SECOND);
    */
-  Gst3DCameraArcball *camera = src->base.src->camera;
+  Gst3DCameraArcball *camera = self->base.src->camera;
 
   gst_3d_camera_arcball_update_view (camera);
   gl->Enable (GL_DEPTH_TEST);
 
   GList *l;
-  for (l = src->nodes; l != NULL; l = l->next) {
+  for (l = self->nodes; l != NULL; l = l->next) {
     Gst3DNode *node = (Gst3DNode *) l->data;
     gst_gl_shader_use (node->shader->shader);
     gst_3d_shader_upload_matrix (node->shader, &camera->mvp, "mvp");
     gst_3d_node_draw (node);
   }
   gl->Disable (GL_DEPTH_TEST);
-  //gst_3d_mesh_draw_arrays(src->plane_mesh);
+  //gst_3d_mesh_draw_arrays(self->plane_mesh);
 
   // gl->BindVertexArray (0);
-  // gst_gl_context_clear_shader (src->base.context);
+  // gst_gl_context_clear_shader (self->base.context);
 
   return TRUE;
 }
 
 static void
-_src_mandelbrot_free (gpointer impl)
+_scene_geometry_free (gpointer impl)
 {
-  struct SrcShader *src = impl;
-
-  if (!src)
+  struct GeometryScene *self = impl;
+  if (!self)
     return;
-
   g_free (impl);
 }
 
 static gpointer
-_src_mandelbrot_new (GstVRTestSrc * test)
+_scene_geometry_new (GstVRTestSrc * test)
 {
-  struct SrcShader *src = g_new0 (struct SrcShader, 1);
-
-  src->base.src = test;
-
-  return src;
+  struct GeometryScene *scene = g_new0 (struct GeometryScene, 1);
+  scene->base.src = test;
+  return scene;
 }
 
-static const struct SrcFuncs src_mandelbrot = {
-  GST_VR_TEST_SRC_MANDELBROT,
-  _src_mandelbrot_new,
-  _src_mandelbrot_init,
-  _src_mandelbrot_draw,
-  _src_mandelbrot_free,
+static const struct SceneFuncs scene_geometry = {
+  GST_VR_TEST_SCENE_GEOMETRY,
+  _scene_geometry_new,
+  _scene_geometry_init,
+  _scene_geometry_draw,
+  _scene_geometry_free,
 };
 
 
-static const struct SrcFuncs *src_impls[] = {
-  &src_mandelbrot,
+static const struct SceneFuncs *src_impls[] = {
+  &scene_geometry,
 };
 
-const struct SrcFuncs *
+const struct SceneFuncs *
 gst_vr_test_src_get_src_funcs_for_pattern (GstVRTestSrcPattern pattern)
 {
   gint i;

@@ -3,6 +3,7 @@
  * Copyright (C) <1999> Erik Walthinsen <omega@cse.ogi.edu>
  * Copyright (C) 2002,2007 David A. Schleef <ds@schleef.org>
  * Copyright (C) 2008 Julien Isorce <julien.isorce@gmail.com>
+ * Copyright (C) 2016 Lubosz Sarnecki <lubosz.sarnecki@collabora.co.uk>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -81,7 +82,7 @@ struct _GstVRTestSrc
   gboolean negotiated;
 
   gboolean gl_result;
-  const struct SrcFuncs *src_funcs;
+  const struct SceneFuncs *src_funcs;
   gpointer src_impl;
 
   GstCaps *out_caps;
