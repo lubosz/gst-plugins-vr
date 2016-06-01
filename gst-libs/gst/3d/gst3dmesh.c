@@ -287,7 +287,6 @@ gst_3d_mesh_upload_cube (Gst3DMesh * self)
 
   /* *INDENT-OFF* */
   GLfloat positions[] = {
-   /*|     Vertex     | TexCoord |*/ 
       /* front face */
        1.0,  1.0, -1.0,
        1.0, -1.0, -1.0,
@@ -322,7 +321,6 @@ gst_3d_mesh_upload_cube (Gst3DMesh * self)
 
   /* *INDENT-OFF* */
   GLfloat uvs[] = {
-   /*|     Vertex     | TexCoord |*/ 
       /* front face */
        1.0, 0.0,
        1.0, 1.0,
