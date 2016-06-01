@@ -28,7 +28,7 @@ typedef struct _GstVRTestSrc GstVRTestSrc;
 typedef enum
 {
   GST_VR_TEST_SCENE_GEOMETRY
-} GstVRTestSrcPattern;
+} GstVRTestScene;
 
 #include "gstvrtestsrc.h"
 
@@ -41,7 +41,7 @@ struct BaseSceneImpl
 
 struct SceneFuncs
 {
-  GstVRTestSrcPattern pattern;
+  GstVRTestScene scene;
     gpointer (*create) (GstVRTestSrc * src);
     gboolean (*init) (gpointer impl, GstGLContext * context,
       GstVideoInfo * v_info);
@@ -50,6 +50,6 @@ struct SceneFuncs
 };
 
 const struct SceneFuncs
-    *gst_vr_test_src_get_src_funcs_for_pattern (GstVRTestSrcPattern pattern);
+    *gst_vr_test_src_get_funcs_for_scene (GstVRTestScene scene);
 
 #endif

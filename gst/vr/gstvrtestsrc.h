@@ -59,8 +59,8 @@ struct _GstVRTestSrc
   /*< private > */
 
   /* type of output */
-  GstVRTestSrcPattern set_pattern;
-  GstVRTestSrcPattern active_pattern;
+  GstVRTestScene set_scene;
+  GstVRTestScene active_scene;
 
   /* video state */
   GstVideoInfo out_info;

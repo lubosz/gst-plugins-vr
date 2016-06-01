@@ -28,13 +28,13 @@
  * <refsect2>
  * <para>
  * The gstvrtestsrc element is used to produce test video texture.
- * The video test produced can be controlled with the "pattern"
+ * The video test produced can be controlled with the "scene"
  * property.
  * </para>
  * <title>Example launch line</title>
  * <para>
  * <programlisting>
- * gst-launch-1.0 -v gstvrtestsrc pattern=smpte ! glimagesink
+ * gst-launch-1.0 -v gstvrtestsrc scene=smpte ! glimagesink
  * </programlisting>
  * Shows original SMPTE color bars in a window.
  * </para>
@@ -59,7 +59,7 @@ GST_DEBUG_CATEGORY_STATIC (vr_test_src_debug);
 enum
 {
   PROP_0,
-  PROP_PATTERN,
+  PROP_SCENE,
   PROP_TIMESTAMP_OFFSET,
   PROP_IS_LIVE
       /* FILL ME */
@@ -81,8 +81,8 @@ static GstStaticPadTemplate src_factory = GST_STATIC_PAD_TEMPLATE ("src",
 #define gst_vr_test_src_parent_class parent_class
 G_DEFINE_TYPE (GstVRTestSrc, gst_vr_test_src, GST_TYPE_PUSH_SRC);
 
-static void gst_vr_test_src_set_pattern (GstVRTestSrc * gstvrtestsrc,
-    int pattern_type);
+static void gst_vr_test_src_set_scene (GstVRTestSrc * gstvrtestsrc,
+    int scene_type);
 static void gst_vr_test_src_set_property (GObject * object, guint prop_id,
     const GValue * value, GParamSpec * pspec);
 static void gst_vr_test_src_get_property (GObject * object, guint prop_id,
@@ -118,21 +118,21 @@ static gboolean gst_vr_test_src_init_shader (GstVRTestSrc * gstvrtestsrc);
 static gboolean gst_vr_test_src_decide_allocation (GstBaseSrc * basesrc,
     GstQuery * query);
 
-#define GST_TYPE_VR_TEST_SRC_PATTERN (gst_vr_test_src_pattern_get_type ())
+#define GST_TYPE_VR_TEST_SRC_SCENE (gst_vr_test_src_scene_get_type ())
 static GType
-gst_vr_test_src_pattern_get_type (void)
+gst_vr_test_src_scene_get_type (void)
 {
-  static GType vr_test_src_pattern_type = 0;
-  static const GEnumValue pattern_types[] = {
+  static GType vr_test_src_scene_type = 0;
+  static const GEnumValue scene_types[] = {
     {GST_VR_TEST_SCENE_GEOMETRY, "Mandelbrot Fractal", "mandelbrot"},
     {0, NULL, NULL}
   };
 
-  if (!vr_test_src_pattern_type) {
-    vr_test_src_pattern_type =
-        g_enum_register_static ("GstVRTestSrcPattern", pattern_types);
+  if (!vr_test_src_scene_type) {
+    vr_test_src_scene_type =
+        g_enum_register_static ("GstVRTestScene", scene_types);
   }
-  return vr_test_src_pattern_type;
+  return vr_test_src_scene_type;
 }
 
 static void
@@ -154,9 +154,9 @@ gst_vr_test_src_class_init (GstVRTestSrcClass * klass)
   gobject_class->set_property = gst_vr_test_src_set_property;
   gobject_class->get_property = gst_vr_test_src_get_property;
 
-  g_object_class_install_property (gobject_class, PROP_PATTERN,
-      g_param_spec_enum ("pattern", "Pattern",
-          "Type of test pattern to generate", GST_TYPE_VR_TEST_SRC_PATTERN,
+  g_object_class_install_property (gobject_class, PROP_SCENE,
+      g_param_spec_enum ("scene", "Pattern",
+          "Type of test scene to generate", GST_TYPE_VR_TEST_SRC_SCENE,
           GST_VR_TEST_SCENE_GEOMETRY,
           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
   g_object_class_install_property (gobject_class, PROP_TIMESTAMP_OFFSET,
@@ -212,7 +212,7 @@ gst_vr_test_src_event (GstBaseSrc * src, GstEvent * event)
 static void
 gst_vr_test_src_init (GstVRTestSrc * src)
 {
-  gst_vr_test_src_set_pattern (src, GST_VR_TEST_SCENE_GEOMETRY);
+  gst_vr_test_src_set_scene (src, GST_VR_TEST_SCENE_GEOMETRY);
 
   src->timestamp_offset = 0;
 
@@ -244,9 +244,9 @@ gst_vr_test_src_fixate (GstBaseSrc * bsrc, GstCaps * caps)
 }
 
 static void
-gst_vr_test_src_set_pattern (GstVRTestSrc * gstvrtestsrc, gint pattern_type)
+gst_vr_test_src_set_scene (GstVRTestSrc * gstvrtestsrc, gint scene_type)
 {
-  gstvrtestsrc->set_pattern = pattern_type;
+  gstvrtestsrc->set_scene = scene_type;
 }
 
 static void
@@ -256,8 +256,8 @@ gst_vr_test_src_set_property (GObject * object, guint prop_id,
   GstVRTestSrc *src = GST_VR_TEST_SRC (object);
 
   switch (prop_id) {
-    case PROP_PATTERN:
-      gst_vr_test_src_set_pattern (src, g_value_get_enum (value));
+    case PROP_SCENE:
+      gst_vr_test_src_set_scene (src, g_value_get_enum (value));
       break;
     case PROP_TIMESTAMP_OFFSET:
       src->timestamp_offset = g_value_get_int64 (value);
@@ -277,8 +277,8 @@ gst_vr_test_src_get_property (GObject * object, guint prop_id,
   GstVRTestSrc *src = GST_VR_TEST_SRC (object);
 
   switch (prop_id) {
-    case PROP_PATTERN:
-      g_value_set_enum (value, src->set_pattern);
+    case PROP_SCENE:
+      g_value_set_enum (value, src->set_scene);
       break;
     case PROP_TIMESTAMP_OFFSET:
       g_value_set_int64 (value, src->timestamp_offset);
@@ -530,7 +530,7 @@ gst_vr_test_src_fill (GstPushSrc * psrc, GstBuffer * buffer)
 
 gl_error:
   {
-    GST_ELEMENT_ERROR (src, RESOURCE, NOT_FOUND, ("failed to draw pattern"),
+    GST_ELEMENT_ERROR (src, RESOURCE, NOT_FOUND, ("failed to draw scene"),
         ("A GL error occured"));
     return GST_FLOW_NOT_NEGOTIATED;
   }
@@ -753,29 +753,29 @@ gst_vr_test_src_draw (gpointer stuff)
 
   funcs = src->src_funcs;
 
-  if (!funcs || src->set_pattern != src->active_pattern) {
+  if (!funcs || src->set_scene != src->active_scene) {
     if (src->src_impl && funcs)
       funcs->free (src->src_impl);
     src->src_funcs = funcs =
-        gst_vr_test_src_get_src_funcs_for_pattern (src->set_pattern);
+        gst_vr_test_src_get_funcs_for_scene (src->set_scene);
     if (funcs == NULL) {
       GST_ERROR_OBJECT (src, "Could not find an implementation of the "
-          "requested pattern");
+          "requested scene");
       src->gl_result = FALSE;
       return;
     }
     src->src_impl = funcs->create (src);
     if (!(src->gl_result =
             funcs->init (src->src_impl, src->context, &src->out_info))) {
-      GST_ERROR_OBJECT (src, "Failed to initialize pattern");
+      GST_ERROR_OBJECT (src, "Failed to initialize scene");
       return;
     }
-    src->active_pattern = src->set_pattern;
+    src->active_scene = src->set_scene;
   }
 
   src->gl_result = funcs->fill_bound_fbo (src->src_impl);
   if (!src->gl_result)
-    GST_ERROR_OBJECT (src, "Failed to render the pattern");
+    GST_ERROR_OBJECT (src, "Failed to render the scene");
 }
 
 static GstStateChangeReturn

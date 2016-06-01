@@ -80,6 +80,10 @@ gst_3d_renderer_send_eos (GstElement * element)
   GstPad *sinkpad = gst_element_get_static_pad (element, "sink");
   if (sinkpad)
     gst_pad_send_event (sinkpad, gst_event_new_eos ());
+  else {
+    GstPad *srcpad = gst_element_get_static_pad (element, "src");
+    gst_pad_send_event (srcpad, gst_event_new_flush_stop (FALSE));
+  }
 }
 
 void

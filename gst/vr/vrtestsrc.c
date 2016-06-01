@@ -66,9 +66,15 @@ _scene_geometry_src_event (gpointer impl, GstEvent * event)
 
 
 static void
-_scene_append_node (Gst3DMesh * mesh, Gst3DShader * shader)
+_scene_append_node (struct GeometryScene *self, Gst3DMesh * mesh,
+    Gst3DShader * shader)
 {
-
+  Gst3DNode *node = gst_3d_node_new (self->base.context);
+  node->meshes = g_list_append (node->meshes, mesh);
+  node->shader = shader;
+  gst_gl_shader_use (shader->shader);
+  gst_3d_mesh_bind_shader (mesh, shader);
+  self->nodes = g_list_append (self->nodes, node);
 }
 
 static gboolean
@@ -90,24 +96,17 @@ _scene_geometry_init (gpointer impl, GstGLContext * context,
 */
 
   // Gst3DMesh * plane_mesh = gst_3d_mesh_new_plane (context, 1.0);
-  Gst3DMesh *plane_mesh = gst_3d_mesh_new_cube (context);
-  Gst3DNode *plane_node = gst_3d_node_new (context);
-  plane_node->meshes = g_list_append (plane_node->meshes, plane_mesh);
-  plane_node->shader =
+
+  Gst3DMesh *cube_mesh = gst_3d_mesh_new_cube (context);
+  Gst3DShader *uv_shader =
       gst_3d_shader_new_vert_frag (context, "mvp_uv.vert", "debug_uv.frag");
-  gst_gl_shader_use (plane_node->shader->shader);
-  gst_3d_mesh_bind_shader (plane_mesh, plane_node->shader);
-
-  self->nodes = g_list_append (self->nodes, plane_node);
-
+  _scene_append_node (self, cube_mesh, uv_shader);
 
   Gst3DNode *axes_node = gst_3d_node_new_debug_axes (context);
   self->nodes = g_list_append (self->nodes, axes_node);
 
   //self->plane_mesh = gst_3d_mesh_new_sphere (context, 2.0, 20, 20);
   // self->plane_mesh->draw_mode = GL_LINES;
-
-  // _create_debug_axes (self);
 
   gl->Disable (GL_CULL_FACE);
 
@@ -198,12 +197,12 @@ static const struct SceneFuncs *src_impls[] = {
 };
 
 const struct SceneFuncs *
-gst_vr_test_src_get_src_funcs_for_pattern (GstVRTestSrcPattern pattern)
+gst_vr_test_src_get_funcs_for_scene (GstVRTestScene scene)
 {
   gint i;
 
   for (i = 0; i < G_N_ELEMENTS (src_impls); i++) {
-    if (src_impls[i]->pattern == pattern)
+    if (src_impls[i]->scene == scene)
       return src_impls[i];
   }
 
