@@ -121,3 +121,14 @@ gst_3d_node_draw (Gst3DNode * self)
     gst_3d_mesh_draw (mesh);
   }
 }
+
+void
+gst_3d_node_draw_wireframe (Gst3DNode * self)
+{
+  GList *l;
+  for (l = self->meshes; l != NULL; l = l->next) {
+    Gst3DMesh *mesh = (Gst3DMesh *) l->data;
+    gst_3d_mesh_bind (mesh);
+    gst_3d_mesh_draw_mode (mesh, GL_LINES);
+  }
+}

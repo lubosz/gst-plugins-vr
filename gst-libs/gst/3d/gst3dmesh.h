@@ -87,6 +87,8 @@ void gst_3d_mesh_unbind_buffers (Gst3DMesh * self);
 void gst_3d_mesh_bind_shader (Gst3DMesh * self, Gst3DShader * shader);
 void gst_3d_mesh_bind (Gst3DMesh * self);
 void gst_3d_mesh_draw (Gst3DMesh * self);
+void gst_3d_mesh_draw_mode (Gst3DMesh * self, GLenum draw_mode);
+
 void gst_3d_mesh_upload_sphere (Gst3DMesh * self, float radius, unsigned stacks,
     unsigned slices);
 void gst_3d_mesh_upload_plane (Gst3DMesh * self, float aspect);

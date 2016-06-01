@@ -57,6 +57,7 @@ GType gst_3d_node_get_type (void);
 Gst3DNode *gst_3d_node_new_debug_axes (GstGLContext * context);
 
 void gst_3d_node_draw (Gst3DNode * self);
+void gst_3d_node_draw_wireframe (Gst3DNode * self);
 
 G_END_DECLS
 #endif /* __GST_3D_NODE_H__ */

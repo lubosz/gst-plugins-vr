@@ -35,40 +35,38 @@ struct GeometryScene
   struct BaseSceneImpl base;
   Gst3DCameraArcball *camera;
   GList *nodes;
+  gboolean wireframe_mode;
 };
 
-/*
-static gboolean
-_scene_geometry_src_event (gpointer impl, GstEvent * event)
+void
+_toggle_wireframe_mode (struct GeometryScene *self)
 {
-  // GstPointCloudBuilder *self = GST_POINT_CLOUD_BUILDER (trans);
-
-  struct GeometryScene *self = impl;
-
-  GST_DEBUG ("handling %s event", GST_EVENT_TYPE_NAME (event));
-
-  switch (GST_EVENT_TYPE (event)) {
-    case GST_EVENT_NAVIGATION:
-      //event =
-      //    GST_EVENT (gst_mini_object_make_writable (GST_MINI_OBJECT (event)));
-      //gst_3d_renderer_navigation_event (GST_ELEMENT (self), event);
-      //gst_3d_camera_arcball_navigation_event (self->camera, event);
-      break;
-    default:
-      break;
-  }
-
-  // gst_event_unref (event);
-  // return GST_BASE_TRANSFORM_CLASS (parent_class)->self_event (trans, event);
-  return TRUE;
+  if (self->wireframe_mode)
+    self->wireframe_mode = FALSE;
+  else
+    self->wireframe_mode = TRUE;
 }
-*/
 
 static gboolean
 _scene_geometry_navigate (gpointer impl, GstEvent * event)
 {
   struct GeometryScene *self = impl;
   gst_3d_camera_arcball_navigation_event (self->camera, event);
+
+  GstNavigationEventType event_type = gst_navigation_event_get_type (event);
+  switch (event_type) {
+    case GST_NAVIGATION_EVENT_KEY_PRESS:{
+      GstStructure *structure =
+          (GstStructure *) gst_event_get_structure (event);
+      const gchar *key = gst_structure_get_string (structure, "key");
+      if (key != NULL && g_strcmp0 (key, "Tab") == 0)
+        _toggle_wireframe_mode (self);
+      break;
+    }
+    default:
+      break;
+  }
+
   return TRUE;
 }
 
@@ -88,13 +86,10 @@ static gboolean
 _scene_geometry_init (gpointer impl, GstGLContext * context,
     GstVideoInfo * v_info)
 {
-  struct GeometryScene *self = impl;
-  // GError *error = NULL;
-
-  self->base.context = context;
-
   // GstGLFuncs *gl = context->gl_vtable;
 
+  struct GeometryScene *self = impl;
+  self->base.context = context;
   self->camera = gst_3d_camera_arcball_new ();
 
 /*
@@ -165,7 +160,10 @@ _scene_geometry_draw (gpointer impl)
     Gst3DNode *node = (Gst3DNode *) l->data;
     gst_gl_shader_use (node->shader->shader);
     gst_3d_shader_upload_matrix (node->shader, &camera->mvp, "mvp");
-    gst_3d_node_draw (node);
+    if (self->wireframe_mode)
+      gst_3d_node_draw_wireframe (node);
+    else
+      gst_3d_node_draw (node);
   }
   gl->Disable (GL_DEPTH_TEST);
   //gst_3d_mesh_draw_arrays(self->plane_mesh);

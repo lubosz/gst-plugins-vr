@@ -210,6 +210,12 @@ gst_3d_mesh_draw (Gst3DMesh * self)
   gl->DrawElements (self->draw_mode, self->index_size, GL_UNSIGNED_SHORT, 0);
 }
 
+void
+gst_3d_mesh_draw_mode (Gst3DMesh * self, GLenum draw_mode)
+{
+  GstGLFuncs *gl = self->context->gl_vtable;
+  gl->DrawElements (draw_mode, self->index_size, GL_UNSIGNED_SHORT, 0);
+}
 
 void
 gst_3d_mesh_draw_arrays (Gst3DMesh * self)
