@@ -57,7 +57,7 @@ gst_3d_camera_arcball_init (Gst3DCameraArcball * self)
   self->cursor_last_x = 0;
   self->cursor_last_y = 0;
 
-  self->theta = -5.0;
+  self->theta = 5.0;
   self->phi = 5.0;
 
   self->pressed_mouse_button = 0;
@@ -105,6 +105,9 @@ gst_3d_camera_arcball_rotate (Gst3DCameraArcball * self, gdouble x, gdouble y)
 {
   self->theta += y * self->rotation_speed;
   self->phi += x * self->rotation_speed;
+
+  // TODO: fix Gimbal lock
+
   GST_DEBUG ("theta: %f phi: %f", self->theta, self->phi);
   gst_3d_camera_arcball_update_view (self);
 }
@@ -112,8 +115,7 @@ gst_3d_camera_arcball_rotate (Gst3DCameraArcball * self, gdouble x, gdouble y)
 void
 gst_3d_camera_arcball_update_view (Gst3DCameraArcball * self)
 {
-  // float radius = exp (self->center_distance);
-  float radius = self->center_distance;
+  float radius = exp (self->center_distance);
 
   graphene_vec3_init (&self->eye,
       radius * sin (self->theta) * cos (self->phi),
@@ -125,6 +127,7 @@ gst_3d_camera_arcball_update_view (Gst3DCameraArcball * self)
       self->fov, self->aspect, self->znear, self->zfar);
 
   /*
+     TODO: fix graphene look_at
      graphene_matrix_t view_matrix;
      graphene_matrix_init_look_at (&view_matrix, &self->eye, &self->center,
      &self->up);
