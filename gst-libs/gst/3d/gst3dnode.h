@@ -56,6 +56,10 @@ GType gst_3d_node_get_type (void);
 
 Gst3DNode *gst_3d_node_new_debug_axes (GstGLContext * context);
 
+Gst3DNode *
+gst_3d_node_new_sphere(GstGLContext * context, Gst3DShader * shader, float radius, unsigned stacks,
+    unsigned slices);
+
 void gst_3d_node_draw (Gst3DNode * self);
 void gst_3d_node_draw_wireframe (Gst3DNode * self);
 

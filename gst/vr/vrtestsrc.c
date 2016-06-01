@@ -111,9 +111,25 @@ _scene_geometry_init (gpointer impl, GstGLContext * context,
   self->nodes = g_list_append (self->nodes, axes_node);
 */
 
-  Gst3DMesh *sphere_mesh = gst_3d_mesh_new_sphere (context, 2.0, 20, 20);
+/*
+  Gst3DMesh *sphere_mesh = gst_3d_mesh_new_sphere (context, 2.0, 15, 15);
   // sphere_mesh->draw_mode = GL_LINES;
   _scene_append_node (self, sphere_mesh, uv_shader);
+
+  Gst3DMesh *top_cap_mesh = gst_3d_mesh_new (context);
+  gst_3d_mesh_init_buffers (top_cap_mesh);
+  gst_3d_mesh_upload_sphere_top_cap (top_cap_mesh, 2.0, 15, 15);
+  _scene_append_node (self, top_cap_mesh, uv_shader);
+
+  Gst3DMesh *bottom_cap_mesh = gst_3d_mesh_new (context);
+  gst_3d_mesh_init_buffers (bottom_cap_mesh);
+  gst_3d_mesh_upload_sphere_bottom_cap (bottom_cap_mesh, 2.0, 15, 15);
+  _scene_append_node (self, bottom_cap_mesh, uv_shader);
+*/
+
+  Gst3DNode *sphere_node =
+      gst_3d_node_new_sphere (context, uv_shader, 2.0, 15, 15);
+  self->nodes = g_list_append (self->nodes, sphere_node);
 
 /*
   gst_gl_shader_use (axes_node->shader->shader);
@@ -123,8 +139,6 @@ _scene_geometry_init (gpointer impl, GstGLContext * context,
       (gfloat) GST_VIDEO_INFO_HEIGHT (v_info));
   gst_gl_context_clear_shader (self->base.context);
 */
-
-
   return TRUE;
 }
 
@@ -134,6 +148,9 @@ _scene_geometry_draw (gpointer impl)
   struct GeometryScene *self = impl;
 
   g_return_val_if_fail (self->base.context, FALSE);
+
+  glPointSize (5.0);
+
 
   //TODO: exit with an error message (shader compiler mostly)
   // if (!self->shader)

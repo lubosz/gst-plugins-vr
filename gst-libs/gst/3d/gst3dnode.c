@@ -111,6 +111,39 @@ gst_3d_node_new_debug_axes (GstGLContext * context)
   return node;
 }
 
+Gst3DNode *
+gst_3d_node_new_sphere (GstGLContext * context, Gst3DShader * shader,
+    float radius, unsigned stacks, unsigned slices)
+{
+
+  Gst3DNode *node = gst_3d_node_new (context);
+
+  node->shader = shader;
+  gst_gl_shader_use (shader->shader);
+
+  Gst3DMesh *sphere_mesh =
+      gst_3d_mesh_new_sphere (context, radius, stacks, slices);
+  //_scene_append_node (self, sphere_mesh, uv_shader);
+  node->meshes = g_list_append (node->meshes, sphere_mesh);
+  gst_3d_mesh_bind_shader (sphere_mesh, shader);
+
+
+  Gst3DMesh *top_cap_mesh = gst_3d_mesh_new (context);
+  gst_3d_mesh_init_buffers (top_cap_mesh);
+  gst_3d_mesh_upload_sphere_top_cap (top_cap_mesh, radius, stacks, slices);
+  node->meshes = g_list_append (node->meshes, top_cap_mesh);
+  gst_3d_mesh_bind_shader (top_cap_mesh, shader);
+
+  Gst3DMesh *bottom_cap_mesh = gst_3d_mesh_new (context);
+  gst_3d_mesh_init_buffers (bottom_cap_mesh);
+  gst_3d_mesh_upload_sphere_bottom_cap (bottom_cap_mesh, radius, stacks,
+      slices);
+  node->meshes = g_list_append (node->meshes, bottom_cap_mesh);
+  gst_3d_mesh_bind_shader (bottom_cap_mesh, shader);
+
+  return node;
+}
+
 void
 gst_3d_node_draw (Gst3DNode * self)
 {
