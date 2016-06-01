@@ -64,6 +64,13 @@ _scene_geometry_src_event (gpointer impl, GstEvent * event)
 }
 */
 
+static gboolean
+_scene_geometry_navigate (gpointer impl, GstEvent * event)
+{
+  struct GeometryScene *self = impl;
+  gst_3d_camera_arcball_navigation_event (self->camera, event);
+  return TRUE;
+}
 
 static void
 _scene_append_node (struct GeometryScene *self, Gst3DMesh * mesh,
@@ -86,7 +93,7 @@ _scene_geometry_init (gpointer impl, GstGLContext * context,
 
   self->base.context = context;
 
-  GstGLFuncs *gl = context->gl_vtable;
+  // GstGLFuncs *gl = context->gl_vtable;
 
   self->camera = gst_3d_camera_arcball_new ();
 
@@ -97,18 +104,21 @@ _scene_geometry_init (gpointer impl, GstGLContext * context,
 
   // Gst3DMesh * plane_mesh = gst_3d_mesh_new_plane (context, 1.0);
 
-  Gst3DMesh *cube_mesh = gst_3d_mesh_new_cube (context);
   Gst3DShader *uv_shader =
       gst_3d_shader_new_vert_frag (context, "mvp_uv.vert", "debug_uv.frag");
+/*
+  Gst3DMesh *cube_mesh = gst_3d_mesh_new_cube (context);
   _scene_append_node (self, cube_mesh, uv_shader);
+*/
 
+/*
   Gst3DNode *axes_node = gst_3d_node_new_debug_axes (context);
   self->nodes = g_list_append (self->nodes, axes_node);
+*/
 
-  //self->plane_mesh = gst_3d_mesh_new_sphere (context, 2.0, 20, 20);
-  // self->plane_mesh->draw_mode = GL_LINES;
-
-  gl->Disable (GL_CULL_FACE);
+  Gst3DMesh *sphere_mesh = gst_3d_mesh_new_sphere (context, 2.0, 20, 20);
+  // sphere_mesh->draw_mode = GL_LINES;
+  _scene_append_node (self, sphere_mesh, uv_shader);
 
 /*
   gst_gl_shader_use (axes_node->shader->shader);
@@ -145,7 +155,7 @@ _scene_geometry_draw (gpointer impl)
      gst_gl_shader_set_uniform_1f (self->shader->shader, "time",
      (gfloat) self->base.src->running_time / GST_SECOND);
    */
-  Gst3DCameraArcball *camera = self->base.src->camera;
+  Gst3DCameraArcball *camera = self->camera;
 
   gst_3d_camera_arcball_update_view (camera);
   gl->Enable (GL_DEPTH_TEST);
@@ -188,6 +198,7 @@ static const struct SceneFuncs scene_geometry = {
   _scene_geometry_new,
   _scene_geometry_init,
   _scene_geometry_draw,
+  _scene_geometry_navigate,
   _scene_geometry_free,
 };
 

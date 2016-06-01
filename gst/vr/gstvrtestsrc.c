@@ -198,13 +198,21 @@ gst_vr_test_src_event (GstBaseSrc * src, GstEvent * event)
 
   GST_DEBUG ("handling %s event", GST_EVENT_TYPE_NAME (event));
 
-  switch (GST_EVENT_TYPE (event)) {
-    case GST_EVENT_NAVIGATION:
-      gst_3d_renderer_navigation_event (GST_ELEMENT (self), event);
-      gst_3d_camera_arcball_navigation_event (self->camera, event);
-      break;
-    default:
-      break;
+  if (GST_EVENT_TYPE (event) == GST_EVENT_NAVIGATION) {
+    self->src_funcs->navigate (self->src_impl, event);
+    GstNavigationEventType event_type = gst_navigation_event_get_type (event);
+    switch (event_type) {
+      case GST_NAVIGATION_EVENT_KEY_PRESS:{
+        GstStructure *structure =
+            (GstStructure *) gst_event_get_structure (event);
+        const gchar *key = gst_structure_get_string (structure, "key");
+        if (key != NULL && g_strcmp0 (key, "Escape") == 0)
+          self->exit_requested = TRUE;
+        break;
+      }
+      default:
+        break;
+    }
   }
   return TRUE;
 }
@@ -216,7 +224,7 @@ gst_vr_test_src_init (GstVRTestSrc * src)
 
   src->timestamp_offset = 0;
 
-  src->camera = gst_3d_camera_arcball_new ();
+  src->exit_requested = FALSE;
 
   /* we operate in time */
   gst_base_src_set_format (GST_BASE_SRC (src), GST_FORMAT_TIME);
@@ -478,6 +486,9 @@ gst_vr_test_src_fill (GstPushSrc * psrc, GstBuffer * buffer)
   GstVideoFrame out_frame;
   GstGLSyncMeta *sync_meta;
   guint out_tex;
+
+  if (src->exit_requested)
+    goto eos;
 
   if (G_UNLIKELY (!src->negotiated || !src->context))
     goto not_negotiated;

@@ -42,10 +42,10 @@ struct BaseSceneImpl
 struct SceneFuncs
 {
   GstVRTestScene scene;
-    gpointer (*create) (GstVRTestSrc * src);
-    gboolean (*init) (gpointer impl, GstGLContext * context,
-      GstVideoInfo * v_info);
-    gboolean (*fill_bound_fbo) (gpointer impl);
+  gpointer (*create) (GstVRTestSrc * src);
+  gboolean (*init) (gpointer impl, GstGLContext * context, GstVideoInfo * v_info);
+  gboolean (*fill_bound_fbo) (gpointer impl);
+  gboolean (*navigate) (gpointer impl, GstEvent * event);
   void (*free) (gpointer impl);
 };
 

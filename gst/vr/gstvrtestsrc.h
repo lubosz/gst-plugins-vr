@@ -31,7 +31,6 @@
 #include <gst/gl/gl.h>
 
 #include "vrtestsrc.h"
-#include "../../gst-libs/gst/3d/gst3dcamera_arcball.h"
 
 G_BEGIN_DECLS
 #define GST_TYPE_VR_TEST_SRC \
@@ -72,14 +71,13 @@ struct _GstVRTestSrc
 
   GstBufferPool *pool;
   
-  Gst3DCameraArcball * camera;
-
   GstGLDisplay *display;
   GstGLContext *context, *other_context;
   gint64 timestamp_offset;      /* base offset */
   GstClockTime running_time;    /* total running time */
   gint64 n_frames;              /* total frames sent */
   gboolean negotiated;
+  gboolean exit_requested;
 
   gboolean gl_result;
   const struct SceneFuncs *src_funcs;
