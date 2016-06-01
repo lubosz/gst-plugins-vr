@@ -63,10 +63,10 @@ class SPHVR:
         src = Gst.ElementFactory.make("uridecodebin", None)
         src.set_property("uri", video_uri)
 
-        sink = CairoGLSink(width, height)
+        # sink = CairoGLSink(width, height)
         
         
-        #sink = Gst.ElementFactory.make("gtkglsink", None)
+        sink = Gst.ElementFactory.make("gtkglsink", None)
         
         """
         gst-launch-1.0 filesrc location=~/Videos/360/carpet.webm ! decodebin ! glupload ! glcolorconvert ! glcompositor ! video/x-raw\(memory:GLMemory\), width=1920, height=1080 ! hmdwarp ! glimagesink
@@ -75,22 +75,28 @@ class SPHVR:
         glupload = Gst.ElementFactory.make("glupload", None)
         glcolorconvert = Gst.ElementFactory.make("glcolorconvert", None)
         videorate = Gst.ElementFactory.make("videorate", None)
-        glcompositor = Gst.ElementFactory.make("glcompositor", None)
+        vrcompositor = Gst.ElementFactory.make("vrcompositor", None)
+        
         hmdwarp = Gst.ElementFactory.make("hmdwarp", None)
 
         # caps
         caps = Gst.Caps.from_string("video/x-raw\(memory:GLMemory\), width=%d, height=%d, framerate=75/1" % (width, height))
         cf = Gst.ElementFactory.make("capsfilter")
         cf.set_property("caps", caps)
+        
+        #somesink = sink.sink
+        somesink = sink
 
-        pipeline.add(src, glupload, glcolorconvert, videorate, glcompositor, cf, hmdwarp, sink.sink)
+        #pipeline.add(src, glupload, glcolorconvert, videorate, vrcompositor, cf, somesink)
+        pipeline.add(src, glupload, glcolorconvert, videorate, vrcompositor, cf, hmdwarp, somesink)
         src.link(glupload)
         glupload.link(glcolorconvert)
         glcolorconvert.link(videorate)
-        videorate.link(glcompositor)
-        glcompositor.link(cf)
+        videorate.link(vrcompositor)
+        vrcompositor.link(cf)
         cf.link(hmdwarp)
-        hmdwarp.link(sink.sink)
+        hmdwarp.link(somesink)
+        #cf.link(somesink)
         src.connect("pad-added", self.pad_added_cb, glupload)
 
         bus = pipeline.get_bus()
@@ -135,20 +141,22 @@ class SPHVR:
         self.window.add(outer_box)
         """
         #gtksink
-        #w = sink.get_property("widget")
-        #self.window.add(w)
+        w = sink.get_property("widget")
+        self.window.add(w)
 
-        self.window.add(sink)
+        #self.window.add(sink)
 
-        from gi.repository import GdkPixbuf
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file("data/sphvr2.svg")
-        theme = Gtk.IconTheme.get_default()
-        theme.add_builtin_icon("sphvr", 256, pixbuf)
-        self.window.set_icon_name("sphvr")
-
+        try:
+          from gi.repository import GdkPixbuf
+          pixbuf = GdkPixbuf.Pixbuf.new_from_file("data/sphvr2.svg")
+          theme = Gtk.IconTheme.get_default()
+          theme.add_builtin_icon("sphvr", 256, pixbuf)
+          self.window.set_icon_name("sphvr")
+        except GLib.Error:
+          print("no icon")
         self.window.show_all()
 
-        sink.set_handle()
+        #sink.set_handle()
 
         if pipeline.set_state(Gst.State.PLAYING) == Gst.StateChangeReturn.FAILURE:
             pipeline.set_state(Gst.State.NULL)
