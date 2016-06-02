@@ -91,6 +91,7 @@ gst_3d_camera_update_view_from_quaternion (Gst3DCamera * self)
   graphene_matrix_t right_eye_projection =
       gst_3d_hmd_get_matrix (self->hmd, OHMD_RIGHT_EYE_GL_PROJECTION_MATRIX);
 
+  /* rotation from OpenHMD */
   graphene_quaternion_t quat = gst_3d_hmd_get_quaternion (self->hmd);
   graphene_quaternion_to_matrix (&quat, &right_eye_model_view);
   graphene_quaternion_to_matrix (&quat, &left_eye_model_view);
