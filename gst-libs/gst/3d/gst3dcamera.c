@@ -82,34 +82,35 @@ gst_3d_camera_update_view_from_quaternion (Gst3DCamera * self)
 {
   gst_3d_hmd_update (self->hmd);
 
+  /* projection from OpenHMD */
   graphene_matrix_t left_eye_model_view;
   graphene_matrix_t left_eye_projection =
       gst_3d_hmd_get_matrix (self->hmd, OHMD_LEFT_EYE_GL_PROJECTION_MATRIX);
-
 
   graphene_matrix_t right_eye_model_view;
   graphene_matrix_t right_eye_projection =
       gst_3d_hmd_get_matrix (self->hmd, OHMD_RIGHT_EYE_GL_PROJECTION_MATRIX);
 
-  graphene_point3d_t left_eye;
-  graphene_point3d_init (&left_eye, +self->hmd->eye_separation, 0, 0);
-  graphene_matrix_t translate_left;
-  graphene_matrix_init_translate (&translate_left, &left_eye);
-
-  graphene_point3d_t rigth_eye;
-  graphene_point3d_init (&rigth_eye, -self->hmd->eye_separation, 0, 0);
-  graphene_matrix_t translate_right;
-  graphene_matrix_init_translate (&translate_right, &rigth_eye);
-
   graphene_quaternion_t quat = gst_3d_hmd_get_quaternion (self->hmd);
-
   graphene_quaternion_to_matrix (&quat, &right_eye_model_view);
-  graphene_matrix_multiply (&right_eye_model_view, &translate_right,
-      &right_eye_model_view);
-
   graphene_quaternion_to_matrix (&quat, &left_eye_model_view);
-  graphene_matrix_multiply (&left_eye_model_view, &translate_left,
-      &left_eye_model_view);
+
+  /* eye separation */
+  /*
+     graphene_point3d_t left_eye;
+     graphene_point3d_init (&left_eye, +self->hmd->eye_separation, 0, 0);
+     graphene_matrix_t translate_left;
+     graphene_matrix_init_translate (&translate_left, &left_eye);
+     graphene_point3d_t rigth_eye;
+     graphene_point3d_init (&rigth_eye, -self->hmd->eye_separation, 0, 0);
+     graphene_matrix_t translate_right;
+     graphene_matrix_init_translate (&translate_right, &rigth_eye);
+
+     graphene_matrix_multiply (&right_eye_model_view, &translate_right,
+     &right_eye_model_view);
+     graphene_matrix_multiply (&left_eye_model_view, &translate_left,
+     &left_eye_model_view);
+   */
 
   graphene_matrix_multiply (&left_eye_model_view, &left_eye_projection,
       &self->left_vp_matrix);
@@ -271,16 +272,7 @@ gst_3d_camera_navigation_event (Gst3DCamera * self, GstEvent * event)
       } else {
         GST_DEBUG ("%s", key);
         _press_key (self, key);
-      }
-
-    /*
-       // reset rotation and position
-       float zero[] = {0, 0, 0, 1};
-       ohmd_device_setf(hmd, OHMD_ROTATION_QUAT, zero);
-       ohmd_device_setf(hmd, OHMD_POSITION_VECTOR, zero);
-     */
-
-    else if (g_strcmp0 (event_name, "key-release") == 0)
+    } else if (g_strcmp0 (event_name, "key-release") == 0)
       _release_key (self, key);
   }
 }
