@@ -506,7 +506,7 @@ gst_3d_mesh_upload_sphere (Gst3DMesh * self, float radius, unsigned stacks,
 
   GstGLFuncs *gl = self->context->gl_vtable;
 
-  self->vertex_count = (slices - 1) * stacks;
+  self->vertex_count = (slices + 1) * stacks;
   const int component_size = sizeof (GLfloat) * self->vertex_count;
 
   positions = (GLfloat *) malloc (component_size * 3);
@@ -518,10 +518,10 @@ gst_3d_mesh_upload_sphere (Gst3DMesh * self, float radius, unsigned stacks,
   float const J = 1. / (float) (stacks - 1);
   float const I = 1. / (float) (slices - 1);
 
-  for (int i = 1; i < slices - 1; i++) {
+  for (int i = 0; i < slices; i++) {
     float const theta = M_PI * i * I;
     for (int j = 0; j < stacks; j++) {
-      float const phi = 2 * M_PI * j * J;
+      float const phi = 2 * M_PI * j * J + M_PI / 2.0;
 
       float const x = sin (theta) * cos (phi);
       float const y = -cos (theta);
@@ -541,46 +541,25 @@ gst_3d_mesh_upload_sphere (Gst3DMesh * self, float radius, unsigned stacks,
   gst_3d_mesh_append_attribute_buffer (self, "uv", sizeof (GLfloat), 2, uvs);
 
   /* index */
-  int vau = 0;
-  //self->index_size = slices * stacks * 2 * 3;
-  self->index_size = (slices - 3) * stacks * 2;
-  //self->index_size = (slices - 2) * stacks;
-  indices = (GLushort *) malloc (sizeof (GLushort) * self->index_size);
+  self->index_size = (slices - 1) * stacks * 2;
 
+  indices = (GLushort *) malloc (sizeof (GLushort) * self->index_size);
   GLushort *indextemp = indices;
 
-
-
-/*
-*/
   // -3 = minus caps slices - one to iterate over strips
-  for (int i = 0; i < slices - 3; i++) {
+  for (int i = 0; i < slices - 1; i++) {
     for (int j = 0; j < stacks; j++) {
       *indextemp++ = i * stacks + j;
       *indextemp++ = (i + 1) * stacks + j;
     }
   }
 
-/*
-  for (int i = 0; i < slices; i++) {
-    for (int j = 0; j < stacks; j++) {
-      int next = (j + 1) % stacks;
-      *indextemp++ = vau + j;
-      *indextemp++ = vau + next;
-      *indextemp++ = vau + j + stacks;
-
-      *indextemp++ = vau + next;
-      *indextemp++ = vau + next + stacks;
-      *indextemp++ = vau + j + stacks;
-    }
-    vau += stacks;
-  }
-*/
-
-/*
-  for (int i = 0; i < self->index_size; i++)
-      *indextemp++ = i;
-*/
+  /* linear index */
+  /*
+     self->index_size = (slices - 2) * stacks;
+     for (int i = 0; i < self->index_size; i++)
+     *indextemp++ = i;
+   */
 
   // upload index
   gl->BindBuffer (GL_ELEMENT_ARRAY_BUFFER, self->vbo_indices);
