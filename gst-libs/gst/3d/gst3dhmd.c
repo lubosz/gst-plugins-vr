@@ -102,6 +102,16 @@ gst_3d_hmd_open_device (Gst3DHmd * self)
   }
 }
 
+void
+gst_3d_hmd_reset (Gst3DHmd * self)
+{
+  // reset rotation and position
+  float zero[] = { 0, 0, 0, 1 };
+  ohmd_device_setf (self->device, OHMD_ROTATION_QUAT, zero);
+  ohmd_device_setf (self->device, OHMD_POSITION_VECTOR, zero);
+  GST_ERROR ("resetting hmd");
+}
+
 static void
 gst_3d_hmd_get_device_properties (Gst3DHmd * self)
 {

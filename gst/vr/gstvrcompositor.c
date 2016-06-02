@@ -194,6 +194,21 @@ gst_vr_compositor_src_event (GstBaseTransform * trans, GstEvent * event)
           GST_EVENT (gst_mini_object_make_writable (GST_MINI_OBJECT (event)));
       gst_3d_renderer_navigation_event (GST_ELEMENT (self), event);
       gst_3d_camera_navigation_event (self->camera, event);
+
+      GstNavigationEventType event_type = gst_navigation_event_get_type (event);
+      switch (event_type) {
+        case GST_NAVIGATION_EVENT_KEY_PRESS:{
+          GstStructure *structure =
+              (GstStructure *) gst_event_get_structure (event);
+          const gchar *key = gst_structure_get_string (structure, "key");
+          if (key != NULL && g_strcmp0 (key, "space") == 0)
+            gst_3d_hmd_reset (self->camera->hmd);
+          break;
+        }
+        default:
+          break;
+      }
+
       break;
     default:
       break;
