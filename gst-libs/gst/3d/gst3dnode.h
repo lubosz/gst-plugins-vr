@@ -25,6 +25,7 @@
 #include <gst/gst.h>
 #include <gst/gl/gstgl_fwd.h>
 #include "gst3dshader.h"
+#include "../../gst-libs/gst/3d/gst3dmesh.h"
 
 G_BEGIN_DECLS
 #define GST_3D_TYPE_NODE            (gst_3d_node_get_type ())
@@ -56,12 +57,12 @@ GType gst_3d_node_get_type (void);
 
 Gst3DNode *gst_3d_node_new_debug_axes (GstGLContext * context);
 
-Gst3DNode *
-gst_3d_node_new_sphere(GstGLContext * context, Gst3DShader * shader, float radius, unsigned stacks,
-    unsigned slices);
-
 void gst_3d_node_draw (Gst3DNode * self);
 void gst_3d_node_draw_wireframe (Gst3DNode * self);
+
+Gst3DNode *
+gst_3d_node_new_from_mesh_shader (GstGLContext * context, Gst3DMesh * mesh,
+    Gst3DShader * shader);
 
 G_END_DECLS
 #endif /* __GST_3D_NODE_H__ */

@@ -99,13 +99,6 @@ void gst_3d_mesh_upload_cube (Gst3DMesh * self);
 void gst_3d_mesh_draw_arrays (Gst3DMesh * self);
 
 void
-gst_3d_mesh_upload_sphere_bottom_cap (Gst3DMesh * self, float radius, unsigned stacks,
-    unsigned slices);
-void
-gst_3d_mesh_upload_sphere_top_cap (Gst3DMesh * self, float radius, unsigned stacks,
-    unsigned slices);
-
-void
 gst_3d_mesh_append_attribute_buffer(Gst3DMesh * self, const gchar* name, size_t element_size, guint vector_length, GLfloat *vertices);
 
 GType gst_3d_mesh_get_type (void);

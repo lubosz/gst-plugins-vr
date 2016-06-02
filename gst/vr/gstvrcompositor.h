@@ -47,11 +47,9 @@ struct _GstVRCompositor
   guint eye_width;
   guint eye_height;
 
-  GLenum render_mode;
-
   gboolean caps_change;
 
-  Gst3DMesh *mesh;
+  // Gst3DMesh *mesh;
   Gst3DMesh *render_plane;
 
   Gst3DShader *shader;
@@ -60,6 +58,8 @@ struct _GstVRCompositor
   GLuint left_color_tex, left_fbo;
   GLuint right_color_tex, right_fbo;
   GLint default_fbo;
+  
+  GList *nodes;
 };
 
 struct _GstVRCompositorClass
