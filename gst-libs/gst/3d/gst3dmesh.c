@@ -184,13 +184,12 @@ gst_3d_mesh_bind_shader (Gst3DMesh * self, Gst3DShader * shader)
 
     if (attrib_location != -1) {
       gl->VertexAttribPointer (attrib_location, buf->vector_length, GL_FLOAT,
-          GL_FALSE, buf->vector_length * sizeof (GLfloat), 0);
+          GL_FALSE, 0, 0);
       gl->EnableVertexAttribArray (attrib_location);
     } else {
       GST_WARNING ("could not find attribute %s in shader.", buf->name);
     }
   }
-
   gl->BindBuffer (GL_ELEMENT_ARRAY_BUFFER, self->vbo_indices);
 }
 
