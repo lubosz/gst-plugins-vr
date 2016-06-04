@@ -103,12 +103,17 @@ gst_3d_camera_arcball_translate (Gst3DCameraArcball * self, float z)
 void
 gst_3d_camera_arcball_rotate (Gst3DCameraArcball * self, gdouble x, gdouble y)
 {
-  self->theta += y * self->rotation_speed;
-  self->phi += x * self->rotation_speed;
+  float delta_theta = y * self->rotation_speed;
+  float delta_phi = x * self->rotation_speed;
 
-  // TODO: fix Gimbal lock
+  self->phi += delta_phi;
 
-  GST_DEBUG ("theta: %f phi: %f", self->theta, self->phi);
+  // 2π < θ < π to avoid gimbal lock
+  float next_theta_pi = (self->theta + delta_theta) / M_PI;
+  if (next_theta_pi < 2.0 && next_theta_pi > 1.0)
+    self->theta += delta_theta;
+
+  GST_DEBUG ("θ = %fπ ϕ = %fπ", self->theta / M_PI, self->phi / M_PI);
   gst_3d_camera_arcball_update_view (self);
 }
 
