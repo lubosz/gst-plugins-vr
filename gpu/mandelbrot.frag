@@ -2,6 +2,7 @@
 
 in vec2 fractal_position;
 in vec2 out_uv;
+out vec4 frag_color;
 
 uniform float time;
 
@@ -37,6 +38,5 @@ vec4 iterate_pixel(vec2 position) {
 }
 
 void main() {
-  gl_FragColor = iterate_pixel(fractal_position);
-  //gl_FragColor = vec4(fractal_position,0,1);
+  frag_color = iterate_pixel(fractal_position);
 }
