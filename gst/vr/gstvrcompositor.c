@@ -249,14 +249,13 @@ gst_vr_compositor_init_scene (GstGLFilter * filter)
   if (!self->shader) {
     self->shader = gst_3d_shader_new_vert_frag (context, "mvp_uv.vert",
         "texture_uv.frag");
-
     //Gst3DShader * sphere_shader = gst_3d_shader_new_vert_frag (context, "mvp_uv.vert",
-    //    "texture_uv.frag");
-    Gst3DMesh *sphere_mesh = gst_3d_mesh_new_sphere (context, 10.0, 100, 100);
+    //    "debug_uv.frag");
+    Gst3DShader *sphere_shader = self->shader;
+    Gst3DMesh *sphere_mesh = gst_3d_mesh_new_sphere (context, 800.0, 100, 100);
     Gst3DNode *sphere_node =
-        gst_3d_node_new_from_mesh_shader (context, sphere_mesh, self->shader);
+        gst_3d_node_new_from_mesh_shader (context, sphere_mesh, sphere_shader);
     self->nodes = g_list_append (self->nodes, sphere_node);
-
 
     self->render_plane = gst_3d_mesh_new_plane (context, self->camera->aspect);
     gst_3d_mesh_bind_shader (self->render_plane, self->shader);
@@ -267,7 +266,8 @@ gst_vr_compositor_init_scene (GstGLFilter * filter)
         self->eye_width, self->eye_height);
     gl->ClearColor (0.f, 0.f, 0.f, 0.f);
     gl->ActiveTexture (GL_TEXTURE0);
-    // gst_gl_shader_set_uniform_1i (sphere_shader, "texture", 0);
+
+    gst_3d_shader_bind (self->shader);
     gst_gl_shader_set_uniform_1i (self->shader->shader, "texture", 0);
   }
   return ret;
@@ -306,6 +306,7 @@ _draw_eye (GstVRCompositor * self, GstGLFuncs * gl, GLuint fbo,
     gst_3d_shader_bind (node->shader);
     gst_3d_shader_upload_matrix (node->shader, mvp, "mvp");
     gst_3d_node_draw (node);
+    //gst_3d_node_draw_wireframe (node);
   }
 }
 
