@@ -13,12 +13,9 @@ gi.require_version('GstGL', '1.0')
 
 from gi.repository import Gdk, Gst, Gtk, GdkX11, GstVideo, GstGL
 
+import sys
+
 signal.signal(signal.SIGINT, signal.SIG_DFL)
-
-# video_uri = "file:///home/bmonkey/workspace/ges/data/hd/Return to split point.mp4"
-# video_uri = "file:///home/bmonkey/Videos/vr/Beach 3D 360 - panocam3d.com.mp4"
-video_uri = "file:///home/bmonkey/Videos/360/elephants.webm"
-
 
 def trace(frame, event, arg):
     print ("%s, %s:%d" % (event, frame.f_code.co_filename, frame.f_lineno))
@@ -48,70 +45,39 @@ class SPHVR:
         else:
             pass
 
-    def __init__(self):
-        Gtk.init([])
-        Gst.init([])
-
-        self.is_fullscreen = False
-
-        width, height = 1920, 1080
-        #width, height = 640, 480
-        self.aspect = width/height
-
-        pipeline = Gst.Pipeline()
-
+    def init_pipeline(self, somesink):
+        self.pipeline = Gst.Pipeline()
         src = Gst.ElementFactory.make("uridecodebin", None)
-        src.set_property("uri", video_uri)
-
-        # sink = CairoGLSink(width, height)
-        
-        
-        sink = Gst.ElementFactory.make("gtkglsink", None)
-        
-        """
-        gst-launch-1.0 filesrc location=~/Videos/360/carpet.webm ! decodebin ! glupload ! glcolorconvert ! glcompositor ! video/x-raw\(memory:GLMemory\), width=1920, height=1080 ! hmdwarp ! glimagesink
-        """
-        
+        src.set_property("uri", self.video_uri)
         glupload = Gst.ElementFactory.make("glupload", None)
         glcolorconvert = Gst.ElementFactory.make("glcolorconvert", None)
         videorate = Gst.ElementFactory.make("videorate", None)
         vrcompositor = Gst.ElementFactory.make("vrcompositor", None)
-        
         hmdwarp = Gst.ElementFactory.make("hmdwarp", None)
 
         # caps
-        caps = Gst.Caps.from_string("video/x-raw\(memory:GLMemory\), width=%d, height=%d, framerate=75/1" % (width, height))
+        caps = Gst.Caps.from_string("video/x-raw(memory:GLMemory), width=%d, height=%d, framerate=75/1" % (self.width, self.height))
         cf = Gst.ElementFactory.make("capsfilter")
         cf.set_property("caps", caps)
         
-        #somesink = sink.sink
-        somesink = sink
-
-        #pipeline.add(src, glupload, glcolorconvert, videorate, vrcompositor, cf, somesink)
-        pipeline.add(src, glupload, glcolorconvert, videorate, vrcompositor, cf, hmdwarp, somesink)
+        self.pipeline.add(src, glupload, glcolorconvert, videorate, vrcompositor, cf, hmdwarp, somesink)
         src.link(glupload)
         glupload.link(glcolorconvert)
         glcolorconvert.link(videorate)
         videorate.link(vrcompositor)
         vrcompositor.link(cf)
+        
         cf.link(hmdwarp)
         hmdwarp.link(somesink)
-        #cf.link(somesink)
+        
         src.connect("pad-added", self.pad_added_cb, glupload)
 
-        bus = pipeline.get_bus()
+        bus = self.pipeline.get_bus()
         bus.add_signal_watch()
         bus.connect("message", self.bus_cb)
 
-        self.window = Gtk.Window()
-        self.window.connect("delete-event", self.window_closed, pipeline)
-        self.window.connect("key-press-event", self.key_pressed, pipeline)
-        self.window.set_default_size(width, height)
-        self.window.set_title("SPHVR")
-        
-
-
-        """
+    """
+    def init_widgets(self):
         outer_box = Gtk.Box()
         outer_box.set_orientation(Gtk.Orientation.VERTICAL)
 
@@ -139,11 +105,39 @@ class SPHVR:
         pause_button.connect("clicked", self.pause, pipeline, sink)
 
         self.window.add(outer_box)
-        """
+    """
+
+    def __init__(self):
+
+        if (len(sys.argv) != 2):
+          print("Usage:")
+          print("       sphvr <uri>")
+          print("Example:")
+          print("       sphvr file:///home/bmonkey/Videos/elephants.webm")
+          exit()
+        else:
+          self.video_uri = sys.argv[1]
+
+        Gtk.init([])
+        Gst.init([])
+        
+        self.width, self.height = 1920, 1080
+        self.is_fullscreen = False
+        self.aspect = float(self.width)/float(self.height)
+
+        # sink = CairoGLSink(width, height)
+        sink = Gst.ElementFactory.make("gtkglsink", None)
+        self.init_pipeline(sink)
+
+        self.window = Gtk.Window()
+        self.window.connect("delete-event", self.window_closed, self.pipeline)
+        self.window.connect("key-press-event", self.key_pressed, self.pipeline)
+        self.window.set_default_size(self.width, self.height)
+        self.window.set_title("SPHVR")
+
         #gtksink
         w = sink.get_property("widget")
         self.window.add(w)
-
         #self.window.add(sink)
 
         try:
@@ -158,8 +152,8 @@ class SPHVR:
 
         #sink.set_handle()
 
-        if pipeline.set_state(Gst.State.PLAYING) == Gst.StateChangeReturn.FAILURE:
-            pipeline.set_state(Gst.State.NULL)
+        if self.pipeline.set_state(Gst.State.PLAYING) == Gst.StateChangeReturn.FAILURE:
+            self.pipeline.set_state(Gst.State.NULL)
         else:
             Gtk.main()
 
