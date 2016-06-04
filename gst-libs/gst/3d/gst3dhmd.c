@@ -175,17 +175,14 @@ gst_3d_hmd_get_device_properties (Gst3DHmd * self)
   ohmd_device_getf (self->device, OHMD_PROJECTION_ZFAR, &self->zfar);
   GST_DEBUG ("znear %f, zfar %f", self->znear, self->zfar);
 
-  /*
-     float kappa[6];
-     ohmd_device_getf (self->device, OHMD_DISTORTION_K, kappa);
-     GST_DEBUG("Kappa: %f, %f, %f, %f, %f, %f",
-     kappa[0], kappa[1], kappa[2], kappa[3], kappa[4], kappa[5]);
-     float position[3];
-     ohmd_device_getf (self->device, OHMD_POSITION_VECTOR, position);
-     GST_DEBUG("position: %f, %f, %f",
-     position[0], position[1], position[2]);
+  float kappa[6];
+  ohmd_device_getf (self->device, OHMD_DISTORTION_K, kappa);
+  GST_DEBUG ("Kappa: %f, %f, %f, %f, %f, %f",
+      kappa[0], kappa[1], kappa[2], kappa[3], kappa[4], kappa[5]);
 
-   */
+  float position[3];
+  ohmd_device_getf (self->device, OHMD_POSITION_VECTOR, position);
+  GST_DEBUG ("position: %f, %f, %f", position[0], position[1], position[2]);
 }
 
 void
