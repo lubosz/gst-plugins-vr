@@ -1,53 +1,59 @@
-#version 330
+/* based on OpenHMD warp shader */
 
-// Taken from mts3d forums, from user fredrik.
+#version 330
+precision highp float;
 
 uniform sampler2D texture;
-
 uniform vec2 screen_size;
 
-const vec2 lens_center_left = vec2(0.2863248, 0.5);
-const vec2 lens_center_right = vec2(0.7136753, 0.5);
+const vec4 kappa = vec4(1.0, 0.22, 0.24, 0.0);
+// const vec4 kappa = vec4(1.0, 1.7, 0.7, 15.0);
+
 const vec2 screen_center_left = vec2(0.25, 0.5);
 const vec2 screen_center_right = vec2(0.75, 0.5);
+
 const vec2 scale = vec2(0.1469278, 0.2350845);
 const vec2 scale_in = vec2(4, 2.5);
-const vec4 kappa = vec4(1, 0.22, 0.24, 0);
 
 in vec2 out_uv;
-out vec4 fragColor;
+out vec4 frag_color;
 
 // scales input texture coordinates for distortion.
-vec2 HmdWarp(vec2 in01, vec2 LensCenter)
+vec2 hmd_warp(vec2 lens_center)
 {
-	vec2 theta = (in01 - LensCenter) * scale_in; // scales to [-1, 1]
+	vec2 theta = (out_uv - lens_center) * scale_in; // scales to [-1, 1]
 	float rSq = theta.x * theta.x + theta.y * theta.y;
-	vec2 rvector = theta * (kappa.x + kappa.y * rSq +
-		kappa.z * rSq * rSq +
-		kappa.w * rSq * rSq * rSq);
-	return LensCenter + scale * rvector;
+	vec2 rvector = theta * (
+	    kappa.x
+	  + kappa.y * rSq
+	  + kappa.z * rSq * rSq
+	  + kappa.w * rSq * rSq * rSq);
+	return lens_center + scale * rvector;
+}
+
+bool is_outside_area(vec2 tc, vec2 screen_center)
+{
+  const vec2 quarter_screen = vec2(0.25, 0.5);
+  vec2 test = clamp(tc,
+      screen_center - quarter_screen,
+      screen_center + quarter_screen) - tc;
+  return any(bvec2(test));
 }
 
 void main()
 {
-
-  int center_x = int(screen_size.x) / 2;
-
 	// The following two variables need to be set per eye
-	vec2 LensCenter = gl_FragCoord.x < center_x ? lens_center_left : lens_center_right;
-	vec2 ScreenCenter = gl_FragCoord.x < center_x ? screen_center_left : screen_center_right;
+	vec2 screen_center = out_uv.x < 0.5 ? screen_center_left : screen_center_right;
+	vec2 tc = hmd_warp(screen_center);
 
-	vec2 oTexCoord = gl_FragCoord.xy / screen_size;
-
-	vec2 tc = HmdWarp(oTexCoord, LensCenter);
-	if (any(bvec2(clamp(tc,ScreenCenter-vec2(0.25,0.5), ScreenCenter+vec2(0.25,0.5)) - tc)))
+	if (is_outside_area(tc, screen_center))
 	{
 	  // We are outside of the warped area
-		fragColor = vec4(0.0, 0.0, 0.0, 1.0);
+		frag_color = vec4(0.0, 0.0, 0.0, 1.0);
 		return;
 	}
 
   // double mono video for fake stereo
 	//tc.x = gl_FragCoord.x < center_x ? (2.0 * tc.x) : (2.0 * (tc.x - 0.5));
-	fragColor = texture2D(texture, tc);
+	frag_color = texture2D(texture, tc);
 }
