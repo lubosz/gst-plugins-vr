@@ -279,7 +279,7 @@ gst_3d_mesh_upload_plane (Gst3DMesh * self, float aspect)
   gst_3d_mesh_append_attribute_buffer (self, "uv", sizeof (GLfloat), 2, uvs);
 
   // index
-  self->index_size = sizeof (indices);
+  self->index_size = sizeof (indices);  // /sizeof(indices[0])
   gl->BindBuffer (GL_ELEMENT_ARRAY_BUFFER, self->vbo_indices);
   gl->BufferData (GL_ELEMENT_ARRAY_BUFFER, self->index_size, indices,
       GL_STATIC_DRAW);
