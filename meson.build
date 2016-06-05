@@ -127,3 +127,16 @@ executable('gst-play-vr-' + apiversion,
   link_with: [gst_3d_lib]
 )
 
+# tests
+
+executable('camera', 'tests/3d/camera.c',
+  install : false,
+  dependencies : [glib_dep, gobject_dep, gst_dep, gst_gl_dep, gst_video_dep],
+  link_with: [gst_3d_lib]
+)
+
+executable('mesh', 'tests/3d/mesh.c', 'gpu/shaders.c',
+  install : false,
+  dependencies : [glib_dep, gobject_dep, gst_dep, gst_gl_dep, gst_video_dep, graphene_dep, gio_dep],
+  link_with: [gst_3d_lib]
+)
