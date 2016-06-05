@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/gpu">
-    <file>distortion.frag</file>
     <file>texture_uv.frag</file>
     <file>warp.frag</file>
     <file>mvp_uv.vert</file>
