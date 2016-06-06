@@ -11,10 +11,10 @@ gst_version = '@0@.@1@'.format(gst_version, gst_nano)
 
 GST_DEP_VERSION = '>= @0@.@1@'.format(gst_major, gst_minor)
 
-openhmd_dep = dependency('openhmd')
 gobject_dep = dependency('gobject-2.0')
 graphene_dep = dependency('graphene-1.0')
-freenect2_dep = dependency('freenect2')
+openhmd_dep = dependency('openhmd', required : false)
+freenect2_dep = dependency('freenect2', required : false)
 glib_dep = dependency('glib-2.0')
 gio_dep = dependency('gio-2.0')
 gst_dep = dependency('gstreamer-' + apiversion, version: GST_DEP_VERSION)
@@ -95,14 +95,23 @@ if r.returncode() != 0
   message(r.stderr().strip())
 endif
 
-gst_vr_plugins = shared_library('gstvrplugins',
-  'gst/vr/gstvrcompositor.c',
+vr_plugin_src_hmd = []
+
+if openhmd_dep.found()
+  vr_plugin_src_hmd = ['gst/vr/gsthmdwarp.c']
+endif
+
+vr_plugin_src = ['gst/vr/gstvrcompositor.c',
   'gst/vr/gstvrtestsrc.c',
   'gst/vr/vrtestsrc.c',
   'gst/vr/gsthmdwarp.c',
   'gst/vr/gstpointcloudbuilder.c',
   'gst/vr/gstvr.c',
   'gpu/shaders.c',
+  vr_plugin_src_hmd]
+
+gst_vr_plugins = shared_library('gstvrplugins',
+  vr_plugin_src,
   install : true,
   dependencies : [glib_dep, gobject_dep, gst_dep, gst_gl_dep, gst_video_dep, graphene_dep, openhmd_dep, gio_dep],
   c_args : gst_c_args,
@@ -110,15 +119,17 @@ gst_vr_plugins = shared_library('gstvrplugins',
   link_with: [gst_3d_lib]
 )
 
-gst_freenect2 = shared_library('gstfreenect2',
-  'gst/freenect2/gstfreenect2src.cpp',
-  'gst/freenect2/gstfreenect2.cpp',
-  install : true,
-  dependencies : [glib_dep, gobject_dep, gst_dep, gst_gl_dep, gst_video_dep, graphene_dep, freenect2_dep, openhmd_dep, gio_dep],
-  c_args : gst_c_args,
-  install_dir : '@0@/gstreamer-1.0'.format(get_option('libdir')),
-  link_with: [gst_3d_lib]
-)
+if freenect2_dep.found()
+  gst_freenect2 = shared_library('gstfreenect2',
+    'gst/freenect2/gstfreenect2src.cpp',
+    'gst/freenect2/gstfreenect2.cpp',
+    install : true,
+    dependencies : [glib_dep, gobject_dep, gst_dep, gst_gl_dep, gst_video_dep, graphene_dep, freenect2_dep, openhmd_dep, gio_dep],
+    c_args : gst_c_args,
+    install_dir : '@0@/gstreamer-1.0'.format(get_option('libdir')),
+    link_with: [gst_3d_lib]
+  )
+endif
 
 executable('gst-play-vr-' + apiversion,
   'tools/gst-play-vr.c',
