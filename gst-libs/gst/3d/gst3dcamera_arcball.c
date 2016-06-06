@@ -118,6 +118,18 @@ gst_3d_camera_arcball_rotate (Gst3DCameraArcball * self, gdouble x, gdouble y)
 }
 
 void
+_graphene_matrix_negate_component (graphene_matrix_t * matrix, guint n, guint m,
+    graphene_matrix_t * result)
+{
+  float values[16];
+  for (int x = 0; x < 4; x++)
+    for (int y = 0; y < 4; y++)
+      values[x * 4 + y] = graphene_matrix_get_value (matrix, x, y);
+  values[n * 4 + m] = -graphene_matrix_get_value (matrix, n, m);
+  graphene_matrix_init_from_float (result, values);
+}
+
+void
 gst_3d_camera_arcball_update_view (Gst3DCameraArcball * self)
 {
   float radius = exp (self->center_distance);
@@ -131,17 +143,18 @@ gst_3d_camera_arcball_update_view (Gst3DCameraArcball * self)
   graphene_matrix_init_perspective (&projection_matrix,
       self->fov, self->aspect, self->znear, self->zfar);
 
-  /*
-     TODO: fix graphene look_at
-     graphene_matrix_t view_matrix;
-     graphene_matrix_init_look_at (&view_matrix, &self->eye, &self->center,
-     &self->up);
-   */
+  graphene_matrix_t view_matrix;
+  graphene_matrix_init_look_at (&view_matrix, &self->eye, &self->center,
+      &self->up);
 
-  graphene_matrix_t view_matrix =
-      gst_3d_glm_look_at (&self->eye, &self->center, &self->up);
+  graphene_matrix_t v_transposed;
+  graphene_matrix_inverse (&view_matrix, &v_transposed);
 
-  graphene_matrix_multiply (&view_matrix, &projection_matrix, &self->mvp);
+  //TODO: graphene lookat component differs glm
+  graphene_matrix_t v_transposed_inv;
+  _graphene_matrix_negate_component (&v_transposed, 3, 2, &v_transposed_inv);
+
+  graphene_matrix_multiply (&v_transposed_inv, &projection_matrix, &self->mvp);
 }
 
 void
