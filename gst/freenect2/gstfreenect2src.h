@@ -48,25 +48,14 @@ G_BEGIN_DECLS
 typedef struct _GstFreenect2Src GstFreenect2Src;
 typedef struct _GstFreenect2SrcClass GstFreenect2SrcClass;
 
-typedef enum
-{
-  GST_FREENECT2_SRC_FILE_TRANSFER,
-  GST_FREENECT2_SRC_NEXT_PROGRAM_CHAIN,
-  GST_FREENECT2_SRC_INVALID_DATA
-} GstFreenect2State;
 
 struct _GstFreenect2Src
 {
   GstPushSrc element;
-
-  GstFreenect2State state;
   gchar *uri_name;
   gint sourcetype;
   GstVideoInfo info;
   GstCaps *gst_caps;
-
-  /* Timestamp of the first frame */
-  GstClockTime oni_start_ts;
 
   /* Freenect2 variables */
   libfreenect2::Freenect2 * freenect2;
@@ -75,10 +64,9 @@ struct _GstFreenect2Src
 
   libfreenect2::SyncMultiFrameListener * listener;
   libfreenect2::FrameMap frames;
-  libfreenect2::Frame * undistorted;
-  libfreenect2::Frame * registered;
-
-  libfreenect2::Registration * registration;
+  //libfreenect2::Frame * undistorted;
+  //libfreenect2::Frame * registered;
+  //libfreenect2::Registration * registration;
 
   int width, height, fps;
 };

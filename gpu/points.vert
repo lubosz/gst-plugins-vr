@@ -8,24 +8,27 @@ uniform sampler2D texture;
 
 void main()
 {
-
-    vec2 ndcPos = position.xy;
-    vec2 in_xy = vec2(0.5) + 0.5*(ndcPos);
+    vec2 in_xy = vec2(0.5) + 0.5* position.xy;
     out_uv = in_xy;
 
     // This is where the magic should happen - sample the depth texture
     // directly from the vertex shader and set each point's location
     // according to its nearest sampled depth value.
-    vec4 texel = textureLod(texture, in_xy, 0.0);
+    //vec4 texel = textureLod(texture, in_xy, 0.0);
+    
+    vec4 texel = texture2D(texture, in_xy);
+
     float depthValue = texel.r;
 
     vec3 pos = position;
     pos.z = depthValue;
     // Push all points of unknown depth away where they shouldn't be visible.
+    /*
     if (depthValue == 0.0)
     {
         pos = vec3(9999.0);
     }
+    */
    gl_Position = mvp * vec4(pos, 1.0);
 
 
