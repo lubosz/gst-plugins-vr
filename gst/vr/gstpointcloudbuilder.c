@@ -119,6 +119,9 @@ gst_point_cloud_builder_init (GstPointCloudBuilder * self)
   self->in_tex = 0;
   self->mesh = NULL;
   self->camera = GST_3D_CAMERA (gst_3d_camera_arcball_new ());
+  GST_3D_CAMERA_ARCBALL (self->camera)->theta = 1.6 * M_PI;
+  GST_3D_CAMERA_ARCBALL (self->camera)->phi = 2.67 * M_PI;
+  GST_3D_CAMERA_ARCBALL (self->camera)->center_distance = 0.5;
 
   self->left_color_tex = 0;
   self->left_fbo = 0;
