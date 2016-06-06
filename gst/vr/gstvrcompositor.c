@@ -43,6 +43,7 @@
 #include <graphene-gobject.h>
 #include "../../gst-libs/gst/3d/gst3drenderer.h"
 #include "../../gst-libs/gst/3d/gst3dnode.h"
+#include "../../gst-libs/gst/3d/gst3dscene.h"
 #include "../../gst-libs/gst/3d/gst3dcamera_hmd.h"
 
 #define GST_CAT_DEFAULT gst_vr_compositor_debug
@@ -239,6 +240,7 @@ gst_vr_compositor_stop (GstBaseTransform * trans)
 
   /* blocking call, wait until the opengl thread has destroyed the shader */
   gst_3d_shader_delete (self->shader);
+  gst_object_unref (self->scene);
 
   return GST_BASE_TRANSFORM_CLASS (parent_class)->stop (trans);
 }
@@ -252,6 +254,9 @@ gst_vr_compositor_init_scene (GstGLFilter * filter)
   GstGLFuncs *gl = context->gl_vtable;
   gboolean ret = TRUE;
   if (!self->shader) {
+
+    self->scene = gst_3d_scene_new (context);
+
     self->shader = gst_3d_shader_new_vert_frag (context, "mvp_uv.vert",
         "texture_uv.frag");
     //Gst3DShader * sphere_shader = gst_3d_shader_new_vert_frag (context, "mvp_uv.vert",
@@ -260,7 +265,7 @@ gst_vr_compositor_init_scene (GstGLFilter * filter)
     Gst3DMesh *sphere_mesh = gst_3d_mesh_new_sphere (context, 800.0, 100, 100);
     Gst3DNode *sphere_node =
         gst_3d_node_new_from_mesh_shader (context, sphere_mesh, sphere_shader);
-    self->nodes = g_list_append (self->nodes, sphere_node);
+    gst_3d_scene_append_node (self->scene, sphere_node);
 
     self->render_plane =
         gst_3d_mesh_new_plane (context, self->camera->hmd->left_aspect);
@@ -298,28 +303,12 @@ gst_vr_compositor_filter_texture (GstGLFilter * filter, guint in_tex,
 }
 
 static void
-_draw_scene (GstVRCompositor * self, GstGLFuncs * gl, unsigned w, unsigned h,
-    graphene_matrix_t * mvp)
-{
-  gl->Viewport (0, 0, w, h);
-  gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-  GList *l;
-  for (l = self->nodes; l != NULL; l = l->next) {
-    Gst3DNode *node = (Gst3DNode *) l->data;
-    gst_3d_shader_bind (node->shader);
-    gst_3d_shader_upload_matrix (node->shader, mvp, "mvp");
-    gst_3d_node_draw (node);
-    //gst_3d_node_draw_wireframe (node);
-  }
-}
-
-static void
 _draw_eye (GstVRCompositor * self, GstGLFuncs * gl, GLuint fbo,
     graphene_matrix_t * mvp)
 {
   gl->BindFramebuffer (GL_FRAMEBUFFER, fbo);
-  _draw_scene (self, gl, self->eye_width, self->eye_height, mvp);
+  gl->Viewport (0, 0, self->eye_width, self->eye_height);
+  gst_3d_scene_draw (self->scene, mvp);
 }
 
 static void

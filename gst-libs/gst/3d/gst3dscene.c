@@ -63,6 +63,12 @@ gst_3d_scene_finalize (GObject * object)
     self->context = NULL;
   }
 
+  GList *l;
+  for (l = self->nodes; l != NULL; l = l->next) {
+    Gst3DNode *node = (Gst3DNode *) l->data;
+    gst_object_unref (node);
+  }
+
   G_OBJECT_CLASS (gst_3d_scene_parent_class)->finalize (object);
 }
 
@@ -71,4 +77,25 @@ gst_3d_scene_class_init (Gst3DSceneClass * klass)
 {
   GObjectClass *obj_class = G_OBJECT_CLASS (klass);
   obj_class->finalize = gst_3d_scene_finalize;
+}
+
+void
+gst_3d_scene_draw (Gst3DScene * self, graphene_matrix_t * mvp)
+{
+  GstGLFuncs *gl = self->context->gl_vtable;
+  gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  GList *l;
+  for (l = self->nodes; l != NULL; l = l->next) {
+    Gst3DNode *node = (Gst3DNode *) l->data;
+    gst_3d_shader_bind (node->shader);
+    gst_3d_shader_upload_matrix (node->shader, mvp, "mvp");
+    gst_3d_node_draw (node);
+    //gst_3d_node_draw_wireframe (node);
+  }
+}
+
+void
+gst_3d_scene_append_node (Gst3DScene * self, Gst3DNode * node)
+{
+  self->nodes = g_list_append (self->nodes, node);
 }

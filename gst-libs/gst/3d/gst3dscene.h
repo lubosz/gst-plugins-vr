@@ -24,6 +24,8 @@
 
 #include <gst/gst.h>
 #include <gst/gl/gstgl_fwd.h>
+#include <graphene.h>
+#include "gst3dnode.h"
 
 G_BEGIN_DECLS
 #define GST_3D_TYPE_SCENE            (gst_3d_scene_get_type ())
@@ -40,6 +42,8 @@ struct _Gst3DScene
   /*< private > */
   GstObject parent;
   GstGLContext *context;
+    
+  GList *nodes;
 };
 
 struct _Gst3DSceneClass
@@ -48,6 +52,9 @@ struct _Gst3DSceneClass
 };
 
 Gst3DScene *gst_3d_scene_new (GstGLContext * context);
+void gst_3d_scene_append_node(Gst3DScene *self, Gst3DNode * node);
+void gst_3d_scene_draw(Gst3DScene *self, graphene_matrix_t * mvp);
+
 GType gst_3d_scene_get_type (void);
 
 G_END_DECLS

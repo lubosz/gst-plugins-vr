@@ -27,6 +27,7 @@
 #include "../../gst-libs/gst/3d/gst3dcamera_hmd.h"
 #include "../../gst-libs/gst/3d/gst3dshader.h"
 #include "../../gst-libs/gst/3d/gst3drenderer.h"
+#include "../../gst-libs/gst/3d/gst3dscene.h"
 
 G_BEGIN_DECLS
 #define GST_TYPE_VR_COMPOSITOR            (gst_vr_compositor_get_type())
@@ -59,7 +60,7 @@ struct _GstVRCompositor
   GLuint right_color_tex, right_fbo;
   GLint default_fbo;
   
-  GList *nodes;
+  Gst3DScene *scene;
   
   gfloat filter_aspect;
 };
