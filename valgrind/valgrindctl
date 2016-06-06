@@ -18,7 +18,9 @@ PLAIN_GL_PIPELINE="gltestsrc ! video/x-raw(memory:GLMemory), framerate=(fraction
 FREENECT_PIPELINE="freenect2src sourcetype=0 ! glimagesink"
 HMDWARP_PIPELINE="gltestsrc ! video/x-raw(memory:GLMemory), framerate=(fraction)30/1, width=1280, height=720 ! hmdwarp ! glimagesink"
 
-PIPELINE=$FREENECT_PIPELINE
+VR_COMP_PIPELINE="gltestsrc ! vrcompositor ! video/x-raw(memory:GLMemory), framerate=(fraction)30/1, width=1280, height=720 ! glimagesink"
+
+PIPELINE=$VR_COMP_PIPELINE
 
 ACTIVE_SUPPS=("--suppressions=$GST_VALIDATE_DIR/data/gstvalidate.supp"
               "--suppressions=$GST_VALIDATE_DIR/common/gst.supp"
