@@ -10,20 +10,20 @@ GST_VALIDATE_DIR=/home/bmonkey/pitivi-git/gst-devtools/validate
 
 export GST_GL_XINITTHREADS=1
 export GST_VALIDATE_SCENARIOS_PATH=$GST_VALIDATE_DIR/data/scenarios/
-export GST_VALIDATE_SCENARIO=setup_sink_props_max_lateness:play_15s
+export GST_VALIDATE_SCENARIO=play_15s
 export GST_VALIDATE_CONFIG=$GST_VALIDATE_DIR/validate/data/valgrind.config
 export DISPLAY=:1
 
 PLAIN_GL_PIPELINE="gltestsrc ! video/x-raw(memory:GLMemory), framerate=(fraction)30/1, width=1280, height=720 ! glimagesink"
-
-
+FREENECT_PIPELINE="freenect2src sourcetype=0 ! glimagesink"
 HMDWARP_PIPELINE="gltestsrc ! video/x-raw(memory:GLMemory), framerate=(fraction)30/1, width=1280, height=720 ! hmdwarp ! glimagesink"
 
-PIPELINE=$HMDWARP_PIPELINE
+PIPELINE=$FREENECT_PIPELINE
 
 ACTIVE_SUPPS=("--suppressions=$GST_VALIDATE_DIR/data/gstvalidate.supp"
               "--suppressions=$GST_VALIDATE_DIR/common/gst.supp"
-              "--suppressions=$SUPP_DIR/gstgl.supp")
+              "--suppressions=$SUPP_DIR/gstgl.supp"
+              "--suppressions=$SUPP_DIR/freenect-deps.supp")
 
 VALGRIND_ARGS=("--leak-check=full"
                "--show-leak-kinds=all"
@@ -32,10 +32,10 @@ VALGRIND_ARGS=("--leak-check=full"
                "--show-reachable=yes"
                "--track-origins=yes"
                "--leak-resolution=high"
+               "--num-callers=20"
                "--errors-for-leak-kinds=definite")
 : '
-  "--num-callers=20""
-  "--error-exitcode=20""
+  "--error-exitcode=20"
 '
 
 if [ "$1" == "run" ]; then

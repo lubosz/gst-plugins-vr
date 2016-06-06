@@ -120,12 +120,13 @@ gst_3d_mesh_finalize (GObject * object)
     self->vao = 0;
   }
 
-/*
-  if (self->vbo_positions) {
-    gl->DeleteBuffers (1, &self->vbo_positions);
-    self->vbo_positions = 0;
+  GList *l;
+  for (l = self->attribute_buffers; l != NULL; l = l->next) {
+    struct Gst3DAttributeBuffer *buf = (struct Gst3DAttributeBuffer *) l->data;
+    gl->DeleteBuffers (1, &buf->location);
+    g_free (buf);
   }
-*/
+
   if (self->vbo_indices) {
     gl->DeleteBuffers (1, &self->vbo_indices);
     self->vbo_indices = 0;

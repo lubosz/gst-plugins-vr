@@ -108,7 +108,7 @@ gst_hmd_warp_init (GstHmdWarp * self)
 {
   self->shader = NULL;
   self->in_tex = 0;
-  //self->screen_size = NULL;
+  self->render_plane = NULL;
 }
 
 static void
@@ -163,6 +163,7 @@ gst_hmd_warp_reset_gl (GstGLFilter * filter)
   GstHmdWarp *self = GST_HMD_WARP (filter);
 
   if (self->shader) {
+    gst_3d_shader_delete (self->shader);
     gst_object_unref (self->shader);
     self->shader = NULL;
   }
