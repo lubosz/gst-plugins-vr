@@ -31,16 +31,6 @@ draw_render (gpointer data)
   GstGLContext *context = data;
   GstGLContextClass *context_class = GST_GL_CONTEXT_GET_CLASS (context);
   const GstGLFuncs *gl = context->gl_vtable;
-  const GLfloat vVertices[] = { 1.0f, 1.0f, 0.0f,
-    1.0f, 0.0f,
-    -1.0f, 1.0f, 0.0f,
-    0.0f, 0.0f,
-    -1.0f, -1.0f, 0.0f,
-    0.0f, 1.0f,
-    1.0f, -1.0f, 0.0f,
-    1.0f, 1.0f
-  };
-
   GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
 
   gl->Clear (GL_COLOR_BUFFER_BIT);
