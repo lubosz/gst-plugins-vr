@@ -25,7 +25,6 @@
 #include <gst/gst.h>
 #include <gst/gl/gstgl_fwd.h>
 #include <graphene.h>
-#include "gst3dhmd.h"
 
 G_BEGIN_DECLS
 #define GST_3D_TYPE_CAMERA            (gst_3d_camera_get_type ())
@@ -49,10 +48,6 @@ struct _Gst3DCamera
   graphene_vec3_t center;
   graphene_vec3_t up;
 
-  gfloat xtranslation;
-  gfloat ytranslation;
-  gfloat ztranslation;
-  
   GList *pushed_buttons;
 
   /* perspective */
@@ -61,13 +56,6 @@ struct _Gst3DCamera
   gfloat znear;
   gfloat zfar;
   gboolean ortho;
-
-  /* stereo */
-  graphene_matrix_t left_vp_matrix;
-  graphene_matrix_t right_vp_matrix;
-  
-  Gst3DHmd * hmd;
-
 };
 
 struct _Gst3DCameraClass
@@ -80,6 +68,10 @@ Gst3DCamera *gst_3d_camera_new (void);
 void gst_3d_camera_update_view (Gst3DCamera * self);
 void gst_3d_camera_update_view_mvp (Gst3DCamera * self);
 void gst_3d_camera_navigation_event (Gst3DCamera * self, GstEvent * event);
+
+void gst_3d_camera_press_key (Gst3DCamera * self, const gchar * key);
+void gst_3d_camera_release_key (Gst3DCamera * self, const gchar * key);
+void gst_3d_camera_print_pressed_keys (Gst3DCamera * self);
 
 GType gst_3d_camera_get_type (void);
 

@@ -31,7 +31,6 @@
 #include <gst/gl/gl.h>
 
 #include "gst3dcamera.h"
-#include "gst3dglm.h"
 
 #define GST_CAT_DEFAULT gst_3d_camera_debug
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -48,7 +47,6 @@ gst_3d_camera_init (Gst3DCamera * self)
   self->aspect = 1920.0 / 1080.0;
   self->znear = 0.01;
   self->zfar = 1000.0;
-  self->hmd = gst_3d_hmd_new ();
 
   graphene_vec3_init (&self->eye, 0.f, 0.f, 1.f);
   graphene_vec3_init (&self->center, 0.f, 0.f, 0.f);
@@ -78,77 +76,10 @@ gst_3d_camera_class_init (Gst3DCameraClass * klass)
 }
 
 void
-gst_3d_camera_update_view_from_quaternion (Gst3DCamera * self)
-{
-  gst_3d_hmd_update (self->hmd);
-
-  /* projection from OpenHMD */
-  graphene_matrix_t left_eye_model_view;
-  graphene_matrix_t left_eye_projection =
-      gst_3d_hmd_get_matrix (self->hmd, OHMD_LEFT_EYE_GL_PROJECTION_MATRIX);
-
-  graphene_matrix_t right_eye_model_view;
-  graphene_matrix_t right_eye_projection =
-      gst_3d_hmd_get_matrix (self->hmd, OHMD_RIGHT_EYE_GL_PROJECTION_MATRIX);
-
-  /* rotation from OpenHMD */
-  graphene_quaternion_t quat = gst_3d_hmd_get_quaternion (self->hmd);
-  graphene_quaternion_to_matrix (&quat, &right_eye_model_view);
-  graphene_quaternion_to_matrix (&quat, &left_eye_model_view);
-
-  /* eye separation */
-  /*
-     graphene_point3d_t left_eye;
-     graphene_point3d_init (&left_eye, +self->hmd->eye_separation, 0, 0);
-     graphene_matrix_t translate_left;
-     graphene_matrix_init_translate (&translate_left, &left_eye);
-     graphene_point3d_t rigth_eye;
-     graphene_point3d_init (&rigth_eye, -self->hmd->eye_separation, 0, 0);
-     graphene_matrix_t translate_right;
-     graphene_matrix_init_translate (&translate_right, &rigth_eye);
-
-     graphene_matrix_multiply (&right_eye_model_view, &translate_right,
-     &right_eye_model_view);
-     graphene_matrix_multiply (&left_eye_model_view, &translate_left,
-     &left_eye_model_view);
-   */
-
-  graphene_matrix_multiply (&left_eye_model_view, &left_eye_projection,
-      &self->left_vp_matrix);
-  graphene_matrix_multiply (&right_eye_model_view, &right_eye_projection,
-      &self->right_vp_matrix);
-}
-
-void
-gst_3d_camera_update_view_from_matrix (Gst3DCamera * self)
-{
-  gst_3d_hmd_update (self->hmd);
-
-  // _process_input (self);
-
-  graphene_matrix_t left_eye_model_view =
-      gst_3d_hmd_get_matrix (self->hmd, OHMD_LEFT_EYE_GL_MODELVIEW_MATRIX);
-  graphene_matrix_t left_eye_projection =
-      gst_3d_hmd_get_matrix (self->hmd, OHMD_LEFT_EYE_GL_PROJECTION_MATRIX);
-
-  graphene_matrix_t right_eye_model_view =
-      gst_3d_hmd_get_matrix (self->hmd, OHMD_RIGHT_EYE_GL_MODELVIEW_MATRIX);
-  graphene_matrix_t right_eye_projection =
-      gst_3d_hmd_get_matrix (self->hmd, OHMD_RIGHT_EYE_GL_PROJECTION_MATRIX);
-
-  graphene_matrix_multiply (&left_eye_model_view, &left_eye_projection,
-      &self->left_vp_matrix);
-  graphene_matrix_multiply (&right_eye_model_view, &right_eye_projection,
-      &self->right_vp_matrix);
-}
-
-void
 gst_3d_camera_update_view (Gst3DCamera * self)
 {
-  gst_3d_camera_update_view_from_quaternion (self);
-  // gst_3d_camera_update_view_from_matrix (self);
+  gst_3d_camera_update_view_mvp (self);
 }
-
 
 void
 gst_3d_camera_update_view_mvp (Gst3DCamera * self)
@@ -173,51 +104,8 @@ print_graphene_vec3 (const gchar * name, graphene_vec3_t * vec)
 }
 */
 
-/*
 void
-_process_input (GstVRCompositor * self)
-{
-  //_print_pressed_keys (self);
-
-  gfloat fast_modifier = 1.0;
-  GList *l;
-  for (l = self->pushed_buttons; l != NULL; l = l->next)
-    if (g_strcmp0 (l->data, "Shift_L") == 0)
-      fast_modifier = 3.0;
-
-
-  gfloat distance = 0.01 * fast_modifier;
-
-  for (l = self->pushed_buttons; l != NULL; l = l->next) {
-    if (g_strcmp0 (l->data, "w") == 0) {
-      self->camera->ztranslation += distance;
-      continue;
-    } else if (g_strcmp0 (l->data, "s") == 0) {
-      self->camera->ztranslation -= distance;
-      continue;
-    }
-
-    if (g_strcmp0 (l->data, "a") == 0) {
-      self->camera->xtranslation += distance;
-      continue;
-    } else if (g_strcmp0 (l->data, "d") == 0) {
-      self->camera->xtranslation -= distance;
-      continue;
-    }
-
-    if (g_strcmp0 (l->data, "space") == 0) {
-      self->camera->ytranslation += distance;
-      continue;
-    } else if (g_strcmp0 (l->data, "Control_L") == 0) {
-      self->camera->ytranslation -= distance;
-      continue;
-    }
-  }
-}
-*/
-
-void
-_press_key (Gst3DCamera * self, const gchar * key)
+gst_3d_camera_press_key (Gst3DCamera * self, const gchar * key)
 {
   GList *l;
   gboolean already_pushed = FALSE;
@@ -233,7 +121,7 @@ _press_key (Gst3DCamera * self, const gchar * key)
 }
 
 void
-_release_key (Gst3DCamera * self, const gchar * key)
+gst_3d_camera_release_key (Gst3DCamera * self, const gchar * key)
 {
   GST_DEBUG ("Event: Release %s", key);
 
@@ -249,7 +137,7 @@ _release_key (Gst3DCamera * self, const gchar * key)
 }
 
 void
-_print_pressed_keys (Gst3DCamera * self)
+gst_3d_camera_print_pressed_keys (Gst3DCamera * self)
 {
   GList *l;
   GST_DEBUG ("Pressed keys:");
@@ -260,6 +148,7 @@ _print_pressed_keys (Gst3DCamera * self)
 void
 gst_3d_camera_navigation_event (Gst3DCamera * self, GstEvent * event)
 {
+/*
   GstStructure *structure = (GstStructure *) gst_event_get_structure (event);
 
   const gchar *key = gst_structure_get_string (structure, "key");
@@ -276,4 +165,5 @@ gst_3d_camera_navigation_event (Gst3DCamera * self, GstEvent * event)
     } else if (g_strcmp0 (event_name, "key-release") == 0)
       _release_key (self, key);
   }
+  */
 }

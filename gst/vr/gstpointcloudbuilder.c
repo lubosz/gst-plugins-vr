@@ -118,10 +118,10 @@ gst_point_cloud_builder_init (GstPointCloudBuilder * self)
   self->render_mode = GL_TRIANGLE_STRIP;
   self->in_tex = 0;
   self->mesh = NULL;
-  self->camera = GST_3D_CAMERA (gst_3d_camera_arcball_new ());
-  GST_3D_CAMERA_ARCBALL (self->camera)->theta = 1.6 * M_PI;
-  GST_3D_CAMERA_ARCBALL (self->camera)->phi = 2.67 * M_PI;
-  GST_3D_CAMERA_ARCBALL (self->camera)->center_distance = 0.5;
+  self->camera = (gst_3d_camera_arcball_new ());
+  (self->camera)->theta = 1.6 * M_PI;
+  (self->camera)->phi = 2.67 * M_PI;
+  (self->camera)->center_distance = 0.5;
 
   self->left_color_tex = 0;
   self->left_fbo = 0;
@@ -273,7 +273,7 @@ gst_point_cloud_builder_draw (gpointer this)
   gst_gl_shader_use (self->shader->shader);
   gl->BindTexture (GL_TEXTURE_2D, self->in_tex);
 
-  gst_3d_camera_arcball_update_view (GST_3D_CAMERA_ARCBALL (self->camera));
+  gst_3d_camera_arcball_update_view ((self->camera));
   gst_3d_shader_upload_matrix (self->shader, &self->camera->mvp, "mvp");
 
   gst_3d_mesh_bind (self->mesh);

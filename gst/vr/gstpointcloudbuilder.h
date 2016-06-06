@@ -24,7 +24,7 @@
 #include <graphene.h>
 #include <gst/gl/gstglfilter.h>
 #include "../../gst-libs/gst/3d/gst3dmesh.h"
-#include "../../gst-libs/gst/3d/gst3dcamera.h"
+#include "../../gst-libs/gst/3d/gst3dcamera_arcball.h"
 #include "../../gst-libs/gst/3d/gst3dshader.h"
 #include "../../gst-libs/gst/3d/gst3drenderer.h"
 
@@ -54,7 +54,7 @@ struct _GstPointCloudBuilder
   Gst3DMesh *mesh;
 
   Gst3DShader *shader;
-  Gst3DCamera *camera;
+  Gst3DCameraArcball *camera;
 
   GstPad *srcpad;
 

@@ -24,7 +24,7 @@
 #include <graphene.h>
 #include <gst/gl/gstglfilter.h>
 #include "../../gst-libs/gst/3d/gst3dmesh.h"
-#include "../../gst-libs/gst/3d/gst3dcamera.h"
+#include "../../gst-libs/gst/3d/gst3dcamera_hmd.h"
 #include "../../gst-libs/gst/3d/gst3dshader.h"
 #include "../../gst-libs/gst/3d/gst3drenderer.h"
 
@@ -53,13 +53,15 @@ struct _GstVRCompositor
   Gst3DMesh *render_plane;
 
   Gst3DShader *shader;
-  Gst3DCamera *camera;
+  Gst3DCameraHmd *camera;
 
   GLuint left_color_tex, left_fbo;
   GLuint right_color_tex, right_fbo;
   GLint default_fbo;
   
   GList *nodes;
+  
+  gfloat filter_aspect;
 };
 
 struct _GstVRCompositorClass
