@@ -15,6 +15,7 @@ Gst VR Plugins are in a very early development stage, you will get motion sick :
 * Meson
 * OpenHMD
 * libfreenect2
+* graphene
 
 ### SPHVR
 
@@ -35,6 +36,19 @@ make
 ```
 gst-launch-1.0 filesrc location=~/Videos/elephants.webm ! decodebin ! glupload ! glcolorconvert ! videorate ! vrcompositor ! video/x-raw\(memory:GLMemory\), width=1920, height=1080, framerate=75/1 ! hmdwarp ! glimagesink
 ```
+
+### Open 2 Windows with Tee
+
+```
+GST_GL_XINITTHREADS=1 \ gst-launch-1.0 filesrc location=~/Videos/360/carpet.webm ! decodebin ! videoscale ! glupload ! glcolorconvert ! videorate ! vrcompositor ! video/x-raw\(memory:GLMemory\), width=1920, height=1080, framerate=75/1 ! hmdwarp ! tee name=t ! queue ! glimagesink t. ! queue ! glimagesink
+```
+
+### Display point cloud from Kinect v2
+
+```
+gst-launch-1.0 freenect2src sourcetype=0 ! glupload ! glcolorconvert ! pointcloudbuilder ! video/x-raw\(memory:GLMemory\), width=1920, height=1080 ! glimagesink
+```
+
 ## License
 
 GPLv2
