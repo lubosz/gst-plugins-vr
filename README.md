@@ -51,4 +51,4 @@ gst-launch-1.0 freenect2src sourcetype=0 ! glupload ! glcolorconvert ! pointclou
 
 ## License
 
-GPLv2
+LGPLv2
