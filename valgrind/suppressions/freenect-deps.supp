@@ -1,0 +1,1728 @@
+{
+   memcheck problem #1
+   Memcheck:Cond
+   obj:/usr/lib/libnvidia-glcore.so.364.19
+   obj:/usr/lib/libnvidia-glcore.so.364.19
+   obj:/usr/lib/libnvidia-glcore.so.364.19
+   fun:gst_gl_query_end
+   fun:gst_gl_memory_texsubimage
+   fun:_upload_pbo_memory
+   fun:_gl_mem_map_gpu_access
+   fun:_gl_mem_map
+   fun:_map_data_gl
+   fun:gst_gl_context_thread_add
+   fun:_mem_map_full
+   fun:gst_memory_map
+   fun:_do_convert_one_view
+   fun:_do_convert
+   fun:_run_message_sync
+   fun:_run_message_async
+   fun:g_main_context_dispatch
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:g_main_loop_run
+   fun:gst_gl_context_create_thread
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:start_thread
+}
+{
+   memcheck problem #2
+   Memcheck:Cond
+   obj:/usr/lib/libnvidia-glcore.so.364.19
+   obj:/usr/lib/libnvidia-glcore.so.364.19
+   fun:gst_gl_memory_texsubimage
+   fun:_upload_pbo_memory
+   fun:_gl_mem_map_gpu_access
+   fun:_gl_mem_map
+   fun:_map_data_gl
+   fun:gst_gl_context_thread_add
+   fun:_mem_map_full
+   fun:gst_memory_map
+   fun:_do_convert_one_view
+   fun:_do_convert
+   fun:_run_message_sync
+   fun:_run_message_async
+   fun:g_main_context_dispatch
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:g_main_loop_run
+   fun:gst_gl_context_create_thread
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:start_thread
+}
+{
+   memcheck problem #3
+   Memcheck:Cond
+   obj:/usr/lib/libnvidia-glcore.so.364.19
+   obj:/usr/lib/libnvidia-glcore.so.364.19
+   obj:/usr/lib/libnvidia-glcore.so.364.19
+   obj:/usr/lib/libnvidia-glcore.so.364.19
+   obj:/usr/lib/libGLX_nvidia.so.364.19
+   obj:/usr/lib/libGLX_nvidia.so.364.19
+   obj:/usr/lib/libGLX.so.0.0.0
+   obj:/usr/lib/libGLX.so.0.0.0
+   fun:gst_gl_context_glx_activate
+   fun:gst_gl_context_activate
+   fun:gst_gl_context_create_thread
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:start_thread
+}
+{
+   memcheck problem #7
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:*
+   obj:*
+   fun:_dl_fini
+   fun:__run_exit_handlers
+   fun:exit
+   fun:(below main)
+}
+{
+   memcheck problem #14
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorImageLoadCursor
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   fun:glfwInit
+   obj:/usr/lib/libfreenect2.so.0.2.0
+}
+{
+   memcheck problem #18
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdup
+   fun:_gst_debug_category_new
+   fun:gst_gl_upload_get_type
+   fun:gst_gl_upload_new
+   fun:_gst_gl_upload_element_decide_allocation
+   fun:gst_base_transform_do_bufferpool
+   fun:gst_base_transform_setcaps
+   fun:gst_base_transform_sink_eventfunc
+   fun:gst_validate_pad_monitor_downstream_event_check
+   fun:gst_validate_pad_monitor_sink_event_full_func
+   fun:gst_validate_pad_monitor_sink_event_func
+   fun:gst_pad_send_event_unchecked
+   fun:gst_pad_push_event_unchecked
+   fun:push_sticky
+   fun:events_foreach
+   fun:check_sticky
+   fun:gst_pad_push_event
+   fun:event_forward_func
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+}
+{
+   memcheck problem #25
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdup
+   fun:_gst_debug_category_new
+   fun:gst_gl_color_convert_get_type
+   fun:gst_gl_color_convert_new
+   fun:gst_gl_color_convert_element_decide_allocation
+   fun:gst_base_transform_do_bufferpool
+   fun:gst_base_transform_setcaps
+   fun:gst_base_transform_sink_eventfunc
+   fun:gst_validate_pad_monitor_downstream_event_check
+   fun:gst_validate_pad_monitor_sink_event_full_func
+   fun:gst_validate_pad_monitor_sink_event_func
+   fun:gst_pad_send_event_unchecked
+   fun:gst_pad_push_event_unchecked
+   fun:push_sticky
+   fun:events_foreach
+   fun:check_sticky
+   fun:gst_pad_push_event
+   fun:gst_pad_set_caps
+   fun:gst_base_transform_setcaps
+   fun:gst_base_transform_sink_eventfunc
+   fun:gst_validate_pad_monitor_downstream_event_check
+}
+{
+   memcheck problem #32
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdup
+   fun:_gst_debug_category_new
+   fun:gst_glsl_stage_get_type
+   fun:gst_glsl_stage_new_with_strings
+   fun:_create_shader
+   fun:_init_convert
+   fun:_do_convert
+   fun:_run_message_sync
+   fun:_run_message_async
+   fun:g_main_context_dispatch
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:g_main_loop_run
+   fun:gst_gl_context_create_thread
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:start_thread
+}
+{
+   memcheck problem #36
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdup
+   fun:g_strdupv
+   fun:gst_meta_api_type_register
+   fun:gst_video_gl_texture_upload_meta_api_get_type
+   fun:_upload_meta_upload_propose_allocation
+   fun:gst_gl_upload_propose_allocation
+   fun:_gst_gl_upload_element_propose_allocation
+   fun:gst_base_transform_default_query
+   fun:gst_gl_base_filter_query
+   fun:gst_validate_pad_monitor_query_func
+   fun:gst_pad_query
+   fun:gst_pad_peer_query
+   fun:query_forward_func
+   fun:gst_pad_forward
+   fun:gst_pad_query_default
+   fun:gst_pad_query
+   fun:gst_pad_peer_query
+   fun:gst_base_src_prepare_allocation
+   fun:gst_base_src_negotiate
+   fun:gst_base_src_loop
+}
+{
+   memcheck problem #37
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdup
+   fun:_gst_debug_category_new
+   fun:gst_gl_framebuffer_get_type
+   fun:gst_gl_framebuffer_new
+   fun:gst_gl_context_del_fbo
+   fun:gst_gl_color_convert_reset
+   fun:gst_gl_color_convert_finalize
+   fun:g_object_unref
+   fun:gst_gl_color_convert_element_stop
+   fun:gst_base_transform_activate
+   fun:gst_base_transform_sink_activate_mode
+   fun:gst_validate_pad_monitor_activatemode_func
+   fun:activate_mode_internal
+   fun:gst_pad_set_active
+   fun:activate_pads
+   fun:gst_iterator_fold
+   fun:iterator_activate_fold_with_resync.constprop.6
+   fun:gst_element_pads_activate
+}
+{
+   memcheck problem #41
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/usr/lib/libusb-1.0.so.0.1.0
+   fun:libusb_handle_events_timeout_completed
+   obj:/usr/lib/libfreenect2.so.0.2.0
+   fun:execute_native_thread_routine
+   fun:start_thread
+}
+{
+   memcheck problem #53
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_slist_prepend
+   fun:_gst_debug_category_new
+   fun:gst_gl_color_convert_get_type
+   fun:gst_gl_color_convert_new
+   fun:gst_gl_color_convert_element_decide_allocation
+   fun:gst_base_transform_do_bufferpool
+   fun:gst_base_transform_setcaps
+   fun:gst_base_transform_sink_eventfunc
+   fun:gst_validate_pad_monitor_downstream_event_check
+   fun:gst_validate_pad_monitor_sink_event_full_func
+   fun:gst_validate_pad_monitor_sink_event_func
+   fun:gst_pad_send_event_unchecked
+   fun:gst_pad_push_event_unchecked
+   fun:push_sticky
+   fun:events_foreach
+   fun:check_sticky
+   fun:gst_pad_push_event
+   fun:gst_pad_set_caps
+   fun:gst_base_transform_setcaps
+   fun:gst_base_transform_sink_eventfunc
+}
+{
+   memcheck problem #54
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_slist_prepend
+   fun:_gst_debug_category_new
+   fun:gst_gl_upload_get_type
+   fun:gst_gl_upload_new
+   fun:_gst_gl_upload_element_decide_allocation
+   fun:gst_base_transform_do_bufferpool
+   fun:gst_base_transform_setcaps
+   fun:gst_base_transform_sink_eventfunc
+   fun:gst_validate_pad_monitor_downstream_event_check
+   fun:gst_validate_pad_monitor_sink_event_full_func
+   fun:gst_validate_pad_monitor_sink_event_func
+   fun:gst_pad_send_event_unchecked
+   fun:gst_pad_push_event_unchecked
+   fun:push_sticky
+   fun:events_foreach
+   fun:check_sticky
+   fun:gst_pad_push_event
+   fun:event_forward_func
+   fun:gst_pad_forward
+}
+{
+   memcheck problem #55
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_slist_prepend
+   fun:_gst_debug_category_new
+   fun:gst_glsl_stage_get_type
+   fun:gst_glsl_stage_new_with_strings
+   fun:_create_shader
+   fun:_init_convert
+   fun:_do_convert
+   fun:_run_message_sync
+   fun:_run_message_async
+   fun:g_main_context_dispatch
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:g_main_loop_run
+   fun:gst_gl_context_create_thread
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:start_thread
+}
+{
+   memcheck problem #56
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_slist_prepend
+   fun:_gst_debug_category_new
+   fun:gst_gl_framebuffer_get_type
+   fun:gst_gl_framebuffer_new
+   fun:gst_gl_context_del_fbo
+   fun:gst_gl_color_convert_reset
+   fun:gst_gl_color_convert_finalize
+   fun:g_object_unref
+   fun:gst_gl_color_convert_element_stop
+   fun:gst_base_transform_activate
+   fun:gst_base_transform_sink_activate_mode
+   fun:gst_validate_pad_monitor_activatemode_func
+   fun:activate_mode_internal
+   fun:gst_pad_set_active
+   fun:activate_pads
+   fun:gst_iterator_fold
+   fun:iterator_activate_fold_with_resync.constprop.6
+}
+{
+   memcheck problem #64
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:XextCreateExtension
+   obj:/usr/lib/libXext.so.6.4.0
+   obj:/usr/lib/libXext.so.6.4.0
+   fun:XextAddDisplay
+   obj:*
+   obj:*
+   fun:glXChooseFBConfig
+   fun:gst_gl_context_glx_choose_format
+   fun:gst_gl_context_create_thread
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:start_thread
+}
+{
+   memcheck problem #69
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorImageLoadCursor
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   fun:glfwInit
+   obj:/usr/lib/libfreenect2.so.0.2.0
+   fun:_ZN12libfreenect220OpenGLPacketPipelineC1EPvb
+   fun:_ZL28freenect2_initialise_devicesP16_GstFreenect2Src
+}
+{
+   memcheck problem #70
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   fun:_XlcResolveLocaleName
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorImageLoadCursor
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   fun:glfwInit
+   obj:/usr/lib/libfreenect2.so.0.2.0
+}
+{
+   memcheck problem #78
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:_gst_debug_category_new
+   fun:gst_gl_color_convert_get_type
+   fun:gst_gl_color_convert_new
+   fun:gst_gl_color_convert_element_decide_allocation
+   fun:gst_base_transform_do_bufferpool
+   fun:gst_base_transform_setcaps
+   fun:gst_base_transform_sink_eventfunc
+   fun:gst_validate_pad_monitor_downstream_event_check
+   fun:gst_validate_pad_monitor_sink_event_full_func
+   fun:gst_validate_pad_monitor_sink_event_func
+   fun:gst_pad_send_event_unchecked
+   fun:gst_pad_push_event_unchecked
+   fun:push_sticky
+   fun:events_foreach
+   fun:check_sticky
+   fun:gst_pad_push_event
+   fun:gst_pad_set_caps
+   fun:gst_base_transform_setcaps
+   fun:gst_base_transform_sink_eventfunc
+   fun:gst_validate_pad_monitor_downstream_event_check
+}
+{
+   memcheck problem #79
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:_gst_debug_category_new
+   fun:gst_gl_upload_get_type
+   fun:gst_gl_upload_new
+   fun:_gst_gl_upload_element_decide_allocation
+   fun:gst_base_transform_do_bufferpool
+   fun:gst_base_transform_setcaps
+   fun:gst_base_transform_sink_eventfunc
+   fun:gst_validate_pad_monitor_downstream_event_check
+   fun:gst_validate_pad_monitor_sink_event_full_func
+   fun:gst_validate_pad_monitor_sink_event_func
+   fun:gst_pad_send_event_unchecked
+   fun:gst_pad_push_event_unchecked
+   fun:push_sticky
+   fun:events_foreach
+   fun:check_sticky
+   fun:gst_pad_push_event
+   fun:event_forward_func
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+}
+{
+   memcheck problem #80
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdupv
+   fun:gst_meta_api_type_register
+   fun:gst_video_gl_texture_upload_meta_api_get_type
+   fun:_upload_meta_upload_propose_allocation
+   fun:gst_gl_upload_propose_allocation
+   fun:_gst_gl_upload_element_propose_allocation
+   fun:gst_base_transform_default_query
+   fun:gst_gl_base_filter_query
+   fun:gst_validate_pad_monitor_query_func
+   fun:gst_pad_query
+   fun:gst_pad_peer_query
+   fun:query_forward_func
+   fun:gst_pad_forward
+   fun:gst_pad_query_default
+   fun:gst_pad_query
+   fun:gst_pad_peer_query
+   fun:gst_base_src_prepare_allocation
+   fun:gst_base_src_negotiate
+   fun:gst_base_src_loop
+   fun:gst_task_func
+}
+{
+   memcheck problem #81
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:_gst_debug_category_new
+   fun:gst_glsl_stage_get_type
+   fun:gst_glsl_stage_new_with_strings
+   fun:_create_shader
+   fun:_init_convert
+   fun:_do_convert
+   fun:_run_message_sync
+   fun:_run_message_async
+   fun:g_main_context_dispatch
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:g_main_loop_run
+   fun:gst_gl_context_create_thread
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:start_thread
+}
+{
+   memcheck problem #82
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:_gst_debug_category_new
+   fun:gst_gl_framebuffer_get_type
+   fun:gst_gl_framebuffer_new
+   fun:gst_gl_context_del_fbo
+   fun:gst_gl_color_convert_reset
+   fun:gst_gl_color_convert_finalize
+   fun:g_object_unref
+   fun:gst_gl_color_convert_element_stop
+   fun:gst_base_transform_activate
+   fun:gst_base_transform_sink_activate_mode
+   fun:gst_validate_pad_monitor_activatemode_func
+   fun:activate_mode_internal
+   fun:gst_pad_set_active
+   fun:activate_pads
+   fun:gst_iterator_fold
+   fun:iterator_activate_fold_with_resync.constprop.6
+   fun:gst_element_pads_activate
+}
+{
+   memcheck problem #86
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdup
+   fun:g_strdupv
+   fun:gst_meta_api_type_register
+   fun:gst_video_meta_api_get_type
+   fun:_raw_data_upload_propose_allocation
+   fun:gst_gl_upload_propose_allocation
+   fun:_gst_gl_upload_element_propose_allocation
+   fun:gst_base_transform_default_query
+   fun:gst_gl_base_filter_query
+   fun:gst_validate_pad_monitor_query_func
+   fun:gst_pad_query
+   fun:gst_pad_peer_query
+   fun:query_forward_func
+   fun:gst_pad_forward
+   fun:gst_pad_query_default
+   fun:gst_pad_query
+   fun:gst_pad_peer_query
+   fun:gst_base_src_prepare_allocation
+   fun:gst_base_src_negotiate
+   fun:gst_base_src_loop
+}
+{
+   memcheck problem #89
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   fun:g_realloc
+   fun:g_type_set_qdata
+   fun:gst_element_register
+   fun:_ZL11plugin_initP10_GstPlugin
+   fun:gst_plugin_register_func
+   fun:_priv_gst_plugin_load_file_for_registry
+   fun:gst_plugin_load_by_name
+   fun:gst_plugin_feature_load
+   fun:gst_element_factory_create
+   fun:gst_element_factory_make
+   fun:priv_gst_parse_yyparse
+   fun:priv_gst_parse_launch
+   fun:gst_parse_launch_full
+   fun:gst_parse_launchv_full
+   fun:main
+}
+{
+   memcheck problem #109
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:g_type_create_instance
+   fun:g_param_spec_internal
+   fun:g_param_spec_enum
+   fun:gst_system_clock_class_init
+   fun:gst_system_clock_class_intern_init
+   fun:g_type_class_ref
+   fun:g_object_new_valist
+   fun:g_object_new
+   fun:gst_system_clock_obtain
+   fun:gst_pipeline_provide_clock_func
+   fun:gst_pipeline_change_state
+   fun:gst_element_change_state
+   fun:gst_element_change_state
+   fun:gst_element_change_state
+   fun:gst_element_set_state_func
+   fun:main
+}
+{
+   memcheck problem #110
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:g_type_create_instance
+   fun:g_param_spec_internal
+   fun:g_param_spec_boolean
+   fun:gst_gl_shader_class_init
+   fun:gst_gl_shader_class_intern_init
+   fun:g_type_class_ref
+   fun:g_object_newv
+   fun:g_object_new
+   fun:_new_with_stages_va_list
+   fun:gst_gl_shader_new_with_stages
+   fun:_create_shader
+   fun:_init_convert
+   fun:_do_convert
+   fun:_run_message_sync
+   fun:_run_message_async
+   fun:g_main_context_dispatch
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:g_main_loop_run
+   fun:gst_gl_context_create_thread
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:start_thread
+}
+{
+   memcheck problem #111
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_slice_alloc0
+   fun:g_source_new
+   fun:g_timeout_source_new
+   fun:g_timeout_add_full
+   fun:_add_execute_actions_gsource
+   fun:execute_next_action
+   fun:execute_next_action
+   fun:execute_next_action
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:g_main_context_dispatch
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:g_main_loop_run
+   fun:main
+}
+{
+   memcheck problem #112
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_source_set_callback
+   fun:g_timeout_add_full
+   fun:_add_execute_actions_gsource
+   fun:execute_next_action
+   fun:execute_next_action
+   fun:execute_next_action
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:g_main_context_dispatch
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:g_main_loop_run
+   fun:main
+}
+{
+   memcheck problem #114
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:g_malloc0
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:g_signal_handlers_destroy
+   obj:/usr/lib/libgobject-2.0.so.0.4800.1
+   fun:g_object_unref
+   fun:gst_validate_scenario_dispose
+   fun:g_object_unref
+   fun:gst_validate_bin_monitor_dispose
+   fun:g_object_unref
+   fun:main
+}
+{
+   memcheck problem #115
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:_dl_load_cache_lookup
+   fun:_dl_map_object
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   obj:/usr/lib/libdl-2.23.so
+   fun:_dl_catch_error
+   obj:/usr/lib/libdl-2.23.so
+   fun:dlopen
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+}
+{
+   memcheck problem #116
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_dl_new_object
+   fun:_dl_map_object_from_fd
+   fun:_dl_map_object
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   obj:/usr/lib/libdl-2.23.so
+   fun:_dl_catch_error
+   obj:/usr/lib/libdl-2.23.so
+   fun:dlopen
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+}
+{
+   memcheck problem #118
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_XlcCreateLocaleDataBase
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorImageLoadCursor
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   fun:glfwInit
+   obj:/usr/lib/libfreenect2.so.0.2.0
+}
+{
+   memcheck problem #120
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdupv
+   fun:gst_meta_api_type_register
+   fun:gst_video_meta_api_get_type
+   fun:_raw_data_upload_propose_allocation
+   fun:gst_gl_upload_propose_allocation
+   fun:_gst_gl_upload_element_propose_allocation
+   fun:gst_base_transform_default_query
+   fun:gst_gl_base_filter_query
+   fun:gst_validate_pad_monitor_query_func
+   fun:gst_pad_query
+   fun:gst_pad_peer_query
+   fun:query_forward_func
+   fun:gst_pad_forward
+   fun:gst_pad_query_default
+   fun:gst_pad_query
+   fun:gst_pad_peer_query
+   fun:gst_base_src_prepare_allocation
+   fun:gst_base_src_negotiate
+   fun:gst_base_src_loop
+   fun:gst_task_func
+}
+{
+   memcheck problem #122
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_XlcAddCT
+   fun:_XlcInitCTInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorImageLoadCursor
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   fun:glfwInit
+}
+{
+   memcheck problem #128
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:_Znwm
+   fun:_ZN12libfreenect222SyncMultiFrameListener10onNewFrameENS_5Frame4TypeEPS1_
+   obj:/usr/lib/libfreenect2.so.0.2.0
+   obj:/usr/lib/libfreenect2.so.0.2.0
+   fun:execute_native_thread_routine
+   fun:start_thread
+}
+{
+   memcheck problem #132
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_XlcSetConverter
+   fun:_XlcInitCTInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorImageLoadCursor
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   fun:glfwInit
+}
+{
+   memcheck problem #133
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_XlcSetConverter
+   fun:_XlcAddUtf8LocaleConverters
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorImageLoadCursor
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   fun:glfwInit
+   obj:/usr/lib/libfreenect2.so.0.2.0
+   fun:_ZN12libfreenect220OpenGLPacketPipelineC1EPvb
+   fun:_ZL28freenect2_initialise_devicesP16_GstFreenect2Src
+}
+{
+   memcheck problem #135
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_XlcSetConverter
+   fun:_XlcAddUtf8Converters
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorImageLoadCursor
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   fun:glfwInit
+   obj:/usr/lib/libfreenect2.so.0.2.0
+   fun:_ZN12libfreenect220OpenGLPacketPipelineC1EPvb
+   fun:_ZL28freenect2_initialise_devicesP16_GstFreenect2Src
+}
+{
+   memcheck problem #137
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   obj:/usr/lib/libdl-2.23.so
+   fun:_dl_catch_error
+   obj:/usr/lib/libdl-2.23.so
+   fun:dlopen
+   obj:/usr/lib/libnvidia-glsi.so.364.19
+   obj:/usr/lib/libnvidia-glsi.so.364.19
+   obj:/usr/lib/libnvidia-glsi.so.364.19
+   obj:/usr/lib/libnvidia-glsi.so.364.19
+   obj:*
+   obj:*
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   fun:glfwInit
+   obj:/usr/lib/libfreenect2.so.0.2.0
+   fun:_ZN12libfreenect220OpenGLPacketPipelineC1EPvb
+   fun:_ZL28freenect2_initialise_devicesP16_GstFreenect2Src
+}
+{
+   memcheck problem #138
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   fun:g_realloc
+   fun:g_type_set_qdata
+   fun:gst_meta_api_type_register
+   fun:gst_video_gl_texture_upload_meta_api_get_type
+   fun:_upload_meta_upload_propose_allocation
+   fun:gst_gl_upload_propose_allocation
+   fun:_gst_gl_upload_element_propose_allocation
+   fun:gst_base_transform_default_query
+   fun:gst_gl_base_filter_query
+   fun:gst_validate_pad_monitor_query_func
+   fun:gst_pad_query
+   fun:gst_pad_peer_query
+   fun:query_forward_func
+   fun:gst_pad_forward
+   fun:gst_pad_query_default
+   fun:gst_pad_query
+   fun:gst_pad_peer_query
+   fun:gst_base_src_prepare_allocation
+   fun:gst_base_src_negotiate
+   fun:gst_base_src_loop
+   fun:gst_task_func
+}
+{
+   memcheck problem #139
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_dl_close_worker
+   fun:_dl_close
+   fun:_dl_catch_error
+   obj:/usr/lib/libdl-2.23.so
+   fun:dlclose
+   fun:__eglTeardownVendor
+   fun:_dl_fini
+   fun:__run_exit_handlers
+   fun:exit
+   fun:(below main)
+}
+{
+   memcheck problem #141
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_XlcCreateDefaultCharSet
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorImageLoadCursor
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   fun:glfwInit
+   obj:/usr/lib/libfreenect2.so.0.2.0
+}
+{
+   memcheck problem #143
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorImageLoadCursor
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   fun:glfwInit
+   obj:/usr/lib/libfreenect2.so.0.2.0
+   fun:_ZN12libfreenect220OpenGLPacketPipelineC1EPvb
+}
+{
+   memcheck problem #144
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_XlcAddCharSet
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorImageLoadCursor
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   fun:glfwInit
+   obj:/usr/lib/libfreenect2.so.0.2.0
+}
+{
+   memcheck problem #145
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:_Znwm
+   obj:/usr/lib/libfreenect2.so.0.2.0
+   obj:/usr/lib/libfreenect2.so.0.2.0
+   obj:/usr/lib/libfreenect2.so.0.2.0
+   fun:execute_native_thread_routine
+   fun:start_thread
+}
+{
+   memcheck problem #147
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_dl_check_map_versions
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   obj:/usr/lib/libdl-2.23.so
+   fun:_dl_catch_error
+   obj:/usr/lib/libdl-2.23.so
+   fun:dlopen
+   fun:__eglLookupVendorByName
+   fun:_init
+   fun:call_init.part.0
+   fun:_dl_init
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   obj:/usr/lib/libdl-2.23.so
+   fun:_dl_catch_error
+   obj:/usr/lib/libdl-2.23.so
+   fun:dlopen
+}
+{
+   memcheck problem #149
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   fun:g_realloc
+   fun:g_type_set_qdata
+   fun:gst_meta_api_type_register
+   fun:gst_video_meta_api_get_type
+   fun:_raw_data_upload_propose_allocation
+   fun:gst_gl_upload_propose_allocation
+   fun:_gst_gl_upload_element_propose_allocation
+   fun:gst_base_transform_default_query
+   fun:gst_gl_base_filter_query
+   fun:gst_validate_pad_monitor_query_func
+   fun:gst_pad_query
+   fun:gst_pad_peer_query
+   fun:query_forward_func
+   fun:gst_pad_forward
+   fun:gst_pad_query_default
+   fun:gst_pad_query
+   fun:gst_pad_peer_query
+   fun:gst_base_src_prepare_allocation
+   fun:gst_base_src_negotiate
+   fun:gst_base_src_loop
+   fun:gst_task_func
+}
+
+{
+   memcheck problem #151
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:g_malloc0
+   fun:g_source_new
+   fun:g_timeout_source_new
+   fun:g_timeout_add_full
+   fun:_add_execute_actions_gsource
+   fun:execute_next_action
+   fun:execute_next_action
+   fun:execute_next_action
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:g_main_context_dispatch
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:g_main_loop_run
+   fun:main
+}
+{
+   memcheck problem #152
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLocaleDataBase
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorImageLoadCursor
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+}
+{
+   memcheck problem #154
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorImageLoadCursor
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   fun:glfwInit
+   obj:/usr/lib/libfreenect2.so.0.2.0
+   fun:_ZN12libfreenect220OpenGLPacketPipelineC1EPvb
+}
+{
+   memcheck problem #167
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorImageLoadCursor
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   fun:glfwInit
+   obj:/usr/lib/libfreenect2.so.0.2.0
+}
+{
+   memcheck problem #168
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_dl_check_map_versions
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   obj:/usr/lib/libdl-2.23.so
+   fun:_dl_catch_error
+   obj:/usr/lib/libdl-2.23.so
+   fun:dlopen
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   fun:glfwInit
+}
+
+{
+   memcheck problem #172
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorImageLoadCursor
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   fun:glfwInit
+   obj:/usr/lib/libfreenect2.so.0.2.0
+   fun:_ZN12libfreenect220OpenGLPacketPipelineC1EPvb
+   fun:_ZL28freenect2_initialise_devicesP16_GstFreenect2Src
+}
+{
+   memcheck problem #180
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_XlcCreateDefaultCharSet
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorImageLoadCursor
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   fun:glfwInit
+   obj:/usr/lib/libfreenect2.so.0.2.0
+}
+{
+   memcheck problem #190
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_XlcCreateDefaultCharSet
+   fun:_XlcAddCT
+   fun:_XlcInitCTInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorImageLoadCursor
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+}
+{
+   memcheck problem #191
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_dl_close_worker
+   fun:_dl_close
+   fun:_dl_catch_error
+   obj:/usr/lib/libdl-2.23.so
+   fun:dlclose
+   obj:/usr/lib/libnvidia-glsi.so.364.19
+   obj:/usr/lib/libnvidia-glsi.so.364.19
+   obj:/usr/lib/libnvidia-glsi.so.364.19
+   fun:__run_exit_handlers
+   fun:exit
+   fun:(below main)
+}
+{
+   memcheck problem #192
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_XlcAddCharSet
+   fun:_XlcAddCT
+   fun:_XlcInitCTInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorImageLoadCursor
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+}
+{
+   memcheck problem #193
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLocaleDataBase
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorImageLoadCursor
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+}
+{
+   memcheck problem #195
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLocaleDataBase
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorImageLoadCursor
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+}
+{
+   memcheck problem #197
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_dl_new_object
+   fun:_dl_map_object_from_fd
+   fun:_dl_map_object
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   obj:/usr/lib/libdl-2.23.so
+   fun:_dl_catch_error
+   obj:/usr/lib/libdl-2.23.so
+   fun:dlopen
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+}
+{
+   memcheck problem #198
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorImageLoadCursor
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   fun:glfwInit
+   obj:/usr/lib/libfreenect2.so.0.2.0
+}
+{
+   memcheck problem #202
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_XlcCreateLocaleDataBase
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorImageLoadCursor
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   fun:glfwInit
+   obj:/usr/lib/libfreenect2.so.0.2.0
+}
+{
+   memcheck problem #205
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_XlcCreateDefaultCharSet
+   fun:_XlcAddCT
+   fun:_XlcInitCTInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorImageLoadCursor
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+}
+{
+   memcheck problem #206
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLocaleDataBase
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorImageLoadCursor
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+}
+{
+   memcheck problem #207
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:do_lookup_x
+   fun:_dl_lookup_symbol_x
+   fun:_dl_relocate_object
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   obj:/usr/lib/libdl-2.23.so
+   fun:_dl_catch_error
+   obj:/usr/lib/libdl-2.23.so
+   fun:dlopen
+   fun:g_module_open
+   fun:_priv_gst_plugin_load_file_for_registry
+   fun:gst_plugin_load_by_name
+   fun:gst_plugin_feature_load
+   fun:gst_element_factory_create
+   fun:gst_element_factory_make
+   fun:priv_gst_parse_yyparse
+   fun:priv_gst_parse_launch
+   fun:gst_parse_launch_full
+}
+{
+   memcheck problem #208
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_intern_string
+   fun:gst_plugin_desc_copy
+   fun:gst_plugin_register_func
+   fun:_priv_gst_plugin_load_file_for_registry
+   fun:gst_registry_scan_plugin_file
+   fun:gst_registry_scan_path_level
+   fun:gst_registry_scan_path_level
+   fun:gst_registry_scan_path_level
+   fun:gst_registry_scan_path_internal
+   fun:gst_registry_scan_path
+   fun:gst_validate_init_plugins
+   fun:gst_validate_init
+   fun:main
+}
+{
+   memcheck problem #213
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XrmInternalStringToQuark
+   fun:_XlcGetLocaleDataBase
+   obj:/usr/lib/libX11.so.6.3.0
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorImageLoadCursor
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+   obj:/usr/lib/libglfw.so.3.2
+}
+{
+   memcheck problem #217
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:pool
+   fun:__static_initialization_and_destruction_0
+   fun:_GLOBAL__sub_I_eh_alloc.cc
+   fun:call_init.part.0
+   fun:_dl_init
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   obj:/usr/lib/libdl-2.23.so
+   fun:_dl_catch_error
+   obj:/usr/lib/libdl-2.23.so
+   fun:dlopen
+   fun:g_module_open
+   fun:_priv_gst_plugin_load_file_for_registry
+   fun:gst_plugin_load_by_name
+   fun:gst_plugin_feature_load
+   fun:gst_element_factory_create
+   fun:gst_element_factory_make
+   fun:priv_gst_parse_yyparse
+   fun:priv_gst_parse_launch
+   fun:gst_parse_launch_full
+}
+{
+   memcheck problem #218
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:gst_gl_buffer_upload_cpu_write
+   fun:_gl_buffer_map
+   fun:_map_data_gl
+   fun:gst_gl_context_thread_add
+   fun:_mem_map_full
+   fun:gst_memory_map
+   fun:_upload_transfer
+   fun:_run_message_sync
+   fun:_run_message_async
+   fun:g_main_context_dispatch
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:g_main_loop_run
+   fun:gst_gl_context_create_thread
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+}
+{
+   memcheck problem #219
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:_Znam
+   fun:_ZN12libfreenect25FrameC1EmmmPh
+   obj:/usr/lib/libfreenect2.so.0.2.0
+   obj:/usr/lib/libfreenect2.so.0.2.0
+   obj:/usr/lib/libfreenect2.so.0.2.0
+   fun:execute_native_thread_routine
+   fun:start_thread
+}
+{
+   memcheck problem #221
+   Memcheck:Cond
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:/usr/lib/libGLX.so.0.0.0
+   obj:/usr/lib/libGLX.so.0.0.0
+   fun:gst_gl_context_glx_activate
+   fun:gst_gl_context_activate
+   fun:gst_gl_context_create_thread
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:start_thread
+}
+{
+   memcheck problem #222
+   Memcheck:Cond
+   obj:*
+   obj:*
+   fun:gst_gl_memory_texsubimage
+   fun:_upload_pbo_memory
+   fun:_gl_mem_map_gpu_access
+   fun:_gl_mem_map
+   fun:_map_data_gl
+   fun:gst_gl_context_thread_add
+   fun:_mem_map_full
+   fun:gst_memory_map
+   fun:_do_convert_one_view
+   fun:_do_convert
+   fun:_run_message_sync
+   fun:_run_message_async
+   fun:g_main_context_dispatch
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:g_main_loop_run
+   fun:gst_gl_context_create_thread
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:start_thread
+}
+{
+   memcheck problem #223
+   Memcheck:Cond
+   obj:*
+   obj:*
+   obj:*
+   fun:gst_gl_query_end
+   fun:gst_gl_memory_texsubimage
+   fun:_upload_pbo_memory
+   fun:_gl_mem_map_gpu_access
+   fun:_gl_mem_map
+   fun:_map_data_gl
+   fun:gst_gl_context_thread_add
+   fun:_mem_map_full
+   fun:gst_memory_map
+   fun:_do_convert_one_view
+   fun:_do_convert
+   fun:_run_message_sync
+   fun:_run_message_async
+   fun:g_main_context_dispatch
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:g_main_loop_run
+   fun:gst_gl_context_create_thread
+   obj:/usr/lib/libglib-2.0.so.0.4800.1
+   fun:start_thread
+}
