@@ -41,15 +41,10 @@ typedef struct _GstHmdWarpClass GstHmdWarpClass;
 struct _GstHmdWarp
 {
   GstGLFilter filter;
-
   Gst3DShader *shader;
-
   guint in_tex;
-
   gboolean caps_change;
-
   graphene_vec2_t screen_size;
-
   Gst3DMesh *render_plane;
   float aspect;
 };

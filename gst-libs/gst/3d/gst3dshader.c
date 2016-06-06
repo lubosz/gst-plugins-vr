@@ -85,37 +85,10 @@ gst_3d_shader_class_init (Gst3DShaderClass * klass)
   obj_class->finalize = gst_3d_shader_finalize;
 }
 
-/*
-void
-gst_3d_shader_disable_attribs (Gst3DShader * self)
-{
-  GstGLFuncs *gl = self->context->gl_vtable;
-  gl->DisableVertexAttribArray (self->attr_position);
-  gl->DisableVertexAttribArray (self->attr_uv);
-}
-
-void
-gst_3d_shader_enable_attribs (Gst3DShader * self)
-{
-  GstGLFuncs *gl = self->context->gl_vtable;
-  gl->EnableVertexAttribArray (self->attr_position);
-  if (self->attr_uv != -1)
-    gl->EnableVertexAttribArray (self->attr_uv);
-}
-
-static void
-_bind_attribs (Gst3DShader * self)
-{
-  self->attr_position =
-      gst_gl_shader_get_attribute_location (self->shader, "position");
-  self->attr_uv = gst_gl_shader_get_attribute_location (self->shader, "uv");
-}
-*/
 void
 gst_3d_shader_bind (Gst3DShader * self)
 {
   gst_gl_shader_use (self->shader);
-  // _bind_attribs (self);
 }
 
 const char *
@@ -145,9 +118,6 @@ gst_3d_shader_read (const char *file)
 void
 gst_3d_shader_delete (Gst3DShader * self)
 {
-  if (!self)
-    return;
-
   if (self->context != NULL && self->shader != NULL) {
     gst_gl_context_del_shader (self->context, self->shader);
     self->shader = NULL;

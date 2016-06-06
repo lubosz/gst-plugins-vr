@@ -228,27 +228,27 @@ void
 gst_3d_mesh_append_attribute_buffer (Gst3DMesh * self, const gchar * name,
     size_t element_size, guint vector_length, GLfloat * vertices)
 {
-  struct Gst3DAttributeBuffer *position_buffer =
+  struct Gst3DAttributeBuffer *attrib_buffer =
       malloc (sizeof (struct Gst3DAttributeBuffer));
 
   GstGLFuncs *gl = self->context->gl_vtable;
 
-  position_buffer->name = name;
-  position_buffer->element_size = element_size;
-  position_buffer->vector_length = vector_length;
+  attrib_buffer->name = name;
+  attrib_buffer->element_size = element_size;
+  attrib_buffer->vector_length = vector_length;
 
-  gl->GenBuffers (1, &position_buffer->location);
+  gl->GenBuffers (1, &attrib_buffer->location);
 
-  GST_DEBUG ("generated %s buffer #%d", position_buffer->name,
-      position_buffer->location);
+  GST_DEBUG ("generated %s buffer #%d", attrib_buffer->name,
+      attrib_buffer->location);
 
-  gl->BindBuffer (GL_ARRAY_BUFFER, position_buffer->location);
+  gl->BindBuffer (GL_ARRAY_BUFFER, attrib_buffer->location);
   gl->BufferData (GL_ARRAY_BUFFER,
-      self->vertex_count * position_buffer->vector_length *
-      position_buffer->element_size, vertices, GL_STATIC_DRAW);
+      self->vertex_count * attrib_buffer->vector_length *
+      attrib_buffer->element_size, vertices, GL_STATIC_DRAW);
 
   self->attribute_buffers =
-      g_list_append (self->attribute_buffers, position_buffer);
+      g_list_append (self->attribute_buffers, attrib_buffer);
 }
 
 void

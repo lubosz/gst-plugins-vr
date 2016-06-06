@@ -69,8 +69,8 @@ static gboolean gst_hmd_warp_set_caps (GstGLFilter * filter,
 
 static void gst_hmd_warp_reset_gl (GstGLFilter * filter);
 static gboolean gst_hmd_warp_stop (GstBaseTransform * trans);
-static gboolean gst_hmd_warp_init_shader (GstGLFilter * filter);
-static void gst_hmd_warp_callback (gpointer stuff);
+static gboolean gst_hmd_warp_init_gl (GstGLFilter * filter);
+static void gst_hmd_warp_draw (gpointer stuff);
 
 static gboolean gst_hmd_warp_filter_texture (GstGLFilter * filter,
     guint in_tex, guint out_tex);
@@ -89,7 +89,7 @@ gst_hmd_warp_class_init (GstHmdWarpClass * klass)
   gobject_class->set_property = gst_hmd_warp_set_property;
   gobject_class->get_property = gst_hmd_warp_get_property;
 
-  GST_GL_FILTER_CLASS (klass)->init_fbo = gst_hmd_warp_init_shader;
+  GST_GL_FILTER_CLASS (klass)->init_fbo = gst_hmd_warp_init_gl;
   GST_GL_FILTER_CLASS (klass)->display_reset_cb = gst_hmd_warp_reset_gl;
   GST_GL_FILTER_CLASS (klass)->set_caps = gst_hmd_warp_set_caps;
   GST_GL_FILTER_CLASS (klass)->filter_texture = gst_hmd_warp_filter_texture;
@@ -173,17 +173,13 @@ gst_hmd_warp_reset_gl (GstGLFilter * filter)
 static gboolean
 gst_hmd_warp_stop (GstBaseTransform * trans)
 {
-  GstHmdWarp *self = GST_HMD_WARP (trans);
-  /* blocking call, wait until the opengl thread has destroyed the shader */
-  if (self->shader != NULL)
-    gst_3d_shader_delete (self->shader);
   return GST_BASE_TRANSFORM_CLASS (parent_class)->stop (trans);
 }
 
-gboolean
-_init_gl (GstHmdWarp * self)
+static gboolean
+gst_hmd_warp_init_gl (GstGLFilter * filter)
 {
-
+  GstHmdWarp *self = GST_HMD_WARP (filter);
   GstGLContext *context = GST_GL_BASE_FILTER (self)->context;
   GstGLFuncs *gl = context->gl_vtable;
   gboolean ret = TRUE;
@@ -209,13 +205,6 @@ _init_gl (GstHmdWarp * self)
 }
 
 static gboolean
-gst_hmd_warp_init_shader (GstGLFilter * filter)
-{
-  GstHmdWarp *self = GST_HMD_WARP (filter);
-  return _init_gl (self);;
-}
-
-static gboolean
 gst_hmd_warp_filter_texture (GstGLFilter * filter, guint in_tex, guint out_tex)
 {
   GstHmdWarp *self = GST_HMD_WARP (filter);
@@ -227,13 +216,13 @@ gst_hmd_warp_filter_texture (GstGLFilter * filter, guint in_tex, guint out_tex)
       GST_VIDEO_INFO_WIDTH (&filter->out_info),
       GST_VIDEO_INFO_HEIGHT (&filter->out_info),
       filter->fbo, filter->depthbuffer,
-      out_tex, gst_hmd_warp_callback, (gpointer) self);
+      out_tex, gst_hmd_warp_draw, (gpointer) self);
 
   return TRUE;
 }
 
 static void
-gst_hmd_warp_callback (gpointer this)
+gst_hmd_warp_draw (gpointer this)
 {
   GstHmdWarp *self = GST_HMD_WARP (this);
   GstGLContext *context = GST_GL_BASE_FILTER (this)->context;
