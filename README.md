@@ -22,7 +22,7 @@ Gst VR Plugins are in a very early development stage, you will get motion sick :
 * Python 3
 * GTK+ 3.X
 
-## Installation
+## Build
 
 ```
 ./configure
@@ -47,6 +47,13 @@ GST_GL_XINITTHREADS=1 \ gst-launch-1.0 filesrc location=~/video.webm ! decodebin
 
 ```
 gst-launch-1.0 freenect2src sourcetype=0 ! glupload ! glcolorconvert ! pointcloudbuilder ! video/x-raw\(memory:GLMemory\), width=1920, height=1080 ! glimagesink
+```
+
+
+### Run vrtestsrc
+
+```
+gst-launch-1.0 vrtestsrc ! video/x-raw\(memory:GLMemory\), width=1920, height=1080 ! glimagesink
 ```
 
 ## License
