@@ -34,13 +34,13 @@ make
 ### View spherical video on a DK2
 
 ```
-gst-launch-1.0 filesrc location=~/Videos/elephants.webm ! decodebin ! glupload ! glcolorconvert ! videorate ! vrcompositor ! video/x-raw\(memory:GLMemory\), width=1920, height=1080, framerate=75/1 ! hmdwarp ! glimagesink
+gst-launch-1.0 filesrc location=~/video.webm ! decodebin ! glupload ! glcolorconvert ! videorate ! vrcompositor ! video/x-raw\(memory:GLMemory\), width=1920, height=1080, framerate=75/1 ! hmdwarp ! glimagesink
 ```
 
 ### Open 2 Windows with Tee
 
 ```
-GST_GL_XINITTHREADS=1 \ gst-launch-1.0 filesrc location=~/Videos/360/carpet.webm ! decodebin ! videoscale ! glupload ! glcolorconvert ! videorate ! vrcompositor ! video/x-raw\(memory:GLMemory\), width=1920, height=1080, framerate=75/1 ! hmdwarp ! tee name=t ! queue ! glimagesink t. ! queue ! glimagesink
+GST_GL_XINITTHREADS=1 \ gst-launch-1.0 filesrc location=~/video.webm ! decodebin ! videoscale ! glupload ! glcolorconvert ! videorate ! vrcompositor ! video/x-raw\(memory:GLMemory\), width=1920, height=1080, framerate=75/1 ! hmdwarp ! tee name=t ! queue ! glimagesink t. ! queue ! glimagesink
 ```
 
 ### Display point cloud from Kinect v2
