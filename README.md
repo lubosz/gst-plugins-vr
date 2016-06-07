@@ -56,6 +56,12 @@ gst-launch-1.0 freenect2src sourcetype=0 ! glupload ! glcolorconvert ! pointclou
 gst-launch-1.0 vrtestsrc ! video/x-raw\(memory:GLMemory\), width=1920, height=1080 ! glimagesink
 ```
 
+### Run a video in SPHVR
+
+```
+./sphvr/sphvr file:///home/bmonkey/video.webm
+```
+
 ## License
 
 LGPLv2
