@@ -295,7 +295,7 @@ gst_freenect2_src_get_caps (GstBaseSrc * src, GstCaps * filter)
   } else if (self->sourcetype == SOURCETYPE_DEPTH
       || self->sourcetype == SOURCETYPE_IR) {
     format = GST_VIDEO_FORMAT_GRAY16_LE;
-    //format = GST_VIDEO_FORMAT_R16F;
+    //format = GST_VIDEO_FORMAT_GRAY32F;
     gst_video_info_set_format (&info, format, 512, 424);
   } else if (self->sourcetype == SOURCETYPE_COLOR) {
     format = GST_VIDEO_FORMAT_RGB;
