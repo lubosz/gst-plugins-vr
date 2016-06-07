@@ -32,7 +32,10 @@
 
 #include "gst3dcamera_hmd.h"
 #include "gst3dglm.h"
+#include "gst3dmath.h"
 #include "gst3drenderer.h"
+#include "gst3dmath.h"
+
 
 #define GST_CAT_DEFAULT gst_3d_camera_hmd_debug
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -45,6 +48,7 @@ void
 gst_3d_camera_hmd_init (Gst3DCameraHmd * self)
 {
   self->hmd = gst_3d_hmd_new ();
+  self->query_type = HMD_QUERY_TYPE_MATRIX_STEREO;
 }
 
 Gst3DCameraHmd *
@@ -60,6 +64,8 @@ gst_3d_camera_hmd_finalize (GObject * object)
   Gst3DCameraHmd *self = GST_3D_CAMERA_HMD (object);
   g_return_if_fail (self != NULL);
 
+  gst_object_unref (self->hmd);
+
   G_OBJECT_CLASS (gst_3d_camera_hmd_parent_class)->finalize (object);
 }
 
@@ -73,14 +79,24 @@ gst_3d_camera_hmd_class_init (Gst3DCameraHmdClass * klass)
 void
 gst_3d_camera_hmd_update_view (Gst3DCameraHmd * self)
 {
-  gst_3d_camera_hmd_update_view_from_quaternion (self);
+  gst_3d_hmd_update (self->hmd);
+  switch (self->query_type) {
+    case HMD_QUERY_TYPE_MATRIX_STEREO:
+    case HMD_QUERY_TYPE_NONE:
+      gst_3d_camera_hmd_update_view_from_matrix (self);
+      break;
+    case HMD_QUERY_TYPE_QUATERNION_MONO:
+      gst_3d_camera_hmd_update_view_from_quaternion (self);
+      break;
+    case HMD_QUERY_TYPE_QUATERNION_STEREO:
+      gst_3d_camera_hmd_update_view_from_quaternion_stereo (self);
+      break;
+  }
 }
 
 void
 gst_3d_camera_hmd_update_view_from_quaternion (Gst3DCameraHmd * self)
 {
-  gst_3d_hmd_update (self->hmd);
-
   /* projection from OpenHMD */
   graphene_matrix_t left_eye_model_view;
   graphene_matrix_t left_eye_projection =
@@ -104,8 +120,6 @@ gst_3d_camera_hmd_update_view_from_quaternion (Gst3DCameraHmd * self)
 void
 gst_3d_camera_hmd_update_view_from_quaternion_stereo (Gst3DCameraHmd * self)
 {
-  gst_3d_hmd_update (self->hmd);
-
   /* projection from OpenHMD */
   graphene_matrix_t left_eye_model_view;
   graphene_matrix_t left_eye_projection =
@@ -142,10 +156,23 @@ gst_3d_camera_hmd_update_view_from_quaternion_stereo (Gst3DCameraHmd * self)
 }
 
 void
+_matrix_invert_y_rotation (const graphene_matrix_t * source,
+    graphene_matrix_t * result)
+{
+  gfloat invert_values[] = {
+    1, -1, 1, 1,
+    -1, 1, -1, 1,
+    1, -1, 1, 1,
+    1, 1, 1, 1
+  };
+  graphene_matrix_t invert_matrix;
+  graphene_matrix_init_from_float (&invert_matrix, invert_values);
+  gst_3d_math_matrix_hadamard_product (&invert_matrix, source, result);
+}
+
+void
 gst_3d_camera_hmd_update_view_from_matrix (Gst3DCameraHmd * self)
 {
-  gst_3d_hmd_update (self->hmd);
-
   graphene_matrix_t left_eye_model_view =
       gst_3d_hmd_get_matrix (self->hmd, OHMD_LEFT_EYE_GL_MODELVIEW_MATRIX);
   graphene_matrix_t left_eye_projection =
@@ -156,10 +183,27 @@ gst_3d_camera_hmd_update_view_from_matrix (Gst3DCameraHmd * self)
   graphene_matrix_t right_eye_projection =
       gst_3d_hmd_get_matrix (self->hmd, OHMD_RIGHT_EYE_GL_PROJECTION_MATRIX);
 
-  graphene_matrix_multiply (&left_eye_model_view, &left_eye_projection,
+  graphene_matrix_t left_eye_model_view_inv;
+  graphene_matrix_t right_eye_model_view_inv;
+
+  _matrix_invert_y_rotation (&left_eye_model_view, &left_eye_model_view_inv);
+  _matrix_invert_y_rotation (&right_eye_model_view, &right_eye_model_view_inv);
+
+  graphene_matrix_multiply (&right_eye_model_view_inv, &left_eye_projection,
       &self->left_vp_matrix);
-  graphene_matrix_multiply (&right_eye_model_view, &right_eye_projection,
+  graphene_matrix_multiply (&left_eye_model_view_inv, &right_eye_projection,
       &self->right_vp_matrix);
+
+}
+
+static void
+_iterate_query_type (Gst3DCameraHmd * self)
+{
+  self->query_type++;
+
+  if (self->query_type == HMD_QUERY_TYPE_NONE)
+    self->query_type = HMD_QUERY_TYPE_QUATERNION_MONO;
+  GST_DEBUG ("query type: %d", self->query_type);
 }
 
 void
@@ -174,6 +218,9 @@ gst_3d_camera_hmd_navigation_event (Gst3DCameraHmd * self, GstEvent * event)
         gst_3d_hmd_eye_sep_inc (self->hmd);
       else if (g_strcmp0 (key, "KP_Subtract") == 0)
         gst_3d_hmd_eye_sep_dec (self->hmd);
+      else if (g_strcmp0 (key, "Tab") == 0) {
+        _iterate_query_type (self);
+      }
     }
   }
 }

@@ -33,6 +33,7 @@
 #include "gst3dcamera_arcball.h"
 #include "gst3dglm.h"
 #include "gst3drenderer.h"
+#include "gst3dmath.h"
 
 #define GST_CAT_DEFAULT gst_3d_camera_arcball_debug
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -52,7 +53,7 @@ gst_3d_camera_arcball_init (Gst3DCameraArcball * self)
   self->zfar = 1000.0;
 
   self->center_distance = 2.5;
-  self->scroll_speed = 0.05;
+  self->scroll_speed = 0.03;
   self->rotation_speed = 0.002;
   self->cursor_last_x = 0;
   self->cursor_last_y = 0;
@@ -118,18 +119,6 @@ gst_3d_camera_arcball_rotate (Gst3DCameraArcball * self, gdouble x, gdouble y)
 }
 
 void
-_graphene_matrix_negate_component (graphene_matrix_t * matrix, guint n, guint m,
-    graphene_matrix_t * result)
-{
-  float values[16];
-  for (int x = 0; x < 4; x++)
-    for (int y = 0; y < 4; y++)
-      values[x * 4 + y] = graphene_matrix_get_value (matrix, x, y);
-  values[n * 4 + m] = -graphene_matrix_get_value (matrix, n, m);
-  graphene_matrix_init_from_float (result, values);
-}
-
-void
 gst_3d_camera_arcball_update_view (Gst3DCameraArcball * self)
 {
   float radius = exp (self->center_distance);
@@ -147,14 +136,13 @@ gst_3d_camera_arcball_update_view (Gst3DCameraArcball * self)
   graphene_matrix_init_look_at (&view_matrix, &self->eye, &self->center,
       &self->up);
 
-  graphene_matrix_t v_transposed;
-  graphene_matrix_inverse (&view_matrix, &v_transposed);
+  /* fix graphene look at */
+  graphene_matrix_t v_inverted;
+  graphene_matrix_t v_inverted_fix;
+  graphene_matrix_inverse (&view_matrix, &v_inverted);
+  gst_3d_math_matrix_negate_component (&v_inverted, 3, 2, &v_inverted_fix);
 
-  //TODO: graphene lookat component differs glm
-  graphene_matrix_t v_transposed_inv;
-  _graphene_matrix_negate_component (&v_transposed, 3, 2, &v_transposed_inv);
-
-  graphene_matrix_multiply (&v_transposed_inv, &projection_matrix, &self->mvp);
+  graphene_matrix_multiply (&v_inverted_fix, &projection_matrix, &self->mvp);
 }
 
 void

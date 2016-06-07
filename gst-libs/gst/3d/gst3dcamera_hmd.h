@@ -29,6 +29,14 @@
 #include "gst3dcamera.h"
 #include "gst3dhmd.h"
 
+typedef enum Gst3DHmdQueryType
+{
+  HMD_QUERY_TYPE_QUATERNION_MONO,
+  HMD_QUERY_TYPE_QUATERNION_STEREO,
+  HMD_QUERY_TYPE_MATRIX_STEREO,
+  HMD_QUERY_TYPE_NONE,
+} Gst3DHmdQueryType;
+
 G_BEGIN_DECLS
 #define GST_3D_TYPE_CAMERA_HMD            (gst_3d_camera_hmd_get_type ())
 #define GST_3D_CAMERA_HMD(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), GST_3D_TYPE_CAMERA_HMD, Gst3DCameraHmd))
@@ -47,6 +55,8 @@ struct _Gst3DCameraHmd
   graphene_matrix_t left_vp_matrix;
   graphene_matrix_t right_vp_matrix;
   
+  Gst3DHmdQueryType query_type;
+  
   Gst3DHmd * hmd;
 };
 
@@ -63,6 +73,9 @@ void gst_3d_camera_hmd_navigation_event (Gst3DCameraHmd * self,
 
 void gst_3d_camera_hmd_update_view_from_matrix (Gst3DCameraHmd * self);
 void gst_3d_camera_hmd_update_view_from_quaternion (Gst3DCameraHmd * self);
+
+void
+gst_3d_camera_hmd_update_view_from_quaternion_stereo (Gst3DCameraHmd * self);
 
 float gst_3d_camera_hmd_get_screen_aspect (Gst3DCameraHmd * self);
 

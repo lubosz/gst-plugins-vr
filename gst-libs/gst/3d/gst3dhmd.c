@@ -169,7 +169,8 @@ gst_3d_hmd_get_device_properties (Gst3DHmd * self)
       self->interpupillary_distance * 100.0);
 
   //self->eye_separation = interpupillary_distance * 100.0 / 2.0;
-  self->eye_separation = 0.65;
+  //self->eye_separation = 0.65;
+  self->eye_separation = 6.5;
 
   ohmd_device_getf (self->device, OHMD_PROJECTION_ZNEAR, &self->znear);
   ohmd_device_getf (self->device, OHMD_PROJECTION_ZFAR, &self->zfar);
@@ -229,13 +230,13 @@ gst_3d_hmd_update (Gst3DHmd * self)
 void
 gst_3d_hmd_eye_sep_inc (Gst3DHmd * self)
 {
-  self->eye_separation += .1;
+  self->eye_separation += 1.f;
   GST_DEBUG ("separation: %f", self->eye_separation);
 }
 
 void
 gst_3d_hmd_eye_sep_dec (Gst3DHmd * self)
 {
-  self->eye_separation -= .1;
+  self->eye_separation -= 1.f;
   GST_DEBUG ("separation: %f", self->eye_separation);
 }
