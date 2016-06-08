@@ -40,7 +40,7 @@ typedef struct _GstPointCloudBuilderClass GstPointCloudBuilderClass;
 
 struct _GstPointCloudBuilder
 {
-  GstGLFilter filter;
+  GstGLFilter parent;
 
   guint in_tex;
 

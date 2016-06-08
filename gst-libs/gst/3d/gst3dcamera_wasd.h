@@ -40,8 +40,7 @@ typedef struct _Gst3DCameraWasdClass Gst3DCameraWasdClass;
 
 struct _Gst3DCameraWasd
 {
-  /*< private > */
-  GstObject parent;
+  Gst3DCamera parent;
 
   graphene_matrix_t mvp;
 

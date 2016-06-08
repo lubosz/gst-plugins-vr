@@ -53,13 +53,6 @@ gst_3d_camera_init (Gst3DCamera * self)
   graphene_vec3_init (&self->up, 0.f, 1.f, 0.f);
 }
 
-Gst3DCamera *
-gst_3d_camera_new (void)
-{
-  Gst3DCamera *camera = g_object_new (GST_3D_TYPE_CAMERA, NULL);
-  return camera;
-}
-
 static void
 gst_3d_camera_finalize (GObject * object)
 {

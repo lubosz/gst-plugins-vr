@@ -39,19 +39,13 @@
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
 G_DEFINE_TYPE_WITH_CODE (Gst3DCameraArcball, gst_3d_camera_arcball,
-    GST_TYPE_OBJECT, GST_DEBUG_CATEGORY_INIT (gst_3d_camera_arcball_debug,
+    GST_3D_TYPE_CAMERA, GST_DEBUG_CATEGORY_INIT (gst_3d_camera_arcball_debug,
         "3dcamera_arcball", 0, "camera_arcball"));
 
 
 void
 gst_3d_camera_arcball_init (Gst3DCameraArcball * self)
 {
-  self->fov = 45.0;
-  //self->aspect = 4.0 / 3.0;
-  self->aspect = 16.0 / 9.0;
-  self->znear = 0.01;
-  self->zfar = 1000.0;
-
   self->center_distance = 2.5;
   self->scroll_speed = 0.03;
   self->rotation_speed = 0.002;
@@ -62,10 +56,6 @@ gst_3d_camera_arcball_init (Gst3DCameraArcball * self)
   self->phi = 5.0;
 
   self->pressed_mouse_button = 0;
-
-  graphene_vec3_init (&self->eye, 0.f, 0.f, 1.f);
-  graphene_vec3_init (&self->center, 0.f, 0.f, 0.f);
-  graphene_vec3_init (&self->up, 0.f, 1.f, 0.f);
 }
 
 Gst3DCameraArcball *
@@ -88,8 +78,14 @@ gst_3d_camera_arcball_finalize (GObject * object)
 static void
 gst_3d_camera_arcball_class_init (Gst3DCameraArcballClass * klass)
 {
-  GObjectClass *obj_class = G_OBJECT_CLASS (klass);
-  obj_class->finalize = gst_3d_camera_arcball_finalize;
+  GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  gobject_class->finalize = gst_3d_camera_arcball_finalize;
+/*
+  gobject_class->set_property = gst_hmd_warp_set_property;
+  gobject_class->get_property = gst_hmd_warp_get_property;
+*/
+  Gst3DCameraClass *camera_class = GST_3D_CAMERA_CLASS (klass);
+  camera_class->update_view = gst_3d_camera_arcball_update_view;
 }
 
 
@@ -123,18 +119,20 @@ gst_3d_camera_arcball_update_view (Gst3DCameraArcball * self)
 {
   float radius = exp (self->center_distance);
 
-  graphene_vec3_init (&self->eye,
+  Gst3DCamera *cam = GST_3D_CAMERA (self);
+
+  graphene_vec3_init (&cam->eye,
       radius * sin (self->theta) * cos (self->phi),
       radius * -cos (self->theta),
       radius * sin (self->theta) * sin (self->phi));
 
   graphene_matrix_t projection_matrix;
   graphene_matrix_init_perspective (&projection_matrix,
-      self->fov, self->aspect, self->znear, self->zfar);
+      cam->fov, cam->aspect, cam->znear, cam->zfar);
 
   graphene_matrix_t view_matrix;
-  graphene_matrix_init_look_at (&view_matrix, &self->eye, &self->center,
-      &self->up);
+  graphene_matrix_init_look_at (&view_matrix, &cam->eye, &cam->center,
+      &cam->up);
 
   /* fix graphene look at */
   graphene_matrix_t v_inverted;
@@ -142,7 +140,7 @@ gst_3d_camera_arcball_update_view (Gst3DCameraArcball * self)
   graphene_matrix_inverse (&view_matrix, &v_inverted);
   gst_3d_math_matrix_negate_component (&v_inverted, 3, 2, &v_inverted_fix);
 
-  graphene_matrix_multiply (&v_inverted_fix, &projection_matrix, &self->mvp);
+  graphene_matrix_multiply (&v_inverted_fix, &projection_matrix, &cam->mvp);
 }
 
 void

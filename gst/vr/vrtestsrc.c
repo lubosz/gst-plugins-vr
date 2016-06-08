@@ -157,7 +157,8 @@ _scene_geometry_draw (gpointer impl)
   for (l = self->nodes; l != NULL; l = l->next) {
     Gst3DNode *node = (Gst3DNode *) l->data;
     gst_gl_shader_use (node->shader->shader);
-    gst_3d_shader_upload_matrix (node->shader, &camera->mvp, "mvp");
+    gst_3d_shader_upload_matrix (node->shader, &GST_3D_CAMERA (camera)->mvp,
+        "mvp");
     if (self->wireframe_mode)
       gst_3d_node_draw_wireframe (node);
     else

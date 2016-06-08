@@ -38,7 +38,7 @@
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
 G_DEFINE_TYPE_WITH_CODE (Gst3DCameraWasd, gst_3d_camera_wasd,
-    GST_TYPE_OBJECT, GST_DEBUG_CATEGORY_INIT (gst_3d_camera_wasd_debug,
+    GST_3D_TYPE_CAMERA, GST_DEBUG_CATEGORY_INIT (gst_3d_camera_wasd_debug,
         "3dcamera_wasd", 0, "camera_wasd"));
 
 

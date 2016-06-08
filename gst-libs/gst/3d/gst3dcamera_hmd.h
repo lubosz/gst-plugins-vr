@@ -49,8 +49,7 @@ typedef struct _Gst3DCameraHmdClass Gst3DCameraHmdClass;
 
 struct _Gst3DCameraHmd
 {
-  /*< private > */
-  GstObject parent;
+  Gst3DCamera parent;
   
   graphene_matrix_t left_vp_matrix;
   graphene_matrix_t right_vp_matrix;

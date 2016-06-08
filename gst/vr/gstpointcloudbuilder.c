@@ -163,7 +163,7 @@ gst_point_cloud_builder_set_caps (GstGLFilter * filter, GstCaps * incaps,
 {
   GstPointCloudBuilder *self = GST_POINT_CLOUD_BUILDER (filter);
 
-  self->camera->aspect =
+  GST_3D_CAMERA (self->camera)->aspect =
       (gdouble) GST_VIDEO_INFO_WIDTH (&filter->out_info) /
       (gdouble) GST_VIDEO_INFO_HEIGHT (&filter->out_info);
 
@@ -274,7 +274,8 @@ gst_point_cloud_builder_draw (gpointer this)
   gl->BindTexture (GL_TEXTURE_2D, self->in_tex);
 
   gst_3d_camera_arcball_update_view ((self->camera));
-  gst_3d_shader_upload_matrix (self->shader, &self->camera->mvp, "mvp");
+  gst_3d_shader_upload_matrix (self->shader, &GST_3D_CAMERA (self->camera)->mvp,
+      "mvp");
 
   gst_3d_mesh_bind (self->mesh);
   gst_3d_mesh_draw_arrays (self->mesh);

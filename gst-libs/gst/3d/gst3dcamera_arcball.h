@@ -40,24 +40,8 @@ typedef struct _Gst3DCameraArcballClass Gst3DCameraArcballClass;
 
 struct _Gst3DCameraArcball
 {
-  /*< private > */
-  GstObject parent;
+  Gst3DCamera parent;
 
-  graphene_matrix_t mvp;
-
-  /* position */
-  graphene_vec3_t eye;
-  graphene_vec3_t center;
-  graphene_vec3_t up;
-
-  /* perspective */
-  gfloat fov;
-  gfloat aspect;
-  gfloat znear;
-  gfloat zfar;
-  gboolean ortho;
-
-  /* arcball cam */
   gfloat center_distance;
   gfloat scroll_speed;
   gdouble rotation_speed;

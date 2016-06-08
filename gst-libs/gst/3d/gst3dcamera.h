@@ -61,9 +61,9 @@ struct _Gst3DCamera
 struct _Gst3DCameraClass
 {
   GstObjectClass parent_class;
-};
 
-Gst3DCamera *gst_3d_camera_new (void);
+  gboolean (*update_view)          (Gst3DCamera *camera);
+};
 
 void gst_3d_camera_update_view (Gst3DCamera * self);
 void gst_3d_camera_update_view_mvp (Gst3DCamera * self);
