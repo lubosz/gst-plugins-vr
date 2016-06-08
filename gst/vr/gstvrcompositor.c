@@ -168,20 +168,23 @@ gst_vr_compositor_set_caps (GstGLFilter * filter, GstCaps * incaps,
   GstVRCompositor *self = GST_VR_COMPOSITOR (filter);
 
   if (!self->camera)
-    self->camera = gst_3d_camera_hmd_new ();
+    self->camera = GST_3D_CAMERA (gst_3d_camera_hmd_new ());
 
-  if (!(self->camera)->hmd->device)
+
+  Gst3DCameraHmd *hmd_cam = GST_3D_CAMERA_HMD (self->camera);
+
+  if (!hmd_cam->hmd->device)
     return FALSE;
 
   self->caps_change = TRUE;
 
-  self->filter_aspect = gst_3d_camera_hmd_get_eye_aspect (self->camera);
+  self->filter_aspect = gst_3d_camera_hmd_get_eye_aspect (hmd_cam);
   //self->filter_aspect = _aspect_from_filter (filter);
-  //self->filter_aspect = gst_3d_camera_hmd_get_screen_aspect(self->camera);
-  self->eye_width = gst_3d_camera_hmd_get_eye_width (self->camera);
-  self->eye_height = gst_3d_camera_hmd_get_eye_height (self->camera);
+  //self->filter_aspect = gst_3d_camera_hmd_get_screen_aspect(hmd_cam);
+  self->eye_width = gst_3d_camera_hmd_get_eye_width (hmd_cam);
+  self->eye_height = gst_3d_camera_hmd_get_eye_height (hmd_cam);
 
-  gst_3d_camera_hmd_update_view (self->camera);
+  gst_3d_camera_update_view (self->camera);
 
   return TRUE;
 }
@@ -197,7 +200,7 @@ gst_vr_compositor_src_event (GstBaseTransform * trans, GstEvent * event)
       event =
           GST_EVENT (gst_mini_object_make_writable (GST_MINI_OBJECT (event)));
       gst_3d_renderer_navigation_event (GST_ELEMENT (self), event);
-      gst_3d_camera_hmd_navigation_event (self->camera, event);
+      gst_3d_camera_navigation_event (self->camera, event);
 
       GstNavigationEventType event_type = gst_navigation_event_get_type (event);
       switch (event_type) {
@@ -206,7 +209,7 @@ gst_vr_compositor_src_event (GstBaseTransform * trans, GstEvent * event)
               (GstStructure *) gst_event_get_structure (event);
           const gchar *key = gst_structure_get_string (structure, "key");
           if (key != NULL && g_strcmp0 (key, "space") == 0)
-            gst_3d_hmd_reset ((self->camera)->hmd);
+            gst_3d_hmd_reset (GST_3D_CAMERA_HMD (self->camera)->hmd);
           break;
         }
         default:
@@ -268,7 +271,8 @@ gst_vr_compositor_init_scene (GstGLFilter * filter)
     gst_3d_scene_append_node (self->scene, sphere_node);
 
     self->render_plane =
-        gst_3d_mesh_new_plane (context, self->camera->hmd->left_aspect);
+        gst_3d_mesh_new_plane (context,
+        GST_3D_CAMERA_HMD (self->camera)->hmd->left_aspect);
     gst_3d_mesh_bind_shader (self->render_plane, self->shader);
 
     gst_3d_renderer_create_fbo (gl, &self->left_fbo, &self->left_color_tex,
@@ -351,11 +355,13 @@ _draw_stereo (GstVRCompositor * self, GstGLFuncs * gl)
   if (self->default_fbo == 0)
     gl->GetIntegerv (GL_DRAW_FRAMEBUFFER_BINDING, &self->default_fbo);
 
+  Gst3DCameraHmd *hmd_cam = GST_3D_CAMERA_HMD (self->camera);
+
   // LEFT EYE
-  _draw_eye (self, gl, self->left_fbo, &(self->camera)->left_vp_matrix);
+  _draw_eye (self, gl, self->left_fbo, &hmd_cam->left_vp_matrix);
 
   // RIGHT EYE
-  _draw_eye (self, gl, self->right_fbo, &(self->camera)->right_vp_matrix);
+  _draw_eye (self, gl, self->right_fbo, &hmd_cam->right_vp_matrix);
 
   gst_gl_shader_use (self->shader->shader);
   _draw_framebuffers_on_planes (self, gl);
@@ -368,9 +374,8 @@ gst_vr_compositor_draw (gpointer this)
   GstGLContext *context = GST_GL_BASE_FILTER (this)->context;
   GstGLFuncs *gl = context->gl_vtable;
 
-  gst_3d_camera_hmd_update_view (self->camera);
+  gst_3d_camera_update_view (self->camera);
   _draw_stereo (self, gl);
-
   _clear_state (context, gl);
 
 }

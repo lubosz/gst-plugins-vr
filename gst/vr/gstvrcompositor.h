@@ -50,11 +50,10 @@ struct _GstVRCompositor
 
   gboolean caps_change;
 
-  // Gst3DMesh *mesh;
   Gst3DMesh *render_plane;
 
   Gst3DShader *shader;
-  Gst3DCameraHmd *camera;
+  Gst3DCamera *camera;
 
   GLuint left_color_tex, left_fbo;
   GLuint right_color_tex, right_fbo;
