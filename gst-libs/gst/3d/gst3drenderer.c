@@ -123,7 +123,5 @@ gst_3d_renderer_navigation_event (GstElement * element, GstEvent * event)
     if (key != NULL)
       if (g_strcmp0 (key, "Escape") == 0)
         gst_3d_renderer_send_eos (element);
-    // else if (g_strcmp0 (key, "Tab") == 0)
-    //  _toggle_render_mode (self);
   }
 }
