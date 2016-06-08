@@ -22,47 +22,7 @@
 #include "config.h"
 #endif
 
-#include <string.h>
-#include <stdlib.h>
-#include <math.h>
-
-#define GST_USE_UNSTABLE_API
-#include <gst/gl/gl.h>
-
 #include "gst3dmath.h"
-
-#define GST_CAT_DEFAULT gst_3d_math_debug
-GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
-
-G_DEFINE_TYPE_WITH_CODE (Gst3DMath, gst_3d_math, GST_TYPE_OBJECT,
-    GST_DEBUG_CATEGORY_INIT (gst_3d_math_debug, "3dmath", 0, "math"));
-
-void
-gst_3d_math_init (Gst3DMath * self)
-{
-}
-
-Gst3DMath *
-gst_3d_math_new (GstGLContext * context)
-{
-  Gst3DMath *math = g_object_new (GST_3D_TYPE_MATH, NULL);
-  return math;
-}
-
-static void
-gst_3d_math_finalize (GObject * object)
-{
-  Gst3DMath *self = GST_3D_MATH (object);
-  g_return_if_fail (self != NULL);
-  G_OBJECT_CLASS (gst_3d_math_parent_class)->finalize (object);
-}
-
-static void
-gst_3d_math_class_init (Gst3DMathClass * klass)
-{
-  GObjectClass *obj_class = G_OBJECT_CLASS (klass);
-  obj_class->finalize = gst_3d_math_finalize;
-}
 
 void
 gst_3d_math_matrix_negate_component (const graphene_matrix_t * matrix, guint n,
@@ -83,16 +43,21 @@ gst_3d_math_matrix_hadamard_product (const graphene_matrix_t * a,
   float values[16];
   for (int x = 0; x < 4; x++)
     for (int y = 0; y < 4; y++)
-      values[x * 4 + y] =
-          graphene_matrix_get_value (a, x, y) * graphene_matrix_get_value (b, x,
-          y);
+      values[x * 4 + y] = graphene_matrix_get_value (a, x, y)
+          * graphene_matrix_get_value (b, x, y);
   graphene_matrix_init_from_float (result, values);
 }
 
-
+void
+gst_3d_math_vec3_print (const gchar * name, graphene_vec3_t * vector)
+{
+  g_print ("%s %f %f %f\n", name, graphene_vec3_get_x (vector),
+      graphene_vec3_get_y (vector), graphene_vec3_get_z (vector));
+}
 
 void
-gst_3d_math_vec3_negate (const graphene_vec3_t * vec, graphene_vec3_t * res)
+gst_3d_math_vec3_negate (const graphene_vec3_t * vector,
+    graphene_vec3_t * result)
 {
-  return graphene_vec3_subtract (graphene_vec3_zero (), vec, res);
+  return graphene_vec3_subtract (graphene_vec3_zero (), vector, result);
 }

@@ -95,15 +95,6 @@ gst_3d_camera_update_view_mvp (Gst3DCamera * self)
   graphene_matrix_multiply (&view_matrix, &projection_matrix, &self->mvp);
 }
 
-/*
-static void
-print_graphene_vec3 (const gchar * name, graphene_vec3_t * vec)
-{
-  GST_ERROR ("%s %f %f %f", name, graphene_vec3_get_x (vec),
-      graphene_vec3_get_y (vec), graphene_vec3_get_z (vec));
-}
-*/
-
 void
 gst_3d_camera_press_key (Gst3DCamera * self, const gchar * key)
 {
