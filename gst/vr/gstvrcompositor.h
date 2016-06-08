@@ -28,6 +28,7 @@
 #include "gst/3d/gst3dshader.h"
 #include "gst/3d/gst3drenderer.h"
 #include "gst/3d/gst3dscene.h"
+#include "gst/3d/gst3drenderer.h"
 
 G_BEGIN_DECLS
 #define GST_TYPE_VR_COMPOSITOR            (gst_vr_compositor_get_type())
@@ -44,24 +45,11 @@ struct _GstVRCompositor
   GstGLFilter filter;
 
   guint in_tex;
-
-  guint eye_width;
-  guint eye_height;
-
   gboolean caps_change;
 
-  Gst3DMesh *render_plane;
-
-  Gst3DShader *shader;
   Gst3DCamera *camera;
-
-  GLuint left_color_tex, left_fbo;
-  GLuint right_color_tex, right_fbo;
-  GLint default_fbo;
-  
   Gst3DScene *scene;
-  
-  gfloat filter_aspect;
+  Gst3DRenderer *renderer;
 };
 
 struct _GstVRCompositorClass

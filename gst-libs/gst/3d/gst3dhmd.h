@@ -72,6 +72,11 @@ void gst_3d_hmd_eye_sep_inc (Gst3DHmd * self);
 void gst_3d_hmd_eye_sep_dec (Gst3DHmd * self);
 void gst_3d_hmd_reset(Gst3DHmd * self);
 
+guint gst_3d_hmd_get_eye_width (Gst3DHmd * self);
+guint gst_3d_hmd_get_eye_height (Gst3DHmd * self);
+float gst_3d_hmd_get_screen_aspect (Gst3DHmd * self);
+float gst_3d_hmd_get_eye_aspect (Gst3DHmd * self);
+
 void gst_3d_hmd_update (Gst3DHmd * self);
 
 G_END_DECLS

@@ -243,30 +243,3 @@ gst_3d_camera_hmd_navigation_event (Gst3DCamera * cam, GstEvent * event)
       break;
   }
 }
-
-guint
-gst_3d_camera_hmd_get_eye_width (Gst3DCameraHmd * self)
-{
-  return self->hmd->screen_width / 2;
-}
-
-guint
-gst_3d_camera_hmd_get_eye_height (Gst3DCameraHmd * self)
-{
-  return self->hmd->screen_height;
-}
-
-float
-gst_3d_camera_hmd_get_screen_aspect (Gst3DCameraHmd * self)
-{
-  int w = self->hmd->screen_width;
-  int h = self->hmd->screen_height;
-  return (gdouble) w / (gdouble) h;
-}
-
-float
-gst_3d_camera_hmd_get_eye_aspect (Gst3DCameraHmd * self)
-{
-  return (gdouble) gst_3d_camera_hmd_get_eye_width (self)
-      / (gdouble) gst_3d_camera_hmd_get_eye_height (self);
-}

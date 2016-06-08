@@ -24,6 +24,10 @@
 
 #include <gst/gst.h>
 #include <gst/gl/gstgl_fwd.h>
+#include "gst3dmesh.h"
+#include "gst3dshader.h"
+#include "gst3dscene.h"
+#include "gst3dhmd.h"
 
 G_BEGIN_DECLS
 #define GST_3D_TYPE_RENDERER            (gst_3d_renderer_get_type ())
@@ -40,6 +44,19 @@ struct _Gst3DRenderer
   /*< private > */
   GstObject parent;
   GstGLContext *context;
+  
+  Gst3DMesh *render_plane;
+
+  Gst3DShader *shader;
+  
+  GLuint left_color_tex, left_fbo;
+  GLuint right_color_tex, right_fbo;
+  GLint default_fbo;
+  
+  guint eye_width;
+  guint eye_height;
+  
+  gfloat filter_aspect;
 };
 
 struct _Gst3DRendererClass
@@ -52,6 +69,12 @@ GType gst_3d_renderer_get_type (void);
 void gst_3d_renderer_send_eos (GstElement * element);
 void gst_3d_renderer_create_fbo (GstGLFuncs *gl, GLuint * fbo, GLuint * color_tex, int width, int height);
 void gst_3d_renderer_navigation_event (GstElement * element, GstEvent * event);
+void gst_3d_renderer_clear_state (Gst3DRenderer * self);
+void gst_3d_renderer_init_stereo (Gst3DRenderer * self, Gst3DCamera *cam);
+void gst_3d_renderer_draw_stereo (Gst3DRenderer * self, Gst3DCamera *cam, Gst3DScene *scene);
+
+gboolean gst_3d_renderer_stero_init_from_hmd (Gst3DRenderer * self, Gst3DHmd * hmd);
+gboolean gst_3d_renderer_stero_init_from_filter (Gst3DRenderer * self, GstGLFilter * filter);
 
 G_END_DECLS
 #endif /* __GST_3D_RENDERER_H__ */

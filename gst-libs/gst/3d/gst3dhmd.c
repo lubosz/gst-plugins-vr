@@ -241,3 +241,30 @@ gst_3d_hmd_eye_sep_dec (Gst3DHmd * self)
   self->eye_separation -= 1.f;
   GST_DEBUG ("separation: %f", self->eye_separation);
 }
+
+guint
+gst_3d_hmd_get_eye_width (Gst3DHmd * self)
+{
+  return self->screen_width / 2;
+}
+
+guint
+gst_3d_hmd_get_eye_height (Gst3DHmd * self)
+{
+  return self->screen_height;
+}
+
+float
+gst_3d_hmd_get_screen_aspect (Gst3DHmd * self)
+{
+  int w = self->screen_width;
+  int h = self->screen_height;
+  return (gdouble) w / (gdouble) h;
+}
+
+float
+gst_3d_hmd_get_eye_aspect (Gst3DHmd * self)
+{
+  return (gdouble) gst_3d_hmd_get_eye_width (self)
+      / (gdouble) gst_3d_hmd_get_eye_height (self);
+}
