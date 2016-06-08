@@ -66,14 +66,16 @@ gst_3d_hmd_open_device (Gst3DHmd * self)
 {
   int picked_device = 0;
   self->hmd_context = ohmd_ctx_create ();
+  g_return_if_fail (self->hmd_context);
+
   int num_devices = ohmd_ctx_probe (self->hmd_context);
   if (num_devices < 0) {
-    GST_ERROR ("failed to probe devices: %s\n",
+    GST_ERROR ("Failed to probe devices: %s\n",
         ohmd_ctx_get_error (self->hmd_context));
     return;
   }
 
-  GST_DEBUG ("We have %d deivces.\n", num_devices);
+  GST_DEBUG ("We have %d devices.\n", num_devices);
 
   for (int i = 0; i < num_devices; i++) {
     GST_DEBUG ("device %d", i);
@@ -105,11 +107,11 @@ gst_3d_hmd_open_device (Gst3DHmd * self)
 void
 gst_3d_hmd_reset (Gst3DHmd * self)
 {
-  // reset rotation and position
+  /* reset rotation and position */
   float zero[] = { 0, 0, 0, 1 };
   ohmd_device_setf (self->device, OHMD_ROTATION_QUAT, zero);
   ohmd_device_setf (self->device, OHMD_POSITION_VECTOR, zero);
-  GST_ERROR ("resetting hmd");
+  GST_DEBUG ("Resetting OHMD_ROTATION_QUAT and OHMD_POSITION_VECTOR.");
 }
 
 static void
@@ -201,7 +203,6 @@ gst_3d_hmd_get_matrix (Gst3DHmd * self, ohmd_float_value type)
   float matrix[16];
   graphene_matrix_t hmd_matrix;
 
-  // set hmd rotation, for left eye.
   ohmd_device_getf (self->device, type, matrix);
   graphene_matrix_init_from_float (&hmd_matrix, matrix);
   return hmd_matrix;
