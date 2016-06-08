@@ -48,7 +48,7 @@ gst_3d_camera_arcball_init (Gst3DCameraArcball * self)
 {
   self->fov = 45.0;
   //self->aspect = 4.0 / 3.0;
-  self->aspect = 1920.0 / 1080.0;
+  self->aspect = 16.0 / 9.0;
   self->znear = 0.01;
   self->zfar = 1000.0;
 
