@@ -28,6 +28,7 @@
 #include "gst/3d/gst3dshader.h"
 #include "gst/3d/gst3dmesh.h"
 #include "gst/3d/gst3dcamera_arcball.h"
+#include "gst/3d/gst3dcamera_wasd.h"
 #include "gst/3d/gst3dscene.h"
 
 struct GeometryScene
@@ -51,7 +52,8 @@ _scene_geometry_init (gpointer impl, GstGLContext * context,
   struct GeometryScene *self = impl;
   self->base.context = context;
   self->scene = gst_3d_scene_new (context);
-  self->scene->camera = GST_3D_CAMERA (gst_3d_camera_arcball_new ());
+  //self->scene->camera = GST_3D_CAMERA (gst_3d_camera_arcball_new ());
+  self->scene->camera = GST_3D_CAMERA (gst_3d_camera_wasd_new ());
 
   /*
      Gst3DMesh * plane_mesh = gst_3d_mesh_new_plane (context, 1.0);

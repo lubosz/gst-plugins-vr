@@ -47,9 +47,8 @@ void gst_3d_camera_wasd_navigation_event (Gst3DCamera * cam, GstEvent * event);
 void
 gst_3d_camera_wasd_init (Gst3DCameraWasd * self)
 {
-  self->xtranslation = 0;
-  self->ytranslation = 0;
-  self->ztranslation = 0;
+  Gst3DCamera *cam = GST_3D_CAMERA (self);
+  graphene_vec3_init_from_vec3 (&self->center_to_eye, &cam->eye);
 }
 
 Gst3DCameraWasd *
@@ -79,54 +78,75 @@ gst_3d_camera_wasd_class_init (Gst3DCameraWasdClass * klass)
 }
 
 void
-gst_3d_camera_wasd_process_input (Gst3DCameraWasd * self)
+gst_3d_camera_wasd_update_view (Gst3DCamera * cam)
 {
-  //_print_pressed_keys (self);
-
   gfloat fast_modifier = 1.0;
   GList *l;
-  for (l = GST_3D_CAMERA (self)->pushed_buttons; l != NULL; l = l->next)
+  for (l = cam->pushed_buttons; l != NULL; l = l->next)
     if (g_strcmp0 (l->data, "Shift_L") == 0)
       fast_modifier = 3.0;
 
+  Gst3DCameraWasd *self = GST_3D_CAMERA_WASD (cam);
 
   gfloat distance = 0.01 * fast_modifier;
+  gfloat xtranslation = 0.0f, ytranslation = 0.0f, ztranslation = 0.0f;
 
-  for (l = GST_3D_CAMERA (self)->pushed_buttons; l != NULL; l = l->next) {
+  for (l = cam->pushed_buttons; l != NULL; l = l->next) {
     if (g_strcmp0 (l->data, "w") == 0) {
-      self->ztranslation += distance;
+      ztranslation = -distance;
       continue;
     } else if (g_strcmp0 (l->data, "s") == 0) {
-      self->ztranslation -= distance;
+      ztranslation = distance;
       continue;
     }
 
     if (g_strcmp0 (l->data, "a") == 0) {
-      self->xtranslation += distance;
+      xtranslation = -distance;
       continue;
     } else if (g_strcmp0 (l->data, "d") == 0) {
-      self->xtranslation -= distance;
+      xtranslation = distance;
       continue;
     }
 
     if (g_strcmp0 (l->data, "space") == 0) {
-      self->ytranslation += distance;
+      ytranslation = -distance;
       continue;
     } else if (g_strcmp0 (l->data, "Control_L") == 0) {
-      self->ytranslation -= distance;
+      ytranslation = distance;
       continue;
     }
   }
-}
 
+  graphene_vec3_t translation;
+  graphene_vec3_init (&translation, xtranslation, ytranslation, ztranslation);
+  graphene_vec3_add (&cam->center, &translation, &cam->center);
 
-void
-gst_3d_camera_wasd_update_view (Gst3DCamera * cam)
-{
+  graphene_vec3_add (&cam->center, &self->center_to_eye, &cam->eye);
+  gst_3d_camera_update_view_mvp (cam);
 }
 
 void
 gst_3d_camera_wasd_navigation_event (Gst3DCamera * cam, GstEvent * event)
 {
-
+  GstNavigationEventType event_type = gst_navigation_event_get_type (event);
+  switch (event_type) {
+    case GST_NAVIGATION_EVENT_KEY_PRESS:{
+      GstStructure *structure =
+          (GstStructure *) gst_event_get_structure (event);
+      const gchar *key = gst_structure_get_string (structure, "key");
+      if (key != NULL)
+        gst_3d_camera_press_key (cam, key);
+      break;
+    }
+    case GST_NAVIGATION_EVENT_KEY_RELEASE:{
+      GstStructure *structure =
+          (GstStructure *) gst_event_get_structure (event);
+      const gchar *key = gst_structure_get_string (structure, "key");
+      if (key != NULL)
+        gst_3d_camera_release_key (cam, key);
+      break;
+    }
+    default:
+      break;
+  }
 }

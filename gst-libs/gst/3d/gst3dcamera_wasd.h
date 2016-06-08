@@ -40,10 +40,7 @@ typedef struct _Gst3DCameraWasdClass Gst3DCameraWasdClass;
 struct _Gst3DCameraWasd
 {
   Gst3DCamera parent;
-  
-  gfloat xtranslation;
-  gfloat ytranslation;
-  gfloat ztranslation;
+  graphene_vec3_t center_to_eye;
 };
 
 struct _Gst3DCameraWasdClass
