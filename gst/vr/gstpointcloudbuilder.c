@@ -38,7 +38,7 @@
 #endif
 
 #include "gstpointcloudbuilder.h"
-#include "../../gst-libs/gst/3d/gst3dcamera_arcball.h"
+#include "gst/3d/gst3dcamera_arcball.h"
 
 #include <gst/gl/gstglapi.h>
 #include <graphene-gobject.h>

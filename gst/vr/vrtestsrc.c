@@ -25,10 +25,10 @@
 
 #include "vrtestsrc.h"
 
-#include "../../gst-libs/gst/3d/gst3dshader.h"
-#include "../../gst-libs/gst/3d/gst3dmesh.h"
-#include "../../gst-libs/gst/3d/gst3dcamera_arcball.h"
-#include "../../gst-libs/gst/3d/gst3dnode.h"
+#include "gst/3d/gst3dshader.h"
+#include "gst/3d/gst3dmesh.h"
+#include "gst/3d/gst3dcamera_arcball.h"
+#include "gst/3d/gst3dnode.h"
 
 struct GeometryScene
 {

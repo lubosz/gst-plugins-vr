@@ -23,10 +23,10 @@
 
 #include <graphene.h>
 #include <gst/gl/gstglfilter.h>
-#include "../../gst-libs/gst/3d/gst3dmesh.h"
-#include "../../gst-libs/gst/3d/gst3dcamera_arcball.h"
-#include "../../gst-libs/gst/3d/gst3dshader.h"
-#include "../../gst-libs/gst/3d/gst3drenderer.h"
+#include "gst/3d/gst3dmesh.h"
+#include "gst/3d/gst3dcamera_arcball.h"
+#include "gst/3d/gst3dshader.h"
+#include "gst/3d/gst3drenderer.h"
 
 G_BEGIN_DECLS
 #define GST_TYPE_POINT_CLOUD_BUILDER            (gst_point_cloud_builder_get_type())

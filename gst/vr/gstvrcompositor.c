@@ -41,10 +41,10 @@
 
 #include <gst/gl/gstglapi.h>
 #include <graphene-gobject.h>
-#include "../../gst-libs/gst/3d/gst3drenderer.h"
-#include "../../gst-libs/gst/3d/gst3dnode.h"
-#include "../../gst-libs/gst/3d/gst3dscene.h"
-#include "../../gst-libs/gst/3d/gst3dcamera_hmd.h"
+#include "gst/3d/gst3drenderer.h"
+#include "gst/3d/gst3dnode.h"
+#include "gst/3d/gst3dscene.h"
+#include "gst/3d/gst3dcamera_hmd.h"
 
 #define GST_CAT_DEFAULT gst_vr_compositor_debug
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);

@@ -21,6 +21,8 @@ gst_dep = dependency('gstreamer-' + apiversion, version: GST_DEP_VERSION)
 gst_gl_dep = dependency('gstreamer-gl-' + apiversion, version: GST_DEP_VERSION)
 gst_video_dep = dependency('gstreamer-video-' + apiversion, version: GST_DEP_VERSION)
 
+gst3dincludes = include_directories('gst-libs/')
+
 # The Gst3D library
 install_headers(
   'gst-libs/gst/3d/gst3dmesh.h',
@@ -120,7 +122,8 @@ gst_vr_plugins = shared_library('gstvrplugins',
   dependencies : [glib_dep, gobject_dep, gst_dep, gst_gl_dep, gst_video_dep, graphene_dep, openhmd_dep, gio_dep],
   c_args : gst_c_args,
   install_dir : '@0@/gstreamer-1.0'.format(get_option('libdir')),
-  link_with: [gst_3d_lib]
+  link_with: [gst_3d_lib], 
+  include_directories : gst3dincludes
 )
 
 if freenect2_dep.found()

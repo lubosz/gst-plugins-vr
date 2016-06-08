@@ -24,9 +24,9 @@
 
 #include <graphene.h>
 #include <gst/gl/gstglfilter.h>
-#include "../../gst-libs/gst/3d/gst3dmesh.h"
-#include "../../gst-libs/gst/3d/gst3dcamera.h"
-#include "../../gst-libs/gst/3d/gst3dshader.h"
+#include "gst/3d/gst3dmesh.h"
+#include "gst/3d/gst3dcamera.h"
+#include "gst/3d/gst3dshader.h"
 
 G_BEGIN_DECLS
 #define GST_TYPE_HMD_WARP            (gst_hmd_warp_get_type())

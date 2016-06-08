@@ -47,8 +47,7 @@
 
 #include "gstvrtestsrc.h"
 #include "gstvrtestsrc.h"
-//#include <gst/gst-i18n-plugin.h>
-#include "../../gst-libs/gst/3d/gst3drenderer.h"
+#include "gst/3d/gst3drenderer.h"
 
 #define USE_PEER_BUFFERALLOC
 #define SUPPORTED_GL_APIS (GST_GL_API_OPENGL | GST_GL_API_OPENGL3 | GST_GL_API_GLES2)
