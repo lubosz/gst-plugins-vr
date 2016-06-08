@@ -45,6 +45,7 @@
 #include "gst/3d/gst3dnode.h"
 #include "gst/3d/gst3dscene.h"
 #include "gst/3d/gst3dcamera_hmd.h"
+#include "gst/3d/gst3dcamera_arcball.h"
 
 #define GST_CAT_DEFAULT gst_vr_compositor_debug
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -117,6 +118,7 @@ gst_vr_compositor_init (GstVRCompositor * self)
   self->shader = NULL;
   self->in_tex = 0;
   self->camera = NULL;
+  self->scene = NULL;
 
   self->left_color_tex = 0;
   self->left_fbo = 0;
@@ -163,22 +165,14 @@ _aspect_from_filter (GstGLFilter * filter)
 }
 */
 
+
 static gboolean
-gst_vr_compositor_set_caps (GstGLFilter * filter, GstCaps * incaps,
-    GstCaps * outcaps)
+_camera_init_hmd (GstVRCompositor * self)
 {
-  GstVRCompositor *self = GST_VR_COMPOSITOR (filter);
-
-  if (!self->camera)
-    self->camera = GST_3D_CAMERA (gst_3d_camera_hmd_new ());
-
-
   Gst3DCameraHmd *hmd_cam = GST_3D_CAMERA_HMD (self->camera);
 
   if (!hmd_cam->hmd->device)
     return FALSE;
-
-  self->caps_change = TRUE;
 
   self->filter_aspect = gst_3d_camera_hmd_get_eye_aspect (hmd_cam);
   //self->filter_aspect = _aspect_from_filter (filter);
@@ -186,9 +180,26 @@ gst_vr_compositor_set_caps (GstGLFilter * filter, GstCaps * incaps,
   self->eye_width = gst_3d_camera_hmd_get_eye_width (hmd_cam);
   self->eye_height = gst_3d_camera_hmd_get_eye_height (hmd_cam);
 
+  return TRUE;
+}
+
+static gboolean
+gst_vr_compositor_set_caps (GstGLFilter * filter, GstCaps * incaps,
+    GstCaps * outcaps)
+{
+  GstVRCompositor *self = GST_VR_COMPOSITOR (filter);
+  gboolean ret = TRUE;
+
+  if (!self->camera)
+    self->camera = GST_3D_CAMERA (gst_3d_camera_hmd_new ());
+
+  if (GST_IS_3D_CAMERA_HMD (self->camera))
+    ret = _camera_init_hmd (self);
+
+  self->caps_change = TRUE;
   gst_3d_camera_update_view (self->camera);
 
-  return TRUE;
+  return ret;
 }
 
 static gboolean
@@ -203,21 +214,6 @@ gst_vr_compositor_src_event (GstBaseTransform * trans, GstEvent * event)
           GST_EVENT (gst_mini_object_make_writable (GST_MINI_OBJECT (event)));
       gst_3d_renderer_navigation_event (GST_ELEMENT (self), event);
       gst_3d_camera_navigation_event (self->camera, event);
-
-      GstNavigationEventType event_type = gst_navigation_event_get_type (event);
-      switch (event_type) {
-        case GST_NAVIGATION_EVENT_KEY_PRESS:{
-          GstStructure *structure =
-              (GstStructure *) gst_event_get_structure (event);
-          const gchar *key = gst_structure_get_string (structure, "key");
-          if (key != NULL && g_strcmp0 (key, "space") == 0)
-            gst_3d_hmd_reset (GST_3D_CAMERA_HMD (self->camera)->hmd);
-          break;
-        }
-        default:
-          break;
-      }
-
       break;
     default:
       break;
@@ -234,7 +230,6 @@ gst_vr_compositor_reset_gl (GstGLFilter * filter)
     gst_object_unref (self->shader);
     self->shader = NULL;
   }
-  // gst_object_unref (self->mesh);
 }
 
 static gboolean
@@ -244,10 +239,33 @@ gst_vr_compositor_stop (GstBaseTransform * trans)
   // GstGLContext *context = GST_GL_BASE_FILTER (trans)->context;
 
   /* blocking call, wait until the opengl thread has destroyed the shader */
-  gst_3d_shader_delete (self->shader);
+  if (self->shader)
+    gst_3d_shader_delete (self->shader);
   gst_object_unref (self->scene);
 
   return GST_BASE_TRANSFORM_CLASS (parent_class)->stop (trans);
+}
+
+
+static void
+_init_stereo_rendering (GstVRCompositor * self)
+{
+  GstGLContext *context = GST_GL_BASE_FILTER (self)->context;
+  GstGLFuncs *gl = context->gl_vtable;
+  self->render_plane =
+      gst_3d_mesh_new_plane (context,
+      GST_3D_CAMERA_HMD (self->camera)->hmd->left_aspect);
+  self->shader = gst_3d_shader_new_vert_frag (context, "mvp_uv.vert",
+      "texture_uv.frag");
+  gst_3d_mesh_bind_shader (self->render_plane, self->shader);
+
+  gst_3d_renderer_create_fbo (gl, &self->left_fbo, &self->left_color_tex,
+      self->eye_width, self->eye_height);
+  gst_3d_renderer_create_fbo (gl, &self->right_fbo, &self->right_color_tex,
+      self->eye_width, self->eye_height);
+
+  gst_3d_shader_bind (self->shader);
+  gst_gl_shader_set_uniform_1i (self->shader->shader, "texture", 0);
 }
 
 static gboolean
@@ -258,34 +276,24 @@ gst_vr_compositor_init_scene (GstGLFilter * filter)
   GstGLContext *context = GST_GL_BASE_FILTER (self)->context;
   GstGLFuncs *gl = context->gl_vtable;
   gboolean ret = TRUE;
-  if (!self->shader) {
-
+  if (!self->scene) {
     self->scene = gst_3d_scene_new (context);
-
-    self->shader = gst_3d_shader_new_vert_frag (context, "mvp_uv.vert",
+    Gst3DShader *sphere_shader =
+        gst_3d_shader_new_vert_frag (context, "mvp_uv.vert",
         "texture_uv.frag");
-    //Gst3DShader * sphere_shader = gst_3d_shader_new_vert_frag (context, "mvp_uv.vert",
-    //    "debug_uv.frag");
-    Gst3DShader *sphere_shader = self->shader;
     Gst3DMesh *sphere_mesh = gst_3d_mesh_new_sphere (context, 800.0, 100, 100);
     Gst3DNode *sphere_node =
         gst_3d_node_new_from_mesh_shader (context, sphere_mesh, sphere_shader);
     gst_3d_scene_append_node (self->scene, sphere_node);
 
-    self->render_plane =
-        gst_3d_mesh_new_plane (context,
-        GST_3D_CAMERA_HMD (self->camera)->hmd->left_aspect);
-    gst_3d_mesh_bind_shader (self->render_plane, self->shader);
-
-    gst_3d_renderer_create_fbo (gl, &self->left_fbo, &self->left_color_tex,
-        self->eye_width, self->eye_height);
-    gst_3d_renderer_create_fbo (gl, &self->right_fbo, &self->right_color_tex,
-        self->eye_width, self->eye_height);
     gl->ClearColor (0.f, 0.f, 0.f, 0.f);
     gl->ActiveTexture (GL_TEXTURE0);
 
-    gst_3d_shader_bind (self->shader);
-    gst_gl_shader_set_uniform_1i (self->shader->shader, "texture", 0);
+    gst_3d_shader_bind (sphere_shader);
+    gst_gl_shader_set_uniform_1i (sphere_shader->shader, "texture", 0);
+
+    if (GST_IS_3D_CAMERA_HMD (self->camera))
+      _init_stereo_rendering (self);
   }
   return ret;
 }
@@ -351,8 +359,6 @@ _draw_framebuffers_on_planes (GstVRCompositor * self, GstGLFuncs * gl)
 static void
 _draw_stereo (GstVRCompositor * self, GstGLFuncs * gl)
 {
-  gl->BindTexture (GL_TEXTURE_2D, self->in_tex);
-
   /* store current fbo id */
   if (self->default_fbo == 0)
     gl->GetIntegerv (GL_DRAW_FRAMEBUFFER_BINDING, &self->default_fbo);
@@ -377,7 +383,12 @@ gst_vr_compositor_draw (gpointer this)
   GstGLFuncs *gl = context->gl_vtable;
 
   gst_3d_camera_update_view (self->camera);
-  _draw_stereo (self, gl);
+
+  gl->BindTexture (GL_TEXTURE_2D, self->in_tex);
+  if (GST_IS_3D_CAMERA_HMD (self->camera))
+    _draw_stereo (self, gl);
+  else
+    gst_3d_scene_draw (self->scene, &self->camera->mvp);
   _clear_state (context, gl);
 
 }

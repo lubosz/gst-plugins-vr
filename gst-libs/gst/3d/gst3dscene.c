@@ -81,8 +81,6 @@ gst_3d_scene_class_init (Gst3DSceneClass * klass)
   obj_class->finalize = gst_3d_scene_finalize;
 }
 
-void (*draw) (Gst3DNode *);
-
 void
 gst_3d_scene_draw (Gst3DScene * self, graphene_matrix_t * mvp)
 {

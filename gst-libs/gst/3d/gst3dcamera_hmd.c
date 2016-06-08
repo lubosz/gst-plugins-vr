@@ -221,20 +221,26 @@ _iterate_query_type (Gst3DCameraHmd * self)
 static void
 gst_3d_camera_hmd_navigation_event (Gst3DCamera * cam, GstEvent * event)
 {
-  Gst3DCameraHmd *self = GST_3D_CAMERA_HMD (cam);
-  GstStructure *structure = (GstStructure *) gst_event_get_structure (event);
-  const gchar *key = gst_structure_get_string (structure, "key");
-  if (key != NULL) {
-    const gchar *event_name = gst_structure_get_string (structure, "event");
-    if (g_strcmp0 (event_name, "key-press") == 0) {
-      if (g_strcmp0 (key, "KP_Add") == 0)
-        gst_3d_hmd_eye_sep_inc (self->hmd);
-      else if (g_strcmp0 (key, "KP_Subtract") == 0)
-        gst_3d_hmd_eye_sep_dec (self->hmd);
-      else if (g_strcmp0 (key, "Tab") == 0) {
-        _iterate_query_type (self);
+  GstNavigationEventType event_type = gst_navigation_event_get_type (event);
+  switch (event_type) {
+    case GST_NAVIGATION_EVENT_KEY_PRESS:{
+      Gst3DCameraHmd *self = GST_3D_CAMERA_HMD (cam);
+      GstStructure *structure =
+          (GstStructure *) gst_event_get_structure (event);
+      const gchar *key = gst_structure_get_string (structure, "key");
+      if (key != NULL) {
+        if (g_strcmp0 (key, "KP_Add") == 0)
+          gst_3d_hmd_eye_sep_inc (self->hmd);
+        else if (g_strcmp0 (key, "KP_Subtract") == 0)
+          gst_3d_hmd_eye_sep_dec (self->hmd);
+        else if (g_strcmp0 (key, "Tab") == 0)
+          _iterate_query_type (self);
+        else if (g_strcmp0 (key, "space") == 0)
+          gst_3d_hmd_reset (GST_3D_CAMERA_HMD (self)->hmd);
       }
     }
+    default:
+      break;
   }
 }
 
