@@ -188,8 +188,7 @@ gst_point_cloud_builder_src_event (GstBaseTransform * trans, GstEvent * event)
       event =
           GST_EVENT (gst_mini_object_make_writable (GST_MINI_OBJECT (event)));
       gst_3d_renderer_navigation_event (GST_ELEMENT (self), event);
-      gst_3d_camera_arcball_navigation_event (GST_3D_CAMERA_ARCBALL
-          (self->camera), event);
+      gst_3d_camera_navigation_event (GST_3D_CAMERA (self->camera), event);
       break;
     default:
       break;
@@ -273,7 +272,7 @@ gst_point_cloud_builder_draw (gpointer this)
   gst_gl_shader_use (self->shader->shader);
   gl->BindTexture (GL_TEXTURE_2D, self->in_tex);
 
-  gst_3d_camera_arcball_update_view ((self->camera));
+  gst_3d_camera_update_view (GST_3D_CAMERA (self->camera));
   gst_3d_shader_upload_matrix (self->shader, &GST_3D_CAMERA (self->camera)->mvp,
       "mvp");
 

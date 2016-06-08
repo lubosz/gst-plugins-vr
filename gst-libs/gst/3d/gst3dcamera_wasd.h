@@ -25,7 +25,6 @@
 #include <gst/gst.h>
 #include <gst/gl/gstgl_fwd.h>
 #include <graphene.h>
-#include "gst3dhmd.h"
 #include "gst3dcamera.h"
 
 G_BEGIN_DECLS

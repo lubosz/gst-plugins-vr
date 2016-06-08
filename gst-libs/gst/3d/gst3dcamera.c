@@ -51,6 +51,10 @@ gst_3d_camera_init (Gst3DCamera * self)
   graphene_vec3_init (&self->eye, 0.f, 0.f, 1.f);
   graphene_vec3_init (&self->center, 0.f, 0.f, 0.f);
   graphene_vec3_init (&self->up, 0.f, 1.f, 0.f);
+
+  self->cursor_last_x = 0;
+  self->cursor_last_y = 0;
+  self->pressed_mouse_button = 0;
 }
 
 static void
@@ -71,7 +75,17 @@ gst_3d_camera_class_init (Gst3DCameraClass * klass)
 void
 gst_3d_camera_update_view (Gst3DCamera * self)
 {
-  gst_3d_camera_update_view_mvp (self);
+  Gst3DCameraClass *camera_class = GST_3D_CAMERA_GET_CLASS (self);
+  if (camera_class->update_view)
+    camera_class->update_view (self);
+}
+
+void
+gst_3d_camera_navigation_event (Gst3DCamera * self, GstEvent * event)
+{
+  Gst3DCameraClass *camera_class = GST_3D_CAMERA_GET_CLASS (self);
+  if (camera_class->navigation_event)
+    camera_class->navigation_event (self, event);
 }
 
 void
@@ -127,27 +141,4 @@ gst_3d_camera_print_pressed_keys (Gst3DCamera * self)
   GST_DEBUG ("Pressed keys:");
   for (l = self->pushed_buttons; l != NULL; l = l->next)
     GST_DEBUG ("%s", (const gchar *) l->data);
-}
-
-void
-gst_3d_camera_navigation_event (Gst3DCamera * self, GstEvent * event)
-{
-/*
-  GstStructure *structure = (GstStructure *) gst_event_get_structure (event);
-
-  const gchar *key = gst_structure_get_string (structure, "key");
-  if (key != NULL) {
-    const gchar *event_name = gst_structure_get_string (structure, "event");
-    if (g_strcmp0 (event_name, "key-press") == 0)
-      if (g_strcmp0 (key, "KP_Add") == 0) {
-        gst_3d_hmd_eye_sep_inc (self->hmd);
-      } else if (g_strcmp0 (key, "KP_Subtract") == 0) {
-        gst_3d_hmd_eye_sep_dec (self->hmd);
-      } else {
-        GST_DEBUG ("%s", key);
-        _press_key (self, key);
-    } else if (g_strcmp0 (event_name, "key-release") == 0)
-      _release_key (self, key);
-  }
-  */
 }

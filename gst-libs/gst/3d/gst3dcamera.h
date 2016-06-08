@@ -56,13 +56,19 @@ struct _Gst3DCamera
   gfloat znear;
   gfloat zfar;
   gboolean ortho;
+  
+  /* user input */
+  gdouble cursor_last_x;
+  gdouble cursor_last_y;
+  
+  int pressed_mouse_button;
 };
 
 struct _Gst3DCameraClass
 {
   GstObjectClass parent_class;
-
-  gboolean (*update_view)          (Gst3DCamera *camera);
+  void (*update_view)          (Gst3DCamera *cam);
+  void (*navigation_event)     (Gst3DCamera *cam, GstEvent * event);
 };
 
 void gst_3d_camera_update_view (Gst3DCamera * self);

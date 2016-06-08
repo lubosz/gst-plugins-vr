@@ -47,11 +47,6 @@ struct _Gst3DCameraArcball
   gdouble rotation_speed;
   gfloat theta;
   gfloat phi;
-
-  gdouble cursor_last_x;
-  gdouble cursor_last_y;
-  
-  int pressed_mouse_button;
 };
 
 struct _Gst3DCameraArcballClass
@@ -61,11 +56,8 @@ struct _Gst3DCameraArcballClass
 
 Gst3DCameraArcball *gst_3d_camera_arcball_new (void);
 
-void gst_3d_camera_arcball_update_view (Gst3DCameraArcball * self);
 void gst_3d_camera_arcball_translate (Gst3DCameraArcball * self, float z);
 void gst_3d_camera_arcball_rotate (Gst3DCameraArcball * self, gdouble x, gdouble y);
-void gst_3d_camera_arcball_navigation_event (Gst3DCameraArcball * self,
-    GstEvent * event);
 
 GType gst_3d_camera_arcball_get_type (void);
 

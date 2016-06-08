@@ -51,7 +51,7 @@ static gboolean
 _scene_geometry_navigate (gpointer impl, GstEvent * event)
 {
   struct GeometryScene *self = impl;
-  gst_3d_camera_arcball_navigation_event (self->camera, event);
+  gst_3d_camera_navigation_event (GST_3D_CAMERA (self->camera), event);
 
   GstNavigationEventType event_type = gst_navigation_event_get_type (event);
   switch (event_type) {
@@ -150,7 +150,7 @@ _scene_geometry_draw (gpointer impl)
    */
   Gst3DCameraArcball *camera = self->camera;
 
-  gst_3d_camera_arcball_update_view (camera);
+  gst_3d_camera_update_view (GST_3D_CAMERA (camera));
   gl->Enable (GL_DEPTH_TEST);
 
   GList *l;

@@ -43,19 +43,19 @@ G_DEFINE_TYPE_WITH_CODE (Gst3DCameraArcball, gst_3d_camera_arcball,
         "3dcamera_arcball", 0, "camera_arcball"));
 
 
+static void gst_3d_camera_arcball_update_view (Gst3DCamera * cam);
+static void gst_3d_camera_arcball_navigation_event (Gst3DCamera * cam,
+    GstEvent * event);
+
 void
 gst_3d_camera_arcball_init (Gst3DCameraArcball * self)
 {
   self->center_distance = 2.5;
   self->scroll_speed = 0.03;
   self->rotation_speed = 0.002;
-  self->cursor_last_x = 0;
-  self->cursor_last_y = 0;
 
   self->theta = 5.0;
   self->phi = 5.0;
-
-  self->pressed_mouse_button = 0;
 }
 
 Gst3DCameraArcball *
@@ -72,6 +72,7 @@ gst_3d_camera_arcball_finalize (GObject * object)
   Gst3DCameraArcball *self = GST_3D_CAMERA_ARCBALL (object);
   g_return_if_fail (self != NULL);
 
+  // GST_3D_CAMERA_CLASS (gst_3d_camera_arcball_parent_class)->finalize (object);
   G_OBJECT_CLASS (gst_3d_camera_arcball_parent_class)->finalize (object);
 }
 
@@ -80,21 +81,17 @@ gst_3d_camera_arcball_class_init (Gst3DCameraArcballClass * klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   gobject_class->finalize = gst_3d_camera_arcball_finalize;
-/*
-  gobject_class->set_property = gst_hmd_warp_set_property;
-  gobject_class->get_property = gst_hmd_warp_get_property;
-*/
   Gst3DCameraClass *camera_class = GST_3D_CAMERA_CLASS (klass);
   camera_class->update_view = gst_3d_camera_arcball_update_view;
+  camera_class->navigation_event = gst_3d_camera_arcball_navigation_event;
 }
-
 
 void
 gst_3d_camera_arcball_translate (Gst3DCameraArcball * self, float z)
 {
   self->center_distance += z * self->scroll_speed;
   GST_DEBUG ("center distance: %f", self->center_distance);
-  gst_3d_camera_arcball_update_view (self);
+  gst_3d_camera_update_view (GST_3D_CAMERA (self));
 }
 
 void
@@ -105,21 +102,20 @@ gst_3d_camera_arcball_rotate (Gst3DCameraArcball * self, gdouble x, gdouble y)
 
   self->phi += delta_phi;
 
-  // 2π < θ < π to avoid gimbal lock
+  /* 2π < θ < π to avoid gimbal lock */
   float next_theta_pi = (self->theta + delta_theta) / M_PI;
   if (next_theta_pi < 2.0 && next_theta_pi > 1.0)
     self->theta += delta_theta;
 
   GST_DEBUG ("θ = %fπ ϕ = %fπ", self->theta / M_PI, self->phi / M_PI);
-  gst_3d_camera_arcball_update_view (self);
+  gst_3d_camera_update_view (GST_3D_CAMERA (self));
 }
 
-void
-gst_3d_camera_arcball_update_view (Gst3DCameraArcball * self)
+static void
+gst_3d_camera_arcball_update_view (Gst3DCamera * cam)
 {
+  Gst3DCameraArcball *self = GST_3D_CAMERA_ARCBALL (cam);
   float radius = exp (self->center_distance);
-
-  Gst3DCamera *cam = GST_3D_CAMERA (self);
 
   graphene_vec3_init (&cam->eye,
       radius * sin (self->theta) * cos (self->phi),
@@ -143,46 +139,47 @@ gst_3d_camera_arcball_update_view (Gst3DCameraArcball * self)
   graphene_matrix_multiply (&v_inverted_fix, &projection_matrix, &cam->mvp);
 }
 
-void
-gst_3d_camera_arcball_navigation_event (Gst3DCameraArcball * self,
-    GstEvent * event)
+static void
+gst_3d_camera_arcball_navigation_event (Gst3DCamera * cam, GstEvent * event)
 {
   GstNavigationEventType event_type = gst_navigation_event_get_type (event);
   GstStructure *structure = (GstStructure *) gst_event_get_structure (event);
 
+  Gst3DCameraArcball *self = GST_3D_CAMERA_ARCBALL (cam);
+
   switch (event_type) {
     case GST_NAVIGATION_EVENT_MOUSE_MOVE:{
+      /* hanlde the mouse motion for zooming and rotating the view */
       gdouble x, y;
       gst_structure_get_double (structure, "pointer_x", &x);
       gst_structure_get_double (structure, "pointer_y", &y);
 
-      // hanlde the mouse motion for zooming and rotating the view
       gdouble dx, dy;
-      dx = x - self->cursor_last_x;
-      dy = y - self->cursor_last_y;
+      dx = x - cam->cursor_last_x;
+      dy = y - cam->cursor_last_y;
 
-      if (self->pressed_mouse_button == 1) {
+      if (cam->pressed_mouse_button == 1) {
         GST_DEBUG ("Rotating [%fx%f]", dx, dy);
         gst_3d_camera_arcball_rotate (self, dx, dy);
       }
-      self->cursor_last_x = x;
-      self->cursor_last_y = y;
+      cam->cursor_last_x = x;
+      cam->cursor_last_y = y;
       break;
     }
     case GST_NAVIGATION_EVENT_MOUSE_BUTTON_RELEASE:{
       gint button;
       gst_structure_get_int (structure, "button", &button);
-      self->pressed_mouse_button = 0;
+      cam->pressed_mouse_button = 0;
 
       if (button == 1) {
-        // GST_DEBUG("first button release");
-        gst_structure_get_double (structure, "pointer_x", &self->cursor_last_x);
-        gst_structure_get_double (structure, "pointer_y", &self->cursor_last_y);
+        /* first mouse button release */
+        gst_structure_get_double (structure, "pointer_x", &cam->cursor_last_x);
+        gst_structure_get_double (structure, "pointer_y", &cam->cursor_last_y);
       } else if (button == 4) {
-        // GST_DEBUG("wheel up");
+        /* wheel up */
         gst_3d_camera_arcball_translate (self, -1.0);
       } else if (button == 5) {
-        // GST_DEBUG("wheel down");
+        /* wheel down */
         gst_3d_camera_arcball_translate (self, 1.0);
       }
       break;
@@ -190,7 +187,7 @@ gst_3d_camera_arcball_navigation_event (Gst3DCameraArcball * self,
     case GST_NAVIGATION_EVENT_MOUSE_BUTTON_PRESS:{
       gint button;
       gst_structure_get_int (structure, "button", &button);
-      self->pressed_mouse_button = button;
+      cam->pressed_mouse_button = button;
       break;
     }
     default:
