@@ -57,6 +57,8 @@ struct _Gst3DCameraHmd
   Gst3DHmdQueryType query_type;
   
   Gst3DHmd * hmd;
+  
+  void (*update_view_funct) (Gst3DCameraHmd *);
 };
 
 struct _Gst3DCameraHmdClass
@@ -65,10 +67,6 @@ struct _Gst3DCameraHmdClass
 };
 
 Gst3DCameraHmd *gst_3d_camera_hmd_new (void);
-
-void gst_3d_camera_hmd_update_view (Gst3DCameraHmd * self);
-void gst_3d_camera_hmd_navigation_event (Gst3DCameraHmd * self,
-    GstEvent * event);
 
 void gst_3d_camera_hmd_update_view_from_matrix (Gst3DCameraHmd * self);
 void gst_3d_camera_hmd_update_view_from_quaternion (Gst3DCameraHmd * self);

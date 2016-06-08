@@ -41,24 +41,15 @@ G_DEFINE_TYPE_WITH_CODE (Gst3DCameraWasd, gst_3d_camera_wasd,
     GST_3D_TYPE_CAMERA, GST_DEBUG_CATEGORY_INIT (gst_3d_camera_wasd_debug,
         "3dcamera_wasd", 0, "camera_wasd"));
 
+void gst_3d_camera_wasd_update_view (Gst3DCamera * cam);
+void gst_3d_camera_wasd_navigation_event (Gst3DCamera * cam, GstEvent * event);
 
 void
 gst_3d_camera_wasd_init (Gst3DCameraWasd * self)
 {
-  self->fov = 45.0;
-  //self->aspect = 4.0 / 3.0;
-  self->aspect = 1920.0 / 1080.0;
-  self->znear = 0.01;
-  self->zfar = 1000.0;
-
-  self->cursor_last_x = 0;
-  self->cursor_last_y = 0;
-
-  self->pressed_mouse_button = 0;
-
-  graphene_vec3_init (&self->eye, 0.f, 0.f, 1.f);
-  graphene_vec3_init (&self->center, 0.f, 0.f, 0.f);
-  graphene_vec3_init (&self->up, 0.f, 1.f, 0.f);
+  self->xtranslation = 0;
+  self->ytranslation = 0;
+  self->ztranslation = 0;
 }
 
 Gst3DCameraWasd *
@@ -80,8 +71,11 @@ gst_3d_camera_wasd_finalize (GObject * object)
 static void
 gst_3d_camera_wasd_class_init (Gst3DCameraWasdClass * klass)
 {
-  GObjectClass *obj_class = G_OBJECT_CLASS (klass);
-  obj_class->finalize = gst_3d_camera_wasd_finalize;
+  GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  gobject_class->finalize = gst_3d_camera_wasd_finalize;
+  Gst3DCameraClass *camera_class = GST_3D_CAMERA_CLASS (klass);
+  camera_class->update_view = gst_3d_camera_wasd_update_view;
+  camera_class->navigation_event = gst_3d_camera_wasd_navigation_event;
 }
 
 void
@@ -127,12 +121,12 @@ gst_3d_camera_wasd_process_input (Gst3DCameraWasd * self)
 
 
 void
-gst_3d_camera_wasd_update_view (Gst3DCameraWasd * self)
+gst_3d_camera_wasd_update_view (Gst3DCamera * cam)
 {
 }
 
 void
-gst_3d_camera_wasd_navigation_event (Gst3DCameraWasd * self, GstEvent * event)
+gst_3d_camera_wasd_navigation_event (Gst3DCamera * cam, GstEvent * event)
 {
 
 }

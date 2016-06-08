@@ -44,11 +44,16 @@ G_DEFINE_TYPE_WITH_CODE (Gst3DCameraHmd, gst_3d_camera_hmd,
     GST_3D_TYPE_CAMERA, GST_DEBUG_CATEGORY_INIT (gst_3d_camera_hmd_debug,
         "3dcamera_hmd", 0, "camera_hmd"));
 
+static void gst_3d_camera_hmd_navigation_event (Gst3DCamera * self,
+    GstEvent * event);
+static void gst_3d_camera_hmd_update_view (Gst3DCamera * self);
+
 void
 gst_3d_camera_hmd_init (Gst3DCameraHmd * self)
 {
   self->hmd = gst_3d_hmd_new ();
   self->query_type = HMD_QUERY_TYPE_MATRIX_STEREO;
+  self->update_view_funct = &gst_3d_camera_hmd_update_view_from_matrix;
 }
 
 Gst3DCameraHmd *
@@ -72,26 +77,19 @@ gst_3d_camera_hmd_finalize (GObject * object)
 static void
 gst_3d_camera_hmd_class_init (Gst3DCameraHmdClass * klass)
 {
-  GObjectClass *obj_class = G_OBJECT_CLASS (klass);
-  obj_class->finalize = gst_3d_camera_hmd_finalize;
+  GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  gobject_class->finalize = gst_3d_camera_hmd_finalize;
+  Gst3DCameraClass *camera_class = GST_3D_CAMERA_CLASS (klass);
+  camera_class->update_view = gst_3d_camera_hmd_update_view;
+  camera_class->navigation_event = gst_3d_camera_hmd_navigation_event;
 }
 
 void
-gst_3d_camera_hmd_update_view (Gst3DCameraHmd * self)
+gst_3d_camera_hmd_update_view (Gst3DCamera * cam)
 {
+  Gst3DCameraHmd *self = GST_3D_CAMERA_HMD (cam);
   gst_3d_hmd_update (self->hmd);
-  switch (self->query_type) {
-    case HMD_QUERY_TYPE_MATRIX_STEREO:
-    case HMD_QUERY_TYPE_NONE:
-      gst_3d_camera_hmd_update_view_from_matrix (self);
-      break;
-    case HMD_QUERY_TYPE_QUATERNION_MONO:
-      gst_3d_camera_hmd_update_view_from_quaternion (self);
-      break;
-    case HMD_QUERY_TYPE_QUATERNION_STEREO:
-      gst_3d_camera_hmd_update_view_from_quaternion_stereo (self);
-      break;
-  }
+  self->update_view_funct (self);
 }
 
 void
@@ -204,11 +202,26 @@ _iterate_query_type (Gst3DCameraHmd * self)
   if (self->query_type == HMD_QUERY_TYPE_NONE)
     self->query_type = HMD_QUERY_TYPE_QUATERNION_MONO;
   GST_DEBUG ("query type: %d", self->query_type);
+
+  switch (self->query_type) {
+    case HMD_QUERY_TYPE_MATRIX_STEREO:
+    case HMD_QUERY_TYPE_NONE:
+      self->update_view_funct = &gst_3d_camera_hmd_update_view_from_matrix;
+      break;
+    case HMD_QUERY_TYPE_QUATERNION_MONO:
+      self->update_view_funct = &gst_3d_camera_hmd_update_view_from_quaternion;
+      break;
+    case HMD_QUERY_TYPE_QUATERNION_STEREO:
+      self->update_view_funct =
+          &gst_3d_camera_hmd_update_view_from_quaternion_stereo;
+      break;
+  }
 }
 
-void
-gst_3d_camera_hmd_navigation_event (Gst3DCameraHmd * self, GstEvent * event)
+static void
+gst_3d_camera_hmd_navigation_event (Gst3DCamera * cam, GstEvent * event)
 {
+  Gst3DCameraHmd *self = GST_3D_CAMERA_HMD (cam);
   GstStructure *structure = (GstStructure *) gst_event_get_structure (event);
   const gchar *key = gst_structure_get_string (structure, "key");
   if (key != NULL) {

@@ -40,29 +40,10 @@ typedef struct _Gst3DCameraWasdClass Gst3DCameraWasdClass;
 struct _Gst3DCameraWasd
 {
   Gst3DCamera parent;
-
-  graphene_matrix_t mvp;
-
-  /* position */
-  graphene_vec3_t eye;
-  graphene_vec3_t center;
-  graphene_vec3_t up;
-
-  /* perspective */
-  gfloat fov;
-  gfloat aspect;
-  gfloat znear;
-  gfloat zfar;
-  gboolean ortho;
-
-  gdouble cursor_last_x;
-  gdouble cursor_last_y;
   
   gfloat xtranslation;
   gfloat ytranslation;
   gfloat ztranslation;
-  
-  int pressed_mouse_button;
 };
 
 struct _Gst3DCameraWasdClass
@@ -71,10 +52,6 @@ struct _Gst3DCameraWasdClass
 };
 
 Gst3DCameraWasd *gst_3d_camera_wasd_new (void);
-
-void gst_3d_camera_wasd_update_view (Gst3DCameraWasd * self);
-void gst_3d_camera_wasd_navigation_event (Gst3DCameraWasd * self,
-    GstEvent * event);
 
 GType gst_3d_camera_wasd_get_type (void);
 

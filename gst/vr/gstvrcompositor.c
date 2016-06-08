@@ -153,6 +153,7 @@ gst_vr_compositor_get_property (GObject * object, guint prop_id,
   }
 }
 
+/*
 static float
 _aspect_from_filter (GstGLFilter * filter)
 {
@@ -160,6 +161,7 @@ _aspect_from_filter (GstGLFilter * filter)
   int h = GST_VIDEO_INFO_HEIGHT (&filter->out_info);
   return (gdouble) w / (gdouble) h;
 }
+*/
 
 static gboolean
 gst_vr_compositor_set_caps (GstGLFilter * filter, GstCaps * incaps,
