@@ -26,6 +26,7 @@
 #include <gst/gl/gstgl_fwd.h>
 #include <graphene.h>
 #include "gst3dnode.h"
+#include "gst3dcamera.h"
 
 G_BEGIN_DECLS
 #define GST_3D_TYPE_SCENE            (gst_3d_scene_get_type ())
@@ -42,6 +43,11 @@ struct _Gst3DScene
   /*< private > */
   GstObject parent;
   GstGLContext *context;
+  
+  gboolean wireframe_mode;
+  void (*node_draw_funct) (Gst3DNode *);
+
+  Gst3DCamera *camera;
     
   GList *nodes;
 };
@@ -53,7 +59,9 @@ struct _Gst3DSceneClass
 
 Gst3DScene *gst_3d_scene_new (GstGLContext * context);
 void gst_3d_scene_append_node(Gst3DScene *self, Gst3DNode * node);
-void gst_3d_scene_draw(Gst3DScene *self, graphene_matrix_t * mvp);
+void gst_3d_scene_draw(Gst3DScene * self, graphene_matrix_t * mvp);
+void gst_3d_scene_toggle_wireframe_mode (Gst3DScene *self);
+void gst_3d_scene_navigation_event (Gst3DScene *self, GstEvent * event);
 
 GType gst_3d_scene_get_type (void);
 

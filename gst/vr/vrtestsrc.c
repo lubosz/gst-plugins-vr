@@ -28,98 +28,56 @@
 #include "gst/3d/gst3dshader.h"
 #include "gst/3d/gst3dmesh.h"
 #include "gst/3d/gst3dcamera_arcball.h"
-#include "gst/3d/gst3dnode.h"
+#include "gst/3d/gst3dscene.h"
 
 struct GeometryScene
 {
   struct BaseSceneImpl base;
-  Gst3DCameraArcball *camera;
-  GList *nodes;
-  gboolean wireframe_mode;
+  Gst3DScene *scene;
 };
-
-void
-_toggle_wireframe_mode (struct GeometryScene *self)
-{
-  if (self->wireframe_mode)
-    self->wireframe_mode = FALSE;
-  else
-    self->wireframe_mode = TRUE;
-}
 
 static gboolean
 _scene_geometry_navigate (gpointer impl, GstEvent * event)
 {
   struct GeometryScene *self = impl;
-  gst_3d_camera_navigation_event (GST_3D_CAMERA (self->camera), event);
-
-  GstNavigationEventType event_type = gst_navigation_event_get_type (event);
-  switch (event_type) {
-    case GST_NAVIGATION_EVENT_KEY_PRESS:{
-      GstStructure *structure =
-          (GstStructure *) gst_event_get_structure (event);
-      const gchar *key = gst_structure_get_string (structure, "key");
-      if (key != NULL && g_strcmp0 (key, "Tab") == 0)
-        _toggle_wireframe_mode (self);
-      break;
-    }
-    default:
-      break;
-  }
-
+  gst_3d_scene_navigation_event (self->scene, event);
   return TRUE;
-}
-
-static void
-_scene_append_node (struct GeometryScene *self, Gst3DMesh * mesh,
-    Gst3DShader * shader)
-{
-  Gst3DNode *node = gst_3d_node_new (self->base.context);
-  node->meshes = g_list_append (node->meshes, mesh);
-  node->shader = shader;
-  gst_gl_shader_use (shader->shader);
-  gst_3d_mesh_bind_shader (mesh, shader);
-  self->nodes = g_list_append (self->nodes, node);
 }
 
 static gboolean
 _scene_geometry_init (gpointer impl, GstGLContext * context,
     GstVideoInfo * v_info)
 {
-  // GstGLFuncs *gl = context->gl_vtable;
-
   struct GeometryScene *self = impl;
   self->base.context = context;
-  self->camera = gst_3d_camera_arcball_new ();
+  self->scene = gst_3d_scene_new (context);
+  self->scene->camera = GST_3D_CAMERA (gst_3d_camera_arcball_new ());
 
-/*
-  if (self->shader)
-    gst_object_unref (self->shader);
-*/
-
-  // Gst3DMesh * plane_mesh = gst_3d_mesh_new_plane (context, 1.0);
+  /*
+     Gst3DMesh * plane_mesh = gst_3d_mesh_new_plane (context, 1.0);
+     Gst3DMesh *cube_mesh = gst_3d_mesh_new_cube (context);
+   */
 
   Gst3DShader *uv_shader =
       gst_3d_shader_new_vert_frag (context, "mvp_uv.vert", "debug_uv.frag");
-/*
-  Gst3DMesh *cube_mesh = gst_3d_mesh_new_cube (context);
-  _scene_append_node (self, cube_mesh, uv_shader);
-*/
 
   Gst3DNode *axes_node = gst_3d_node_new_debug_axes (context);
-  self->nodes = g_list_append (self->nodes, axes_node);
+  gst_3d_scene_append_node (self->scene, axes_node);
 
   Gst3DMesh *sphere_mesh = gst_3d_mesh_new_sphere (context, 0.5, 100, 100);
-  _scene_append_node (self, sphere_mesh, uv_shader);
+  Gst3DNode *sphere_node =
+      gst_3d_node_new_from_mesh_shader (context, sphere_mesh, uv_shader);
 
-/*
-  gst_gl_shader_use (axes_node->shader->shader);
-  gst_gl_shader_use (self->shader);
-  gst_gl_shader_set_uniform_1f (self->shader, "aspect_ratio",
-      (gfloat) GST_VIDEO_INFO_WIDTH (v_info) /
-      (gfloat) GST_VIDEO_INFO_HEIGHT (v_info));
-  gst_gl_context_clear_shader (self->base.context);
-*/
+  gst_3d_scene_append_node (self->scene, sphere_node);
+
+  /*
+     gst_gl_shader_use (axes_node->shader->shader);
+     gst_gl_shader_use (self->shader);
+     gst_gl_shader_set_uniform_1f (self->shader, "aspect_ratio",
+     (gfloat) GST_VIDEO_INFO_WIDTH (v_info) /
+     (gfloat) GST_VIDEO_INFO_HEIGHT (v_info));
+     gst_gl_context_clear_shader (self->base.context);
+   */
   return TRUE;
 }
 
@@ -127,48 +85,19 @@ static gboolean
 _scene_geometry_draw (gpointer impl)
 {
   struct GeometryScene *self = impl;
-
   g_return_val_if_fail (self->base.context, FALSE);
 
-  glPointSize (5.0);
-
-
-  //TODO: exit with an error message (shader compiler mostly)
-  // if (!self->shader)
-  //  exit (0);
-  // g_return_val_if_fail (self->shader, FALSE);
-
   GstGLFuncs *gl = self->base.context->gl_vtable;
-
-  // gl->Viewport (0, 0, self->eye_width, self->eye_height);
-  gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
   /*
      gst_gl_shader_use (self->shader->shader);
      gst_gl_shader_set_uniform_1f (self->shader->shader, "time",
      (gfloat) self->base.src->running_time / GST_SECOND);
    */
-  Gst3DCameraArcball *camera = self->camera;
 
-  gst_3d_camera_update_view (GST_3D_CAMERA (camera));
+  gst_3d_camera_update_view (self->scene->camera);
   gl->Enable (GL_DEPTH_TEST);
-
-  GList *l;
-  for (l = self->nodes; l != NULL; l = l->next) {
-    Gst3DNode *node = (Gst3DNode *) l->data;
-    gst_gl_shader_use (node->shader->shader);
-    gst_3d_shader_upload_matrix (node->shader, &GST_3D_CAMERA (camera)->mvp,
-        "mvp");
-    if (self->wireframe_mode)
-      gst_3d_node_draw_wireframe (node);
-    else
-      gst_3d_node_draw (node);
-  }
+  gst_3d_scene_draw (self->scene, &self->scene->camera->mvp);
   gl->Disable (GL_DEPTH_TEST);
-  //gst_3d_mesh_draw_arrays(self->plane_mesh);
-
-  // gl->BindVertexArray (0);
-  // gst_gl_context_clear_shader (self->base.context);
 
   return TRUE;
 }
@@ -179,6 +108,7 @@ _scene_geometry_free (gpointer impl)
   struct GeometryScene *self = impl;
   if (!self)
     return;
+  gst_object_unref (self->scene);
   g_free (impl);
 }
 

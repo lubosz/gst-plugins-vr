@@ -581,12 +581,17 @@ gst_vr_test_src_stop (GstBaseSrc * basesrc)
 
   gst_caps_replace (&src->out_caps, NULL);
 
+  const struct SceneFuncs *funcs = src->src_funcs;
+
+  if (src->src_impl && funcs)
+    funcs->free (src->src_impl);
+
   if (src->context) {
     if (src->shader) {
       gst_object_unref (src->shader);
       src->shader = NULL;
     }
-    //blocking call, delete the FBO
+    /* blocking call, delete the FBO */
     gst_gl_context_del_fbo (src->context, src->fbo, src->depthbuffer);
     gst_object_unref (src->context);
     src->context = NULL;

@@ -41,6 +41,8 @@ void
 gst_3d_scene_init (Gst3DScene * self)
 {
   self->context = NULL;
+  self->wireframe_mode = FALSE;
+  self->node_draw_funct = &gst_3d_node_draw;
 }
 
 Gst3DScene *
@@ -79,6 +81,8 @@ gst_3d_scene_class_init (Gst3DSceneClass * klass)
   obj_class->finalize = gst_3d_scene_finalize;
 }
 
+void (*draw) (Gst3DNode *);
+
 void
 gst_3d_scene_draw (Gst3DScene * self, graphene_matrix_t * mvp)
 {
@@ -89,8 +93,7 @@ gst_3d_scene_draw (Gst3DScene * self, graphene_matrix_t * mvp)
     Gst3DNode *node = (Gst3DNode *) l->data;
     gst_3d_shader_bind (node->shader);
     gst_3d_shader_upload_matrix (node->shader, mvp, "mvp");
-    gst_3d_node_draw (node);
-    //gst_3d_node_draw_wireframe (node);
+    self->node_draw_funct (node);
   }
 }
 
@@ -98,4 +101,36 @@ void
 gst_3d_scene_append_node (Gst3DScene * self, Gst3DNode * node)
 {
   self->nodes = g_list_append (self->nodes, node);
+}
+
+void
+gst_3d_scene_toggle_wireframe_mode (Gst3DScene * self)
+{
+  if (self->wireframe_mode) {
+    self->wireframe_mode = FALSE;
+    self->node_draw_funct = &gst_3d_node_draw;
+  } else {
+    self->wireframe_mode = TRUE;
+    self->node_draw_funct = &gst_3d_node_draw_wireframe;
+  }
+}
+
+void
+gst_3d_scene_navigation_event (Gst3DScene * self, GstEvent * event)
+{
+  gst_3d_camera_navigation_event (self->camera, event);
+
+  GstNavigationEventType event_type = gst_navigation_event_get_type (event);
+  switch (event_type) {
+    case GST_NAVIGATION_EVENT_KEY_PRESS:{
+      GstStructure *structure =
+          (GstStructure *) gst_event_get_structure (event);
+      const gchar *key = gst_structure_get_string (structure, "key");
+      if (key != NULL && g_strcmp0 (key, "Tab") == 0)
+        gst_3d_scene_toggle_wireframe_mode (self);
+      break;
+    }
+    default:
+      break;
+  }
 }
