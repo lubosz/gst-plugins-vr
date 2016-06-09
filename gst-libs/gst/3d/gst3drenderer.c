@@ -32,6 +32,8 @@
 #include "gst3drenderer.h"
 #include "gst3dhmd.h"
 #include "gst3dcamera_hmd.h"
+#include "gst3dscene.h"
+
 
 #define GST_CAT_DEFAULT gst_3d_renderer_debug
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -160,7 +162,7 @@ gboolean
 gst_3d_renderer_stero_init_from_filter (Gst3DRenderer * self,
     GstGLFilter * filter)
 {
-  int w = GST_VIDEO_INFO_WIDTH (&filter->out_info);
+  int w = GST_VIDEO_INFO_WIDTH (&filter->out_info) / 2;
   int h = GST_VIDEO_INFO_HEIGHT (&filter->out_info);
 
   self->filter_aspect = (gfloat) w / (gfloat) h;
@@ -177,7 +179,7 @@ _draw_eye (Gst3DRenderer * self, GLuint fbo, Gst3DScene * scene,
   GstGLFuncs *gl = self->context->gl_vtable;
   gl->BindFramebuffer (GL_FRAMEBUFFER, fbo);
   gl->Viewport (0, 0, self->eye_width, self->eye_height);
-  gst_3d_scene_draw (scene, mvp);
+  gst_3d_scene_draw_nodes (scene, mvp);
 }
 
 static void

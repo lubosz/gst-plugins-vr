@@ -47,9 +47,7 @@ struct _GstVRCompositor
   guint in_tex;
   gboolean caps_change;
 
-  Gst3DCamera *camera;
   Gst3DScene *scene;
-  Gst3DRenderer *renderer;
 };
 
 struct _GstVRCompositorClass

@@ -30,6 +30,7 @@
 #include <gst/gl/gl.h>
 
 #include "gst3dscene.h"
+#include "gst3dcamera_hmd.h"
 
 #define GST_CAT_DEFAULT gst_3d_scene_debug
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -40,17 +41,22 @@ G_DEFINE_TYPE_WITH_CODE (Gst3DScene, gst_3d_scene, GST_TYPE_OBJECT,
 void
 gst_3d_scene_init (Gst3DScene * self)
 {
-  self->context = NULL;
   self->wireframe_mode = FALSE;
-  self->node_draw_funct = &gst_3d_node_draw;
+  self->camera = NULL;
+  self->renderer = NULL;
+  self->context = NULL;
+  self->gl_initialized = FALSE;
+  self->node_draw_func = &gst_3d_node_draw;
+  gst_3d_camera_update_view (self->camera);
 }
 
 Gst3DScene *
-gst_3d_scene_new (GstGLContext * context)
+gst_3d_scene_new (Gst3DCamera * camera, void (*_init_func) (Gst3DScene *))
 {
-  g_return_val_if_fail (GST_IS_GL_CONTEXT (context), NULL);
+  g_return_val_if_fail (GST_IS_3D_CAMERA (camera), NULL);
   Gst3DScene *scene = g_object_new (GST_3D_TYPE_SCENE, NULL);
-  scene->context = gst_object_ref (context);
+  scene->camera = gst_object_ref (camera);
+  scene->gl_init_func = _init_func;
   return scene;
 }
 
@@ -59,6 +65,11 @@ gst_3d_scene_finalize (GObject * object)
 {
   Gst3DScene *self = GST_3D_SCENE (object);
   g_return_if_fail (self != NULL);
+
+  if (self->camera) {
+    gst_object_unref (self->camera);
+    self->camera = NULL;
+  }
 
   if (self->context) {
     gst_object_unref (self->context);
@@ -82,17 +93,37 @@ gst_3d_scene_class_init (Gst3DSceneClass * klass)
 }
 
 void
-gst_3d_scene_draw (Gst3DScene * self, graphene_matrix_t * mvp)
+gst_3d_scene_init_gl (Gst3DScene * self, GstGLContext * context)
 {
-  GstGLFuncs *gl = self->context->gl_vtable;
-  gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  if (self->gl_initialized)
+    return;
+  self->context = gst_object_ref (context);
+  self->gl_init_func (self);
+  self->gl_initialized = TRUE;
+  gst_3d_scene_init_stereo_renderer (self, context);
+}
+
+void
+gst_3d_scene_draw_nodes (Gst3DScene * self, graphene_matrix_t * mvp)
+{
   GList *l;
   for (l = self->nodes; l != NULL; l = l->next) {
     Gst3DNode *node = (Gst3DNode *) l->data;
     gst_3d_shader_bind (node->shader);
     gst_3d_shader_upload_matrix (node->shader, mvp, "mvp");
-    self->node_draw_funct (node);
+    self->node_draw_func (node);
   }
+}
+
+void
+gst_3d_scene_draw (Gst3DScene * self)
+{
+  gst_3d_camera_update_view (self->camera);
+  if (GST_IS_3D_CAMERA_HMD (self->camera))
+    gst_3d_renderer_draw_stereo (self->renderer, self->camera, self);
+  else
+    gst_3d_scene_draw_nodes (self, &self->camera->mvp);
+  gst_3d_renderer_clear_state (self->renderer);
 }
 
 void
@@ -106,10 +137,10 @@ gst_3d_scene_toggle_wireframe_mode (Gst3DScene * self)
 {
   if (self->wireframe_mode) {
     self->wireframe_mode = FALSE;
-    self->node_draw_funct = &gst_3d_node_draw;
+    self->node_draw_func = &gst_3d_node_draw;
   } else {
     self->wireframe_mode = TRUE;
-    self->node_draw_funct = &gst_3d_node_draw_wireframe;
+    self->node_draw_func = &gst_3d_node_draw_wireframe;
   }
 }
 
@@ -130,5 +161,30 @@ gst_3d_scene_navigation_event (Gst3DScene * self, GstEvent * event)
     }
     default:
       break;
+  }
+}
+
+/* stereo */
+
+gboolean
+gst_3d_scene_init_hmd (Gst3DScene * self)
+{
+  if (GST_IS_3D_CAMERA_HMD (self->camera)) {
+    Gst3DHmd *hmd = GST_3D_CAMERA_HMD (self->camera)->hmd;
+    if (!hmd->device)
+      return FALSE;
+  }
+  return TRUE;
+}
+
+void
+gst_3d_scene_init_stereo_renderer (Gst3DScene * self, GstGLContext * context)
+{
+  self->renderer = gst_3d_renderer_new (context);
+  if (GST_IS_3D_CAMERA_HMD (self->camera)) {
+    Gst3DCameraHmd *hmd_cam = GST_3D_CAMERA_HMD (self->camera);
+    Gst3DHmd *hmd = hmd_cam->hmd;
+    gst_3d_renderer_stero_init_from_hmd (self->renderer, hmd);
+    gst_3d_renderer_init_stereo (self->renderer, self->camera);
   }
 }

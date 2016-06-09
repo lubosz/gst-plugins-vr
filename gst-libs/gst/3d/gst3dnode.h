@@ -25,7 +25,7 @@
 #include <gst/gst.h>
 #include <gst/gl/gstgl_fwd.h>
 #include "gst3dshader.h"
-#include "../../gst-libs/gst/3d/gst3dmesh.h"
+#include "gst3dmesh.h"
 
 G_BEGIN_DECLS
 #define GST_3D_TYPE_NODE            (gst_3d_node_get_type ())

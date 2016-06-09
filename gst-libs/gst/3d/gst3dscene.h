@@ -27,6 +27,7 @@
 #include <graphene.h>
 #include "gst3dnode.h"
 #include "gst3dcamera.h"
+#include "gst3drenderer.h"
 
 G_BEGIN_DECLS
 #define GST_3D_TYPE_SCENE            (gst_3d_scene_get_type ())
@@ -43,11 +44,15 @@ struct _Gst3DScene
   /*< private > */
   GstObject parent;
   GstGLContext *context;
+  gboolean gl_initialized;
   
   gboolean wireframe_mode;
-  void (*node_draw_funct) (Gst3DNode *);
+  void (*node_draw_func) (Gst3DNode *);
+  void (*gl_init_func) (Gst3DScene *);
 
   Gst3DCamera *camera;
+  
+  Gst3DRenderer *renderer;
     
   GList *nodes;
 };
@@ -57,11 +62,18 @@ struct _Gst3DSceneClass
   GstObjectClass parent_class;
 };
 
-Gst3DScene *gst_3d_scene_new (GstGLContext * context);
+Gst3DScene *gst_3d_scene_new (Gst3DCamera * camera, void (*_init_func)(Gst3DScene *));
 void gst_3d_scene_append_node(Gst3DScene *self, Gst3DNode * node);
-void gst_3d_scene_draw(Gst3DScene * self, graphene_matrix_t * mvp);
 void gst_3d_scene_toggle_wireframe_mode (Gst3DScene *self);
 void gst_3d_scene_navigation_event (Gst3DScene *self, GstEvent * event);
+
+void gst_3d_scene_init_gl(Gst3DScene *self, GstGLContext *context);
+gboolean gst_3d_scene_init_hmd(Gst3DScene * self);
+
+void gst_3d_scene_draw_nodes (Gst3DScene * self, graphene_matrix_t * mvp);
+void gst_3d_scene_draw (Gst3DScene * self);
+
+void gst_3d_scene_init_stereo_renderer(Gst3DScene * self, GstGLContext * context);
 
 GType gst_3d_scene_get_type (void);
 

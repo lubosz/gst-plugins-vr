@@ -29,6 +29,7 @@
 #include "gst/3d/gst3dmesh.h"
 #include "gst/3d/gst3dcamera_arcball.h"
 #include "gst/3d/gst3dcamera_wasd.h"
+#include "gst/3d/gst3dcamera.h"
 #include "gst/3d/gst3dscene.h"
 
 struct GeometryScene
@@ -45,34 +46,25 @@ _scene_geometry_navigate (gpointer impl, GstEvent * event)
   return TRUE;
 }
 
-static gboolean
-_scene_geometry_init (gpointer impl, GstGLContext * context,
-    GstVideoInfo * v_info)
+static void
+_init_scene (Gst3DScene * scene)
 {
-  struct GeometryScene *self = impl;
-  self->base.context = context;
-  self->scene = gst_3d_scene_new (context);
-  //self->scene->camera = GST_3D_CAMERA (gst_3d_camera_arcball_new ());
-  self->scene->camera = GST_3D_CAMERA (gst_3d_camera_wasd_new ());
-
-  /*
-     Gst3DMesh * plane_mesh = gst_3d_mesh_new_plane (context, 1.0);
-     Gst3DMesh *cube_mesh = gst_3d_mesh_new_cube (context);
-   */
-
+  GstGLContext *context = scene->context;
   Gst3DShader *uv_shader =
       gst_3d_shader_new_vert_frag (context, "mvp_uv.vert", "debug_uv.frag");
 
   Gst3DNode *axes_node = gst_3d_node_new_debug_axes (context);
-  gst_3d_scene_append_node (self->scene, axes_node);
+  gst_3d_scene_append_node (scene, axes_node);
 
   Gst3DMesh *sphere_mesh = gst_3d_mesh_new_sphere (context, 0.5, 100, 100);
   Gst3DNode *sphere_node =
       gst_3d_node_new_from_mesh_shader (context, sphere_mesh, uv_shader);
 
-  gst_3d_scene_append_node (self->scene, sphere_node);
-
+  gst_3d_scene_append_node (scene, sphere_node);
   /*
+     GstGLFuncs *gl = context->gl_vtable;
+     Gst3DMesh * plane_mesh = gst_3d_mesh_new_plane (context, 1.0);
+     Gst3DMesh *cube_mesh = gst_3d_mesh_new_cube (context);
      gst_gl_shader_use (axes_node->shader->shader);
      gst_gl_shader_use (self->shader);
      gst_gl_shader_set_uniform_1f (self->shader, "aspect_ratio",
@@ -80,6 +72,21 @@ _scene_geometry_init (gpointer impl, GstGLContext * context,
      (gfloat) GST_VIDEO_INFO_HEIGHT (v_info));
      gst_gl_context_clear_shader (self->base.context);
    */
+}
+
+static gboolean
+_scene_geometry_init (gpointer impl, GstGLContext * context,
+    GstVideoInfo * v_info)
+{
+  struct GeometryScene *self = impl;
+  self->base.context = context;
+
+  //Gst3DCamera *cam = GST_3D_CAMERA (gst_3d_camera_wasd_new ());
+  Gst3DCamera *cam = GST_3D_CAMERA (gst_3d_camera_arcball_new ());
+
+  self->scene = gst_3d_scene_new (cam, &_init_scene);
+  gst_3d_scene_init_gl (self->scene, context);
+
   return TRUE;
 }
 
@@ -96,9 +103,9 @@ _scene_geometry_draw (gpointer impl)
      (gfloat) self->base.src->running_time / GST_SECOND);
    */
 
-  gst_3d_camera_update_view (self->scene->camera);
   gl->Enable (GL_DEPTH_TEST);
-  gst_3d_scene_draw (self->scene, &self->scene->camera->mvp);
+  gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  gst_3d_scene_draw (self->scene);
   gl->Disable (GL_DEPTH_TEST);
 
   return TRUE;

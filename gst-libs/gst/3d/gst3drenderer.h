@@ -26,8 +26,8 @@
 #include <gst/gl/gstgl_fwd.h>
 #include "gst3dmesh.h"
 #include "gst3dshader.h"
-#include "gst3dscene.h"
 #include "gst3dhmd.h"
+#include "gst3dcamera.h"
 
 G_BEGIN_DECLS
 #define GST_3D_TYPE_RENDERER            (gst_3d_renderer_get_type ())
@@ -38,6 +38,8 @@ G_BEGIN_DECLS
 #define GST_3D_RENDERER_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), GST_3D_TYPE_RENDERER, Gst3DRendererClass))
 typedef struct _Gst3DRenderer Gst3DRenderer;
 typedef struct _Gst3DRendererClass Gst3DRendererClass;
+
+typedef struct _Gst3DScene Gst3DScene;
 
 struct _Gst3DRenderer
 {
@@ -63,6 +65,7 @@ struct _Gst3DRendererClass
 {
   GstObjectClass parent_class;
 };
+
 
 Gst3DRenderer *gst_3d_renderer_new (GstGLContext * context);
 GType gst_3d_renderer_get_type (void);

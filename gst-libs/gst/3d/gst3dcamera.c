@@ -75,6 +75,7 @@ gst_3d_camera_class_init (Gst3DCameraClass * klass)
 void
 gst_3d_camera_update_view (Gst3DCamera * self)
 {
+  g_return_if_fail (self);
   Gst3DCameraClass *camera_class = GST_3D_CAMERA_GET_CLASS (self);
   if (camera_class->update_view)
     camera_class->update_view (self);
