@@ -77,15 +77,10 @@ _init_scene (Gst3DScene * scene)
    */
 }
 
-static gboolean
-_scene_geometry_init (gpointer impl, GstGLContext * context,
-    GstVideoInfo * v_info)
+/*
+static gboolean _void_select_camera(struct GeometryScene *self)
 {
-  struct GeometryScene *self = impl;
-  self->base.context = context;
   gboolean ret = TRUE;
-  //GstGLFuncs *gl = self->base.context->gl_vtable;
-
 #ifdef HAVE_OPENHMD
   Gst3DCamera *cam = GST_3D_CAMERA (gst_3d_camera_hmd_new ());
 #else
@@ -98,6 +93,21 @@ _scene_geometry_init (gpointer impl, GstGLContext * context,
 #ifdef HAVE_OPENHMD
   ret = gst_3d_scene_init_hmd (self->scene);
 #endif
+  return ret;
+}
+*/
+
+static gboolean
+_scene_geometry_init (gpointer impl, GstGLContext * context,
+    GstVideoInfo * v_info)
+{
+  struct GeometryScene *self = impl;
+  self->base.context = context;
+  gboolean ret = TRUE;
+
+  Gst3DCamera *cam = GST_3D_CAMERA (gst_3d_camera_arcball_new ());
+  self->scene = gst_3d_scene_new (cam, &_init_scene);
+  // ret = _void_select_camera(self);
 
   gst_3d_scene_init_gl (self->scene, context);
 
