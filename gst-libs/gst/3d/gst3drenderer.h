@@ -73,9 +73,9 @@ void gst_3d_renderer_create_fbo (GstGLFuncs *gl, GLuint * fbo, GLuint * color_te
 void gst_3d_renderer_navigation_event (GstElement * element, GstEvent * event);
 void gst_3d_renderer_clear_state (Gst3DRenderer * self);
 void gst_3d_renderer_init_stereo (Gst3DRenderer * self, Gst3DCamera *cam);
-void gst_3d_renderer_draw_stereo (Gst3DRenderer * self, Gst3DCamera *cam, Gst3DScene *scene);
+void gst_3d_renderer_draw_stereo (Gst3DRenderer * self, Gst3DScene *scene);
 
-gboolean gst_3d_renderer_stero_init_from_hmd (Gst3DRenderer * self, Gst3DHmd * hmd);
+gboolean gst_3d_renderer_stereo_init_from_hmd (Gst3DRenderer * self, Gst3DHmd * hmd);
 gboolean gst_3d_renderer_stero_init_from_filter (Gst3DRenderer * self, GstGLFilter * filter);
 
 G_END_DECLS

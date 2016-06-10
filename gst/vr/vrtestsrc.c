@@ -29,7 +29,7 @@
 #include "gst/3d/gst3dmesh.h"
 #include "gst/3d/gst3dcamera_arcball.h"
 #include "gst/3d/gst3dcamera_wasd.h"
-#include "gst/3d/gst3dcamera.h"
+#include "gst/3d/gst3dcamera_hmd.h"
 #include "gst/3d/gst3dscene.h"
 
 struct GeometryScene

@@ -120,7 +120,7 @@ gst_3d_scene_draw (Gst3DScene * self)
 {
   gst_3d_camera_update_view (self->camera);
   if (GST_IS_3D_CAMERA_HMD (self->camera))
-    gst_3d_renderer_draw_stereo (self->renderer, self->camera, self);
+    gst_3d_renderer_draw_stereo (self->renderer, self);
   else
     gst_3d_scene_draw_nodes (self, &self->camera->mvp);
   gst_3d_renderer_clear_state (self->renderer);
@@ -184,7 +184,7 @@ gst_3d_scene_init_stereo_renderer (Gst3DScene * self, GstGLContext * context)
   if (GST_IS_3D_CAMERA_HMD (self->camera)) {
     Gst3DCameraHmd *hmd_cam = GST_3D_CAMERA_HMD (self->camera);
     Gst3DHmd *hmd = hmd_cam->hmd;
-    gst_3d_renderer_stero_init_from_hmd (self->renderer, hmd);
+    gst_3d_renderer_stereo_init_from_hmd (self->renderer, hmd);
     gst_3d_renderer_init_stereo (self->renderer, self->camera);
   }
 }

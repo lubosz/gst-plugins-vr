@@ -143,7 +143,7 @@ gst_3d_renderer_navigation_event (GstElement * element, GstEvent * event)
 /* stereo rendering */
 
 gboolean
-gst_3d_renderer_stero_init_from_hmd (Gst3DRenderer * self, Gst3DHmd * hmd)
+gst_3d_renderer_stereo_init_from_hmd (Gst3DRenderer * self, Gst3DHmd * hmd)
 {
   if (!hmd->device)
     return FALSE;
@@ -235,8 +235,7 @@ gst_3d_renderer_init_stereo (Gst3DRenderer * self, Gst3DCamera * cam)
 }
 
 void
-gst_3d_renderer_draw_stereo (Gst3DRenderer * self, Gst3DCamera * cam,
-    Gst3DScene * scene)
+gst_3d_renderer_draw_stereo (Gst3DRenderer * self, Gst3DScene * scene)
 {
   GstGLFuncs *gl = self->context->gl_vtable;
 
