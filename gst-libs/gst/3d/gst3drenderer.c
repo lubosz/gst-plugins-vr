@@ -232,12 +232,12 @@ gst_3d_renderer_draw_stereo (Gst3DRenderer * self, Gst3DScene * scene)
   /* right eye */
   _draw_eye (self, self->right_fbo, scene, &hmd_cam->right_vp_matrix);
 
-  gst_3d_renderer_clear_state (self);
+  gst_3d_scene_clear_state (scene);
 
   gst_3d_shader_bind (self->shader);
   gl->BindFramebuffer (GL_FRAMEBUFFER, bound_fbo);
   gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   _draw_framebuffers_on_planes (self);
-  gst_3d_renderer_clear_state (self);
+  gst_3d_scene_clear_state (scene);
 }
