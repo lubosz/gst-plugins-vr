@@ -187,6 +187,7 @@ _draw_eye (Gst3DRenderer * self, GLuint fbo, Gst3DScene * scene,
   _insert_gl_debug_marker (self->context, "_draw_eye");
   gl->BindFramebuffer (GL_FRAMEBUFFER, fbo);
   gl->Viewport (0, 0, self->eye_width, self->eye_height);
+  gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   gst_3d_scene_draw_nodes (scene, mvp);
 }
 
@@ -194,7 +195,6 @@ static void
 _draw_framebuffers_on_planes (Gst3DRenderer * self)
 {
   GstGLFuncs *gl = self->context->gl_vtable;
-  gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   _insert_gl_debug_marker (self->context, "_draw_framebuffers_on_planes");
 
@@ -267,9 +267,12 @@ gst_3d_renderer_draw_stereo (Gst3DRenderer * self, Gst3DScene * scene)
   /* right eye */
   _draw_eye (self, self->right_fbo, scene, &hmd_cam->right_vp_matrix);
 
+  gst_3d_renderer_clear_state (self);
+
   gst_3d_shader_bind (self->shader);
   gl->BindFramebuffer (GL_FRAMEBUFFER, bound_fbo);
   gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   _draw_framebuffers_on_planes (self);
+  gst_3d_renderer_clear_state (self);
 }
