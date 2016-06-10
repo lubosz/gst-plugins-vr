@@ -119,11 +119,12 @@ void
 gst_3d_scene_draw (Gst3DScene * self)
 {
   gst_3d_camera_update_view (self->camera);
+
   if (GST_IS_3D_CAMERA_HMD (self->camera))
     gst_3d_renderer_draw_stereo (self->renderer, self);
   else
     gst_3d_scene_draw_nodes (self, &self->camera->mvp);
-  gst_3d_renderer_clear_state (self->renderer);
+  gst_3d_scene_clear_state (self);
 }
 
 void
@@ -164,6 +165,16 @@ gst_3d_scene_navigation_event (Gst3DScene * self, GstEvent * event)
   }
 }
 
+void
+gst_3d_scene_clear_state (Gst3DScene * self)
+{
+  GstGLFuncs *gl = self->context->gl_vtable;
+  gl->BindVertexArray (0);
+  gl->BindTexture (GL_TEXTURE_2D, 0);
+  gst_gl_context_clear_shader (self->context);
+}
+
+
 /* stereo */
 
 gboolean
@@ -186,5 +197,31 @@ gst_3d_scene_init_stereo_renderer (Gst3DScene * self, GstGLContext * context)
     Gst3DHmd *hmd = hmd_cam->hmd;
     gst_3d_renderer_stereo_init_from_hmd (self->renderer, hmd);
     gst_3d_renderer_init_stereo (self->renderer, self->camera);
+  }
+}
+
+/* element navigation */
+static void
+_send_eos (GstElement * element)
+{
+  GstPad *sinkpad = gst_element_get_static_pad (element, "sink");
+  if (sinkpad)
+    gst_pad_send_event (sinkpad, gst_event_new_eos ());
+  else {
+    GstPad *srcpad = gst_element_get_static_pad (element, "src");
+    gst_pad_send_event (srcpad, gst_event_new_flush_stop (FALSE));
+  }
+}
+
+void
+gst_3d_scene_send_eos_on_esc (GstElement * element, GstEvent * event)
+{
+  GstStructure *structure = (GstStructure *) gst_event_get_structure (event);
+  const gchar *event_name = gst_structure_get_string (structure, "event");
+  if (g_strcmp0 (event_name, "key-press") == 0) {
+    const gchar *key = gst_structure_get_string (structure, "key");
+    if (key != NULL)
+      if (g_strcmp0 (key, "Escape") == 0)
+        _send_eos (element);
   }
 }

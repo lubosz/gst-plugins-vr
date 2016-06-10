@@ -172,7 +172,7 @@ gst_vr_compositor_src_event (GstBaseTransform * trans, GstEvent * event)
     case GST_EVENT_NAVIGATION:
       event =
           GST_EVENT (gst_mini_object_make_writable (GST_MINI_OBJECT (event)));
-      gst_3d_renderer_navigation_event (GST_ELEMENT (self), event);
+      gst_3d_scene_send_eos_on_esc (GST_ELEMENT (self), event);
       gst_3d_scene_navigation_event (self->scene, event);
       break;
     default:

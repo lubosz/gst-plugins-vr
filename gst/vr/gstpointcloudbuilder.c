@@ -39,6 +39,7 @@
 
 #include "gstpointcloudbuilder.h"
 #include "gst/3d/gst3dcamera_arcball.h"
+#include "gst/3d/gst3dscene.h"
 
 #include <gst/gl/gstglapi.h>
 #include <graphene-gobject.h>
@@ -187,7 +188,7 @@ gst_point_cloud_builder_src_event (GstBaseTransform * trans, GstEvent * event)
     case GST_EVENT_NAVIGATION:
       event =
           GST_EVENT (gst_mini_object_make_writable (GST_MINI_OBJECT (event)));
-      gst_3d_renderer_navigation_event (GST_ELEMENT (self), event);
+      gst_3d_scene_send_eos_on_esc (GST_ELEMENT (self), event);
       gst_3d_camera_navigation_event (GST_3D_CAMERA (self->camera), event);
       break;
     default:

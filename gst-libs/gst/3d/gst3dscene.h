@@ -51,9 +51,7 @@ struct _Gst3DScene
   void (*gl_init_func) (Gst3DScene *);
 
   Gst3DCamera *camera;
-  
   Gst3DRenderer *renderer;
-    
   GList *nodes;
 };
 
@@ -68,11 +66,14 @@ void gst_3d_scene_toggle_wireframe_mode (Gst3DScene *self);
 void gst_3d_scene_navigation_event (Gst3DScene *self, GstEvent * event);
 
 void gst_3d_scene_init_gl(Gst3DScene *self, GstGLContext *context);
-gboolean gst_3d_scene_init_hmd(Gst3DScene * self);
 
 void gst_3d_scene_draw_nodes (Gst3DScene * self, graphene_matrix_t * mvp);
 void gst_3d_scene_draw (Gst3DScene * self);
 
+void gst_3d_scene_send_eos_on_esc (GstElement * element, GstEvent * event);
+void gst_3d_scene_clear_state (Gst3DScene * self);
+
+gboolean gst_3d_scene_init_hmd(Gst3DScene * self);
 void gst_3d_scene_init_stereo_renderer(Gst3DScene * self, GstGLContext * context);
 
 GType gst_3d_scene_get_type (void);

@@ -68,10 +68,7 @@ struct _Gst3DRendererClass
 
 Gst3DRenderer *gst_3d_renderer_new (GstGLContext * context);
 GType gst_3d_renderer_get_type (void);
-void gst_3d_renderer_send_eos (GstElement * element);
 void gst_3d_renderer_create_fbo (GstGLFuncs *gl, GLuint * fbo, GLuint * color_tex, int width, int height);
-void gst_3d_renderer_navigation_event (GstElement * element, GstEvent * event);
-void gst_3d_renderer_clear_state (Gst3DRenderer * self);
 void gst_3d_renderer_init_stereo (Gst3DRenderer * self, Gst3DCamera *cam);
 void gst_3d_renderer_draw_stereo (Gst3DRenderer * self, Gst3DScene *scene);
 

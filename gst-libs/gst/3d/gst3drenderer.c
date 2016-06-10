@@ -98,18 +98,6 @@ gst_3d_renderer_class_init (Gst3DRendererClass * klass)
   obj_class->finalize = gst_3d_renderer_finalize;
 }
 
-void
-gst_3d_renderer_send_eos (GstElement * element)
-{
-  GstPad *sinkpad = gst_element_get_static_pad (element, "sink");
-  if (sinkpad)
-    gst_pad_send_event (sinkpad, gst_event_new_eos ());
-  else {
-    GstPad *srcpad = gst_element_get_static_pad (element, "src");
-    gst_pad_send_event (srcpad, gst_event_new_flush_stop (FALSE));
-  }
-}
-
 static void
 _create_fbo (GstGLFuncs * gl, GLuint * fbo, GLuint * color_tex,
     int width, int height)
@@ -133,19 +121,6 @@ _create_fbo (GstGLFuncs * gl, GLuint * fbo, GLuint * color_tex,
 
   if (status != GL_FRAMEBUFFER_COMPLETE) {
     GST_ERROR ("failed to create fbo %x\n", status);
-  }
-}
-
-void
-gst_3d_renderer_navigation_event (GstElement * element, GstEvent * event)
-{
-  GstStructure *structure = (GstStructure *) gst_event_get_structure (event);
-  const gchar *event_name = gst_structure_get_string (structure, "event");
-  if (g_strcmp0 (event_name, "key-press") == 0) {
-    const gchar *key = gst_structure_get_string (structure, "key");
-    if (key != NULL)
-      if (g_strcmp0 (key, "Escape") == 0)
-        gst_3d_renderer_send_eos (element);
   }
 }
 
@@ -214,16 +189,6 @@ _draw_framebuffers_on_planes (Gst3DRenderer * self)
   glBindTexture (GL_TEXTURE_2D, self->right_color_tex);
   gst_3d_mesh_draw (self->render_plane);
 }
-
-void
-gst_3d_renderer_clear_state (Gst3DRenderer * self)
-{
-  GstGLFuncs *gl = self->context->gl_vtable;
-  gl->BindVertexArray (0);
-  gl->BindTexture (GL_TEXTURE_2D, 0);
-  gst_gl_context_clear_shader (self->context);
-}
-
 
 void
 gst_3d_renderer_init_stereo (Gst3DRenderer * self, Gst3DCamera * cam)
