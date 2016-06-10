@@ -80,14 +80,17 @@ _scene_geometry_init (gpointer impl, GstGLContext * context,
 {
   struct GeometryScene *self = impl;
   self->base.context = context;
+  gboolean ret = TRUE;
+  //GstGLFuncs *gl = self->base.context->gl_vtable;
 
   //Gst3DCamera *cam = GST_3D_CAMERA (gst_3d_camera_wasd_new ());
-  Gst3DCamera *cam = GST_3D_CAMERA (gst_3d_camera_arcball_new ());
-
+  Gst3DCamera *cam = GST_3D_CAMERA (gst_3d_camera_hmd_new ());
   self->scene = gst_3d_scene_new (cam, &_init_scene);
+  ret = gst_3d_scene_init_hmd (self->scene);
+
   gst_3d_scene_init_gl (self->scene, context);
 
-  return TRUE;
+  return ret;
 }
 
 static gboolean
