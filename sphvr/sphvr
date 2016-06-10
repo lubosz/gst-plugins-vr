@@ -147,7 +147,8 @@ class SPHVR:
           theme.add_builtin_icon("sphvr", 256, pixbuf)
           self.window.set_icon_name("sphvr")
         except GLib.Error:
-          print("no icon")
+          # no icon
+          pass
         self.window.show_all()
 
         #sink.set_handle()
@@ -172,8 +173,8 @@ class SPHVR:
             quit_app(widget, pipeline)
         elif key.keyval == Gdk.KEY_f:
             self.toggle_fullscreen()
-        else:
-            print(key.keyval)
+        # else:
+        #    print(key.keyval)
 
 
     @staticmethod
