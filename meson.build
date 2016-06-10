@@ -1,9 +1,9 @@
 project('gst-plugins-vr', 'c', 'cpp', meson_version : '>= 0.28.0')
 
 gst_major = 0
-gst_minor = 0
+gst_minor = 1
 gst_micro = 0
-gst_nano = 1
+gst_nano = 0
 subdir('common/meson')
 
 # Commented for release versions
