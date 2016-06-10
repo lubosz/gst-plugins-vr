@@ -142,7 +142,7 @@ class SPHVR:
 
         try:
           from gi.repository import GdkPixbuf
-          pixbuf = GdkPixbuf.Pixbuf.new_from_file("data/sphvr2.svg")
+          pixbuf = GdkPixbuf.Pixbuf.new_from_file("data/sphvr.png")
           theme = Gtk.IconTheme.get_default()
           theme.add_builtin_icon("sphvr", 256, pixbuf)
           self.window.set_icon_name("sphvr")
