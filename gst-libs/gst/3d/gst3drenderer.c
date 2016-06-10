@@ -43,6 +43,15 @@ G_DEFINE_TYPE_WITH_CODE (Gst3DRenderer, gst_3d_renderer, GST_TYPE_OBJECT,
         "renderer"));
 
 void
+_insert_gl_debug_marker (GstGLContext * context, const gchar * message)
+{
+  GstGLFuncs *gl = context->gl_vtable;
+  gl->DebugMessageInsert (GL_DEBUG_SOURCE_APPLICATION,
+      GL_DEBUG_TYPE_OTHER,
+      1, GL_DEBUG_SEVERITY_HIGH, strlen (message), message);
+}
+
+void
 gst_3d_renderer_init (Gst3DRenderer * self)
 {
   self->context = NULL;
@@ -175,6 +184,7 @@ _draw_eye (Gst3DRenderer * self, GLuint fbo, Gst3DScene * scene,
     graphene_matrix_t * mvp)
 {
   GstGLFuncs *gl = self->context->gl_vtable;
+  _insert_gl_debug_marker (self->context, "_draw_eye");
   gl->BindFramebuffer (GL_FRAMEBUFFER, fbo);
   gl->Viewport (0, 0, self->eye_width, self->eye_height);
   gst_3d_scene_draw_nodes (scene, mvp);
@@ -185,6 +195,8 @@ _draw_framebuffers_on_planes (Gst3DRenderer * self)
 {
   GstGLFuncs *gl = self->context->gl_vtable;
   gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  _insert_gl_debug_marker (self->context, "_draw_framebuffers_on_planes");
 
   graphene_matrix_t projection_ortho;
   graphene_matrix_init_ortho (&projection_ortho, -self->filter_aspect,
@@ -239,6 +251,7 @@ gst_3d_renderer_draw_stereo (Gst3DRenderer * self, Gst3DScene * scene)
 {
   GstGLFuncs *gl = self->context->gl_vtable;
 
+  _insert_gl_debug_marker (self->context, "gst_3d_renderer_draw_stereo");
 
   /* aquire current fbo id */
   GLint bound_fbo;
