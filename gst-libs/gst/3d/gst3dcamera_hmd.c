@@ -233,7 +233,7 @@ gst_3d_camera_hmd_navigation_event (Gst3DCamera * cam, GstEvent * event)
           gst_3d_hmd_eye_sep_inc (self->hmd);
         else if (g_strcmp0 (key, "KP_Subtract") == 0)
           gst_3d_hmd_eye_sep_dec (self->hmd);
-        else if (g_strcmp0 (key, "Tab") == 0)
+        else if (g_strcmp0 (key, "Return") == 0)
           _iterate_query_type (self);
         else if (g_strcmp0 (key, "space") == 0)
           gst_3d_hmd_reset (GST_3D_CAMERA_HMD (self)->hmd);
