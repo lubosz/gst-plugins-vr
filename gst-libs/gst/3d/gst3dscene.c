@@ -30,7 +30,10 @@
 #include <gst/gl/gl.h>
 
 #include "gst3dscene.h"
+
+#ifdef HAVE_OPENHMD
 #include "gst3dcamera_hmd.h"
+#endif
 
 #define GST_CAT_DEFAULT gst_3d_scene_debug
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -100,7 +103,9 @@ gst_3d_scene_init_gl (Gst3DScene * self, GstGLContext * context)
   self->context = gst_object_ref (context);
   self->gl_init_func (self);
   self->gl_initialized = TRUE;
+#ifdef HAVE_OPENHMD
   gst_3d_scene_init_stereo_renderer (self, context);
+#endif
 }
 
 void
@@ -120,10 +125,14 @@ gst_3d_scene_draw (Gst3DScene * self)
 {
   gst_3d_camera_update_view (self->camera);
 
+#ifdef HAVE_OPENHMD
   if (GST_IS_3D_CAMERA_HMD (self->camera))
     gst_3d_renderer_draw_stereo (self->renderer, self);
   else
     gst_3d_scene_draw_nodes (self, &self->camera->mvp);
+#else
+  gst_3d_scene_draw_nodes (self, &self->camera->mvp);
+#endif
   gst_3d_scene_clear_state (self);
 }
 
@@ -177,6 +186,7 @@ gst_3d_scene_clear_state (Gst3DScene * self)
 
 /* stereo */
 
+#ifdef HAVE_OPENHMD
 gboolean
 gst_3d_scene_init_hmd (Gst3DScene * self)
 {
@@ -199,6 +209,7 @@ gst_3d_scene_init_stereo_renderer (Gst3DScene * self, GstGLContext * context)
     gst_3d_renderer_init_stereo (self->renderer, self->camera);
   }
 }
+#endif
 
 /* element navigation */
 static void

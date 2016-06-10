@@ -29,8 +29,11 @@
 #include "gst/3d/gst3dmesh.h"
 #include "gst/3d/gst3dcamera_arcball.h"
 #include "gst/3d/gst3dcamera_wasd.h"
-#include "gst/3d/gst3dcamera_hmd.h"
 #include "gst/3d/gst3dscene.h"
+
+#ifdef HAVE_OPENHMD
+#include "gst/3d/gst3dcamera_hmd.h"
+#endif
 
 struct GeometryScene
 {
@@ -83,10 +86,18 @@ _scene_geometry_init (gpointer impl, GstGLContext * context,
   gboolean ret = TRUE;
   //GstGLFuncs *gl = self->base.context->gl_vtable;
 
-  //Gst3DCamera *cam = GST_3D_CAMERA (gst_3d_camera_wasd_new ());
+#ifdef HAVE_OPENHMD
   Gst3DCamera *cam = GST_3D_CAMERA (gst_3d_camera_hmd_new ());
+#else
+  //Gst3DCamera *cam = GST_3D_CAMERA (gst_3d_camera_wasd_new ());
+  Gst3DCamera *cam = GST_3D_CAMERA (gst_3d_camera_arcball_new ());
+#endif
+
   self->scene = gst_3d_scene_new (cam, &_init_scene);
+
+#ifdef HAVE_OPENHMD
   ret = gst_3d_scene_init_hmd (self->scene);
+#endif
 
   gst_3d_scene_init_gl (self->scene, context);
 

@@ -26,8 +26,11 @@
 #include <gst/gl/gstgl_fwd.h>
 #include "gst3dmesh.h"
 #include "gst3dshader.h"
-#include "gst3dhmd.h"
 #include "gst3dcamera.h"
+
+#ifdef HAVE_OPENHMD
+#include "gst3dhmd.h"
+#endif
 
 G_BEGIN_DECLS
 #define GST_3D_TYPE_RENDERER            (gst_3d_renderer_get_type ())
@@ -65,14 +68,15 @@ struct _Gst3DRendererClass
   GstObjectClass parent_class;
 };
 
-
 Gst3DRenderer *gst_3d_renderer_new (GstGLContext * context);
 GType gst_3d_renderer_get_type (void);
 void gst_3d_renderer_create_fbo (GstGLFuncs *gl, GLuint * fbo, GLuint * color_tex, int width, int height);
 void gst_3d_renderer_init_stereo (Gst3DRenderer * self, Gst3DCamera *cam);
 void gst_3d_renderer_draw_stereo (Gst3DRenderer * self, Gst3DScene *scene);
 
+#ifdef HAVE_OPENHMD
 gboolean gst_3d_renderer_stereo_init_from_hmd (Gst3DRenderer * self, Gst3DHmd * hmd);
+#endif
 gboolean gst_3d_renderer_stero_init_from_filter (Gst3DRenderer * self, GstGLFilter * filter);
 
 G_END_DECLS

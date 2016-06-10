@@ -32,26 +32,31 @@ install_headers(
   'gst-libs/gst/3d/gst3dshader.h',
   subdir : 'gstreamer-' + apiversion + '/gst/3d')
 
+gst_3d_lib_src_hmd = []
+vr_plugin_src_hmd = []
+
+if openhmd_dep.found()
+  gst_3d_lib_src_hmd = ['gst-libs/gst/3d/gst3dhmd.c', 'gst-libs/gst/3d/gst3dcamera_hmd.c', 'gst-libs/gst/3d/gst3drenderer.c']
+  vr_plugin_src_hmd = ['gst/vr/gsthmdwarp.c']
+  add_global_arguments('-DHAVE_OPENHMD=1', language : 'c')
+endif
 
 gst_3d_lib = shared_library('gst3d-' + apiversion,
   'gst-libs/gst/3d/gst3dmesh.c',
   'gst-libs/gst/3d/gst3dcamera.c',
   'gst-libs/gst/3d/gst3dcamera_arcball.c',
-  'gst-libs/gst/3d/gst3dcamera_hmd.c',
   'gst-libs/gst/3d/gst3dcamera_wasd.c',
-  'gst-libs/gst/3d/gst3dhmd.c',
-  'gst-libs/gst/3d/gst3drenderer.c',
   'gst-libs/gst/3d/gst3dshader.c',
   'gst-libs/gst/3d/gst3dnode.c',
   'gst-libs/gst/3d/gst3dscene.c',
   'gst-libs/gst/3d/gst3dmath.c',
+  gst_3d_lib_src_hmd,
   install: true,
   dependencies: [glib_dep, gobject_dep, gst_dep, gst_gl_dep, gst_video_dep, graphene_dep, openhmd_dep, gio_dep],
   c_args: ['-Wno-pedantic'],
   cpp_args: ['-fpermissive'],
   link_args: ['-lm'],
   soversion : '0')
-
 
 '''
 gnome = import ('gnome')
@@ -97,12 +102,6 @@ r = run_command('glib-compile-resources', '--target=gpu/shaders.c', '--sourcedir
 if r.returncode() != 0
   message('Could not compile glib resources:')
   message(r.stderr().strip())
-endif
-
-vr_plugin_src_hmd = []
-
-if openhmd_dep.found()
-  vr_plugin_src_hmd = ['gst/vr/gsthmdwarp.c']
 endif
 
 vr_plugin_src = ['gst/vr/gstvrcompositor.c',

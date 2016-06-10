@@ -24,11 +24,14 @@
 #include <graphene.h>
 #include <gst/gl/gstglfilter.h>
 #include "gst/3d/gst3dmesh.h"
-#include "gst/3d/gst3dcamera_hmd.h"
 #include "gst/3d/gst3dshader.h"
 #include "gst/3d/gst3drenderer.h"
 #include "gst/3d/gst3dscene.h"
 #include "gst/3d/gst3drenderer.h"
+
+#ifdef HAVE_OPENHMD
+#include "gst/3d/gst3dcamera_hmd.h"
+#endif
 
 G_BEGIN_DECLS
 #define GST_TYPE_VR_COMPOSITOR            (gst_vr_compositor_get_type())

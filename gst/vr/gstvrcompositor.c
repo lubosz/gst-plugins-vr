@@ -44,8 +44,11 @@
 #include "gst/3d/gst3drenderer.h"
 #include "gst/3d/gst3dnode.h"
 #include "gst/3d/gst3dscene.h"
-#include "gst/3d/gst3dcamera_hmd.h"
 #include "gst/3d/gst3dcamera_arcball.h"
+
+#ifdef HAVE_OPENHMD
+#include "gst/3d/gst3dcamera_hmd.h"
+#endif
 
 #define GST_CAT_DEFAULT gst_vr_compositor_debug
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -151,11 +154,16 @@ gst_vr_compositor_set_caps (GstGLFilter * filter, GstCaps * incaps,
   gboolean ret = TRUE;
 
   if (!self->scene) {
+#ifdef HAVE_OPENHMD
     Gst3DCamera *cam = GST_3D_CAMERA (gst_3d_camera_hmd_new ());
-//    Gst3DCamera *cam = GST_3D_CAMERA (gst_3d_camera_arcball_new ());
+#else
+    Gst3DCamera *cam = GST_3D_CAMERA (gst_3d_camera_arcball_new ());
 //    Gst3DCamera *cam = GST_3D_CAMERA (gst_3d_camera_wasd_new ());
+#endif
     self->scene = gst_3d_scene_new (cam, &_init_scene);
+#ifdef HAVE_OPENHMD
     ret = gst_3d_scene_init_hmd (self->scene);
+#endif
   }
   self->caps_change = TRUE;
 
