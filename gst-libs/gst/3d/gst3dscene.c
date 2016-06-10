@@ -47,7 +47,6 @@ gst_3d_scene_init (Gst3DScene * self)
   self->context = NULL;
   self->gl_initialized = FALSE;
   self->node_draw_func = &gst_3d_node_draw;
-  gst_3d_camera_update_view (self->camera);
 }
 
 Gst3DScene *
@@ -57,6 +56,7 @@ gst_3d_scene_new (Gst3DCamera * camera, void (*_init_func) (Gst3DScene *))
   Gst3DScene *scene = g_object_new (GST_3D_TYPE_SCENE, NULL);
   scene->camera = gst_object_ref (camera);
   scene->gl_init_func = _init_func;
+  gst_3d_camera_update_view (scene->camera);
   return scene;
 }
 
