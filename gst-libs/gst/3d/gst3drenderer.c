@@ -53,7 +53,6 @@ gst_3d_renderer_init (Gst3DRenderer * self)
   self->right_fbo = 0;
   self->eye_width = 1;
   self->eye_height = 1;
-  self->default_fbo = 0;
   self->filter_aspect = 1.0f;
 }
 
@@ -126,7 +125,6 @@ _create_fbo (GstGLFuncs * gl, GLuint * fbo, GLuint * color_tex,
   if (status != GL_FRAMEBUFFER_COMPLETE) {
     GST_ERROR ("failed to create fbo %x\n", status);
   }
-  gl->BindFramebuffer (GL_FRAMEBUFFER, 0);
 }
 
 void
@@ -186,7 +184,6 @@ static void
 _draw_framebuffers_on_planes (Gst3DRenderer * self)
 {
   GstGLFuncs *gl = self->context->gl_vtable;
-  gl->BindFramebuffer (GL_FRAMEBUFFER, self->default_fbo);
   gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   graphene_matrix_t projection_ortho;
@@ -242,11 +239,15 @@ gst_3d_renderer_draw_stereo (Gst3DRenderer * self, Gst3DCamera * cam,
     Gst3DScene * scene)
 {
   GstGLFuncs *gl = self->context->gl_vtable;
-  /* store current fbo id */
-  if (self->default_fbo == 0)
-    gl->GetIntegerv (GL_DRAW_FRAMEBUFFER_BINDING, &self->default_fbo);
 
-  Gst3DCameraHmd *hmd_cam = GST_3D_CAMERA_HMD (cam);
+
+  /* aquire current fbo id */
+  GLint bound_fbo;
+  gl->GetIntegerv (GL_DRAW_FRAMEBUFFER_BINDING, &bound_fbo);
+  if (bound_fbo == 0)
+    return;
+
+  Gst3DCameraHmd *hmd_cam = GST_3D_CAMERA_HMD (scene->camera);
 
   /* left eye */
   _draw_eye (self, self->left_fbo, scene, &hmd_cam->left_vp_matrix);
@@ -254,6 +255,9 @@ gst_3d_renderer_draw_stereo (Gst3DRenderer * self, Gst3DCamera * cam,
   /* right eye */
   _draw_eye (self, self->right_fbo, scene, &hmd_cam->right_vp_matrix);
 
-  gst_gl_shader_use (self->shader->shader);
+  gst_3d_shader_bind (self->shader);
+  gl->BindFramebuffer (GL_FRAMEBUFFER, bound_fbo);
+  gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
   _draw_framebuffers_on_planes (self);
 }

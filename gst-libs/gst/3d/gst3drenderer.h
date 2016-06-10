@@ -53,7 +53,6 @@ struct _Gst3DRenderer
   
   GLuint left_color_tex, left_fbo;
   GLuint right_color_tex, right_fbo;
-  GLint default_fbo;
   
   guint eye_width;
   guint eye_height;
