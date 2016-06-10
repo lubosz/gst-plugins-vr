@@ -31,7 +31,6 @@
 #include <gst/gl/gl.h>
 
 #include "gst3dcamera_wasd.h"
-#include "gst3dglm.h"
 #include "gst3drenderer.h"
 
 #define GST_CAT_DEFAULT gst_3d_camera_wasd_debug

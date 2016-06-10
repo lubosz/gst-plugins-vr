@@ -30,7 +30,6 @@ install_headers(
   'gst-libs/gst/3d/gst3dhmd.h',
   'gst-libs/gst/3d/gst3drenderer.h',
   'gst-libs/gst/3d/gst3dshader.h',
-  'gst-libs/gst/3d/gst3dglm.h',
   subdir : 'gstreamer-' + apiversion + '/gst/3d')
 
 
@@ -43,7 +42,6 @@ gst_3d_lib = shared_library('gst3d-' + apiversion,
   'gst-libs/gst/3d/gst3dhmd.c',
   'gst-libs/gst/3d/gst3drenderer.c',
   'gst-libs/gst/3d/gst3dshader.c',
-  'gst-libs/gst/3d/gst3dglm.cpp',
   'gst-libs/gst/3d/gst3dnode.c',
   'gst-libs/gst/3d/gst3dscene.c',
   'gst-libs/gst/3d/gst3dmath.c',

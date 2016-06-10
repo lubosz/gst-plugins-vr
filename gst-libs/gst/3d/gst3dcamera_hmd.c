@@ -31,7 +31,6 @@
 #include <gst/gl/gl.h>
 
 #include "gst3dcamera_hmd.h"
-#include "gst3dglm.h"
 #include "gst3dmath.h"
 #include "gst3drenderer.h"
 #include "gst3dmath.h"
