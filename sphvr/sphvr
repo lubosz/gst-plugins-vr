@@ -1,8 +1,25 @@
 #!/usr/bin/env python3
 
-import signal
-from sinks import *
-# from vrsink.widgets import *
+import signal, os, sys
+
+# Check if we're in development or installed version and set paths properly
+def _in_devel():
+    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    return os.path.exists(os.path.join(root_dir, '.git'))
+
+def _add_sphvr_path():
+    dir = os.path.dirname(os.path.abspath(__file__))
+    if _in_devel():
+        root = os.path.split(dir)[0]
+    else:
+        root = os.path.join('/usr/lib', 'sphvr', 'python')
+
+    if not root in sys.path:
+        sys.path.append(root)
+
+_add_sphvr_path()
+
+from sphvr.sinks import *
 
 import gi
 gi.require_version('Gdk', '3.0')

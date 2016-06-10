@@ -155,3 +155,7 @@ executable('mesh', 'tests/3d/mesh.c', 'gpu/shaders.c',
   dependencies : [glib_dep, gobject_dep, gst_dep, gst_gl_dep, gst_video_dep, graphene_dep, gio_dep],
   link_with: [gst_3d_lib]
 )
+
+# install sphvr
+install_data('sphvr/sphvr', install_dir : 'bin/')
+install_subdir('sphvr', install_dir : 'lib/sphvr/python')
