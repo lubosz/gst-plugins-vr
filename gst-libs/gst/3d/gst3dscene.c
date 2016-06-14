@@ -59,7 +59,7 @@ gst_3d_scene_new (Gst3DCamera * camera, void (*_init_func) (Gst3DScene *))
   Gst3DScene *scene = g_object_new (GST_3D_TYPE_SCENE, NULL);
   scene->camera = gst_object_ref (camera);
   scene->gl_init_func = _init_func;
-  gst_3d_camera_update_view (scene->camera);
+
   return scene;
 }
 
@@ -103,6 +103,7 @@ gst_3d_scene_init_gl (Gst3DScene * self, GstGLContext * context)
   self->context = gst_object_ref (context);
   self->gl_init_func (self);
   self->gl_initialized = TRUE;
+  gst_3d_camera_update_view (self->camera);
 #ifdef HAVE_OPENHMD
   gst_3d_scene_init_stereo_renderer (self, context);
 #endif

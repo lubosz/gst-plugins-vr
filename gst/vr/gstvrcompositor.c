@@ -166,7 +166,6 @@ gst_vr_compositor_set_caps (GstGLFilter * filter, GstCaps * incaps,
 #endif
   }
   self->caps_change = TRUE;
-
   return ret;
 }
 
@@ -209,7 +208,8 @@ gst_vr_compositor_stop (GstBaseTransform * trans)
 
   /* blocking call, wait until the opengl thread has destroyed the shader */
 
-  gst_object_unref (self->scene);
+  if (self->scene)
+    gst_object_unref (self->scene);
 
   return GST_BASE_TRANSFORM_CLASS (parent_class)->stop (trans);
 }
@@ -239,7 +239,15 @@ gst_vr_compositor_init_scene (GstGLFilter * filter)
 {
   GstVRCompositor *self = GST_VR_COMPOSITOR (filter);
   GstGLContext *context = GST_GL_BASE_FILTER (filter)->context;
+
+#ifdef HAVE_OPENHMD
+  Gst3DHmd *hmd = GST_3D_CAMERA_HMD (self->scene->camera)->hmd;
+  if (!hmd->device)
+    return FALSE;
+#endif
+
   gst_3d_scene_init_gl (self->scene, context);
+
   return TRUE;
 }
 
