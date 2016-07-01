@@ -42,7 +42,8 @@ def _add_sphvr_path():
 
 
 class Monitor:
-    def __init__(self):
+    def __init__(self, id):
+        self.id = id
         self.geometry = None
         self.physical = []
         self.product = ""
@@ -57,9 +58,10 @@ class Monitor:
 
 class SPHVR:
     def __init__(self):
-        self.hmd_monitor = 0
+        self.hmd_monitor = None
         self.monitors = OrderedDict()
         self.pipeline = None
+        self.hmd_window = None
 
         if len(sys.argv) != 2:
             print("Usage:")
@@ -73,34 +75,24 @@ class SPHVR:
         Gtk.init([])
         Gst.init([])
 
-        self.init_monitors()
-        # self.print_monitors()
+        self.query_monitors()
 
-        self.width, self.height = self.hmd_monitor.geometry.width, self.hmd_monitor.geometry.height
-        self.is_fullscreen = False
-        self.aspect = float(self.width)/float(self.height)
+        if self.hmd_monitor:
+            self.width, self.height = self.hmd_monitor.geometry.width, self.hmd_monitor.geometry.height
+            self.hmd_sink = GLSink()
+            self.hmd_window = Gtk.Window()
+            self.hmd_window.set_default_size(self.width, self.height)
+            self.hmd_window.set_title("HMD")
+            self.hmd_window.connect("delete-event", self.window_closed, self.pipeline)
+            self.hmd_window.connect("key-press-event", self.key_pressed, self.pipeline)
+        else:
+            print("No HMD found in:")
+            self.print_monitors()
+            self.width, self.height = 1920, 1080
 
-        self.hmd_sink = GstOverlaySink("glimagesink", self.width, self.height)
-        self.desktop_sink = GstOverlaySink("glimagesink", self.width, self.height)
+        self.desktop_sink = GLSink()
 
         self.init_pipeline()
-
-        self.hmd_window = Gtk.Window()
-        self.hmd_window.set_default_size(self.width, self.height)
-        self.hmd_window.set_title("HMD")
-        self.hmd_window.add(self.hmd_sink.widget)
-
-        try:
-            from gi.repository import GdkPixbuf
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file("data/sphvr.png")
-            theme = Gtk.IconTheme.get_default()
-            theme.add_builtin_icon("sphvr", 256, pixbuf)
-            self.hmd_window.set_icon_name("sphvr")
-        except GLib.Error:
-            # no icon
-            pass
-        self.hmd_window.show_all()
-        self.hmd_sink.set_handle()
 
         self.desktop_window = Gtk.Window()
         self.desktop_window.connect("delete-event", self.window_closed, self.pipeline)
@@ -111,7 +103,21 @@ class SPHVR:
         self.desktop_window.show_all()
         self.desktop_sink.set_handle()
 
-        self.fullscreen_window_on_hmd(self.hmd_window)
+        if self.hmd_monitor:
+            self.hmd_window.add(self.hmd_sink.widget)
+            self.hmd_window.show_all()
+            self.hmd_sink.set_handle()
+            self.fullscreen_window_on_hmd(self.hmd_window)
+
+        try:
+            from gi.repository import GdkPixbuf
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file("data/sphvr.png")
+            theme = Gtk.IconTheme.get_default()
+            theme.add_builtin_icon("sphvr", 256, pixbuf)
+            self.hmd_window.set_icon_name("sphvr")
+        except GLib.Error:
+            # no icon
+            pass
 
         if self.pipeline.set_state(Gst.State.PLAYING) == Gst.StateChangeReturn.FAILURE:
             self.pipeline.set_state(Gst.State.NULL)
@@ -122,7 +128,7 @@ class SPHVR:
         screen = Gdk.Screen.get_default()
         window.move(self.hmd_monitor.geometry.x, self.hmd_monitor.geometry.y)
         window.fullscreen_on_monitor(screen, self.hmd_monitor.id)
-        print("fullscreen on", self.hmd_monitor)
+        print("Found HMD Screen:", self.hmd_monitor)
 
     @staticmethod
     def pad_added_cb(element, stuff, sink):
@@ -134,7 +140,7 @@ class SPHVR:
 
     def bus_cb(self, bus, message):
         if message.type == Gst.MessageType.EOS:
-            print("eos")
+            print("Show's over, bye.")
             self.quit_app()
         elif message.type == Gst.MessageType.ERROR:
             print("Error:", message.parse_error())
@@ -152,8 +158,7 @@ class SPHVR:
 
         tee = Gst.ElementFactory.make("tee", None)
 
-        queue1 = Gst.ElementFactory.make("queue", None)
-        queue2 = Gst.ElementFactory.make("queue", None)
+        desktop_queue = Gst.ElementFactory.make("queue", None)
 
         # caps
         caps = Gst.Caps.from_string("video/x-raw(memory:GLMemory), width=%d, height=%d, framerate=75/1" % (self.width, self.height))
@@ -161,9 +166,11 @@ class SPHVR:
         cf.set_property("caps", caps)
 
         self.pipeline.add(src, glupload, glcolorconvert, videorate)
-        self.pipeline.add(vrcompositor, cf, hmdwarp, tee, queue1, queue2)
+        self.pipeline.add(vrcompositor, cf, hmdwarp, tee, desktop_queue)
         self.pipeline.add(self.desktop_sink.element)
-        self.pipeline.add(self.hmd_sink.element)
+        if self.hmd_monitor:
+            hmd_queue = Gst.ElementFactory.make("queue", None)
+            self.pipeline.add(self.hmd_sink.element, hmd_queue)
         src.link(glupload)
         glupload.link(glcolorconvert)
         glcolorconvert.link(videorate)
@@ -172,18 +179,20 @@ class SPHVR:
 
         cf.link(hmdwarp)
 
-        queue1.link(self.hmd_sink.element)
-        queue2.link(self.desktop_sink.element)
+        if self.hmd_monitor:
+            hmd_queue.link(self.hmd_sink.element)
+        desktop_queue.link(self.desktop_sink.element)
 
         hmdwarp.link(tee)
 
-        srcpadvideo = tee.get_request_pad("src_0")
-        sinkpadvideo = queue1.get_static_pad("sink")
-        srcpadvideo.link(sinkpadvideo)
+        if self.hmd_monitor:
+            src_pad = tee.get_request_pad("src_0")
+            sink_pad = hmd_queue.get_static_pad("sink")
+            src_pad.link(sink_pad)
 
-        srcpadvideo = tee.get_request_pad("src_1")
-        sinkpadvideo = queue2.get_static_pad("sink")
-        srcpadvideo.link(sinkpadvideo)
+        src_pad = tee.get_request_pad("src_1")
+        sink_pad = desktop_queue.get_static_pad("sink")
+        src_pad.link(sink_pad)
 
         src.connect("pad-added", self.pad_added_cb, glupload)
 
@@ -191,21 +200,16 @@ class SPHVR:
         bus.add_signal_watch()
         bus.connect("message", self.bus_cb)
 
-    def init_monitors(self):
+    def query_monitors(self):
+        # GDK
         screen = Gdk.Screen.get_default()
         for m in range(0, screen.get_n_monitors()):
             plug = screen.get_monitor_plug_name(m)
-
-            mon = Monitor()
-            mon.id = m
-
-            self.monitors[plug] = mon
-
-            mon.geometry = screen.get_monitor_geometry(m)
-            # mon.output = screen.get_monitor_output(m)
-            # mon.workarea = screen.get_monitor_workarea(m)
-            mon.physical = [float(screen.get_monitor_height_mm(m)) / 10.0, float(screen.get_monitor_width_mm(m)) / 10.0]
-
+            self.monitors[plug] = Monitor(m)
+            self.monitors[plug].geometry = screen.get_monitor_geometry(m)
+            self.monitors[plug].physical = [float(screen.get_monitor_height_mm(m)) / 10.0,
+                                            float(screen.get_monitor_width_mm(m)) / 10.0]
+        # GnomeDesktop
         gscreen = GnomeDesktop.RRScreen.new(screen)
         gconfig = GnomeDesktop.RRConfig.new_current(gscreen)
         outputs = GnomeDesktop.RRConfig.get_outputs(gconfig)

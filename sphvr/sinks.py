@@ -5,11 +5,10 @@ from gi.repository import Gtk
 from gi.repository import Gst
 
 
-class GstOverlaySink:
-    def __init__(self, name, w, h):
-        self.element = Gst.ElementFactory.make(name, None)
+class GLSink:
+    def __init__(self):
+        self.element = Gst.ElementFactory.make("glimagesink", None)
         self.widget = Gtk.DrawingArea()
-        self.widget.set_size_request(w, h)
         self.widget.set_double_buffered(True)
 
     def xid(self):
