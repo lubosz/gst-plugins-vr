@@ -80,11 +80,7 @@ class SPHVR:
         if self.hmd_monitor:
             self.width, self.height = self.hmd_monitor.geometry.width, self.hmd_monitor.geometry.height
             self.hmd_sink = GLSink()
-            self.hmd_window = Gtk.Window()
-            self.hmd_window.set_default_size(self.width, self.height)
-            self.hmd_window.set_title("HMD")
-            self.hmd_window.connect("delete-event", self.window_closed, self.pipeline)
-            self.hmd_window.connect("key-press-event", self.key_pressed, self.pipeline)
+
         else:
             print("No HMD found in:")
             self.print_monitors()
@@ -94,20 +90,25 @@ class SPHVR:
 
         self.init_pipeline()
 
-        self.desktop_window = Gtk.Window()
-        self.desktop_window.connect("delete-event", self.window_closed, self.pipeline)
-        self.desktop_window.connect("key-press-event", self.key_pressed, self.pipeline)
-        self.desktop_window.set_default_size(self.width, self.height)
-        self.desktop_window.set_title("SPHVR")
-        self.desktop_window.add(self.desktop_sink.widget)
-        self.desktop_window.show_all()
+        desktop_window = Gtk.Window()
+        desktop_window.connect("delete-event", self.window_closed, self.pipeline)
+        desktop_window.connect("key-press-event", self.key_pressed, self.pipeline)
+        desktop_window.set_default_size(self.width, self.height)
+        desktop_window.set_title("SPHVR")
+        desktop_window.add(self.desktop_sink.widget)
+        desktop_window.show_all()
         self.desktop_sink.set_handle()
 
         if self.hmd_monitor:
-            self.hmd_window.add(self.hmd_sink.widget)
-            self.hmd_window.show_all()
+            hmd_window = Gtk.Window()
+            hmd_window.set_default_size(self.width, self.height)
+            hmd_window.set_title("HMD")
+            hmd_window.connect("delete-event", self.window_closed, self.pipeline)
+            hmd_window.connect("key-press-event", self.key_pressed, self.pipeline)
+            hmd_window.add(self.hmd_sink.widget)
+            hmd_window.show_all()
             self.hmd_sink.set_handle()
-            self.fullscreen_window_on_hmd(self.hmd_window)
+            self.fullscreen_window_on_hmd(hmd_window)
 
         try:
             from gi.repository import GdkPixbuf
