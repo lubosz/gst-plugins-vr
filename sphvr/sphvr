@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
-import signal, os, sys
+import signal
+import os
+import sys
 import gi
+
 gi.require_version('Gdk', '3.0')
 gi.require_version('Gst', '1.0')
 gi.require_version('Gtk', '3.0')
@@ -13,10 +16,12 @@ from gi.repository import Gdk, Gst, Gtk, GdkX11, GstVideo, GstGL, GnomeDesktop
 from sphvr.sinks import *
 from collections import OrderedDict
 
+
 # Check if we're in development or installed version and set paths properly
 def _in_devel():
     root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     return os.path.exists(os.path.join(root_dir, '.git'))
+
 
 def _add_sphvr_path():
     dir = os.path.dirname(os.path.abspath(__file__))
@@ -28,18 +33,20 @@ def _add_sphvr_path():
     if not root in sys.path:
         sys.path.append(root)
 
-def trace(frame, event, arg):
-    print ("%s, %s:%d" % (event, frame.f_code.co_filename, frame.f_lineno))
-    return trace
-#sys.settrace(trace)
 
-class Monitor():
-  def __init__(self):
-    res = [1, 1]
-  def __str__(self):
-    return " ".join(("%dx%d" % (self.geometry.width, self.geometry.height),
-            "%.1fcmx%.1fcm" % (self.physical[0], self.physical[1]),
-            self.vendor, self.product, self.display_name))
+class Monitor:
+    def __init__(self):
+        self.geometry = None
+        self.physical = []
+        self.product = ""
+        self.vendor = ""
+        self.display_name = ""
+
+    def __str__(self):
+        return " ".join(("%dx%d" % (self.geometry.width, self.geometry.height),
+                         "%.1fcmx%.1fcm" % (self.physical[0], self.physical[1]),
+                         self.vendor, self.product, self.display_name))
+
 
 class SPHVR:
     @staticmethod
@@ -72,17 +79,17 @@ class SPHVR:
         caps = Gst.Caps.from_string("video/x-raw(memory:GLMemory), width=%d, height=%d, framerate=75/1" % (self.width, self.height))
         cf = Gst.ElementFactory.make("capsfilter")
         cf.set_property("caps", caps)
-        
+
         self.pipeline.add(src, glupload, glcolorconvert, videorate, vrcompositor, cf, hmdwarp, somesink)
         src.link(glupload)
         glupload.link(glcolorconvert)
         glcolorconvert.link(videorate)
         videorate.link(vrcompositor)
         vrcompositor.link(cf)
-        
+
         cf.link(hmdwarp)
         hmdwarp.link(somesink)
-        
+
         src.connect("pad-added", self.pad_added_cb, glupload)
 
         bus = self.pipeline.get_bus()
@@ -90,25 +97,25 @@ class SPHVR:
         bus.connect("message", self.bus_cb)
 
     def __init__(self):
-    
-        self.rift_display = 0
+
+        self.hmd_monitor = 0
         self.monitors = OrderedDict()
 
-        if (len(sys.argv) != 2):
-          print("Usage:")
-          print("       sphvr <uri>")
-          print("Example:")
-          print("       sphvr file:///home/bmonkey/Videos/elephants.webm")
-          exit()
+        if len(sys.argv) != 2:
+            print("Usage:")
+            print("       sphvr <uri>")
+            print("Example:")
+            print("       sphvr file:///home/bmonkey/Videos/elephants.webm")
+            exit()
         else:
-          self.video_uri = sys.argv[1]
+            self.video_uri = sys.argv[1]
 
         Gtk.init([])
         Gst.init([])
-        
+
         self.init_monitors()
         self.print_monitors()
-        
+
         self.width, self.height = 1920, 1080
         self.is_fullscreen = False
         self.aspect = float(self.width)/float(self.height)
@@ -123,23 +130,23 @@ class SPHVR:
         self.window.set_default_size(self.width, self.height)
         self.window.set_title("SPHVR")
 
-        #gtksink
+        # gtksink
         w = sink.get_property("widget")
         self.window.add(w)
-        #self.window.add(sink)
+        # self.window.add(sink)
 
         try:
-          from gi.repository import GdkPixbuf
-          pixbuf = GdkPixbuf.Pixbuf.new_from_file("data/sphvr.png")
-          theme = Gtk.IconTheme.get_default()
-          theme.add_builtin_icon("sphvr", 256, pixbuf)
-          self.window.set_icon_name("sphvr")
+            from gi.repository import GdkPixbuf
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file("data/sphvr.png")
+            theme = Gtk.IconTheme.get_default()
+            theme.add_builtin_icon("sphvr", 256, pixbuf)
+            self.window.set_icon_name("sphvr")
         except GLib.Error:
-          # no icon
-          pass
+            # no icon
+            pass
         self.window.show_all()
 
-        #sink.set_handle()
+        # sink.set_handle()
 
         if self.pipeline.set_state(Gst.State.PLAYING) == Gst.StateChangeReturn.FAILURE:
             self.pipeline.set_state(Gst.State.NULL)
@@ -147,61 +154,55 @@ class SPHVR:
             Gtk.main()
 
     def init_monitors(self):
-          screen = Gdk.Screen.get_default()
-          for m in range(0, screen.get_n_monitors()):
+        screen = Gdk.Screen.get_default()
+        for m in range(0, screen.get_n_monitors()):
             plug = screen.get_monitor_plug_name(m)
-            
+
             mon = Monitor()
             mon.id = m
-            
+
             self.monitors[plug] = mon
-            
-            mon.geometry = screen.get_monitor_geometry(m)      
-            #mon.output = screen.get_monitor_output(m)
-            #mon.workarea = screen.get_monitor_workarea(m) 
+
+            mon.geometry = screen.get_monitor_geometry(m)
+            # mon.output = screen.get_monitor_output(m)
+            # mon.workarea = screen.get_monitor_workarea(m)
             mon.physical = [float(screen.get_monitor_height_mm(m)) / 10.0, float(screen.get_monitor_width_mm(m)) / 10.0]
-              
-          gscreen = GnomeDesktop.RRScreen.new(screen)
-          gconfig = GnomeDesktop.RRConfig.new_current(gscreen)
-          outputs = GnomeDesktop.RRConfig.get_outputs(gconfig)
-          
-          for info in outputs:
+
+        gscreen = GnomeDesktop.RRScreen.new(screen)
+        gconfig = GnomeDesktop.RRConfig.new_current(gscreen)
+        outputs = GnomeDesktop.RRConfig.get_outputs(gconfig)
+
+        for info in outputs:
             plug = info.get_name()
             self.monitors[plug].vendor = info.get_vendor()
             self.monitors[plug].product = info.get_product()
             self.monitors[plug].display_name = info.get_display_name()
             if "Rift DK2" in self.monitors[plug].product:
-              print("setting rift_display to", self.monitors[plug].id)
-              self.rift_display = self.monitors[plug].id
-
+                print("setting rift_display to", self.monitors[plug].id)
+                self.hmd_monitor = self.monitors[plug]
 
     def print_monitors(self):
-      for k, v in self.monitors.items():
-        print(k, v)
-        
+        for k, v in self.monitors.items():
+            print(k, v)
 
     def toggle_fullscreen(self):
-      if self.is_fullscreen:
-          self.is_fullscreen = False
-          self.window.unfullscreen() 
-      else:
-          screen = Gdk.Screen.get_default()
-          #from IPython import embed
-          #embed()
-          x, y, width, height = self.monitors[self.rift_display]
-          self.window.move(x,y)
-          self.window.fullscreen_on_monitor(screen, self.rift_display)
-          print("fullscreen on", self.rift_display)
-          self.is_fullscreen = True
+        if self.is_fullscreen:
+            self.is_fullscreen = False
+            self.window.unfullscreen()
+        else:
+            screen = Gdk.Screen.get_default()
+            self.window.move(self.hmd_monitor.geometry.x, self.hmd_monitor.geometry.y)
+            self.window.fullscreen_on_monitor(screen, self.hmd_monitor.id)
+            print("fullscreen on", self.hmd_monitor)
+            self.is_fullscreen = True
 
     def key_pressed(self, widget, key, pipeline):
         if key.keyval == Gdk.KEY_Escape:
             self.quit_app()
         elif key.keyval == Gdk.KEY_f:
             self.toggle_fullscreen()
-        # else:
-        #    print(key.keyval)
-
+            # else:
+            #    print(key.keyval)
 
     @staticmethod
     def pause(button, pipeline, sink):
@@ -210,8 +211,7 @@ class SPHVR:
         else:
             pipeline.set_state(Gst.State.PAUSED)
 
-    @staticmethod
-    def window_closed(widget, event, pipeline):
+    def window_closed(self, widget, event, pipeline):
         self.quit_app()
 
 
