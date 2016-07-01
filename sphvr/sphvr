@@ -12,7 +12,7 @@ gi.require_version('GstVideo', '1.0')
 gi.require_version('GstGL', '1.0')
 gi.require_version('GnomeDesktop', '3.0')
 
-from gi.repository import Gdk, Gst, Gtk, GdkX11, GstVideo, GstGL, GnomeDesktop
+from gi.repository import Gdk, Gst, Gtk, GdkX11, GstVideo, GstGL, GnomeDesktop, GLib
 from sphvr.sinks import *
 from collections import OrderedDict
 
@@ -24,9 +24,9 @@ def _in_devel():
 
 
 def _add_sphvr_path():
-    dir = os.path.dirname(os.path.abspath(__file__))
+    directory = os.path.dirname(os.path.abspath(__file__))
     if _in_devel():
-        root = os.path.split(dir)[0]
+        root = os.path.split(directory)[0]
     else:
         root = os.path.join('/usr/lib', 'sphvr', 'python')
 
@@ -65,7 +65,7 @@ class SPHVR:
             print("Error:", message.parse_error())
             self.quit_app()
 
-    def init_pipeline(self, somesink):
+    def init_pipeline(self, sink):
         self.pipeline = Gst.Pipeline()
         src = Gst.ElementFactory.make("uridecodebin", None)
         src.set_property("uri", self.video_uri)
@@ -80,7 +80,7 @@ class SPHVR:
         cf = Gst.ElementFactory.make("capsfilter")
         cf.set_property("caps", caps)
 
-        self.pipeline.add(src, glupload, glcolorconvert, videorate, vrcompositor, cf, hmdwarp, somesink)
+        self.pipeline.add(src, glupload, glcolorconvert, videorate, vrcompositor, cf, hmdwarp, sink.element)
         src.link(glupload)
         glupload.link(glcolorconvert)
         glcolorconvert.link(videorate)
@@ -88,7 +88,7 @@ class SPHVR:
         vrcompositor.link(cf)
 
         cf.link(hmdwarp)
-        hmdwarp.link(somesink)
+        hmdwarp.link(sink.element)
 
         src.connect("pad-added", self.pad_added_cb, glupload)
 
@@ -120,8 +120,9 @@ class SPHVR:
         self.is_fullscreen = False
         self.aspect = float(self.width)/float(self.height)
 
-        # sink = CairoGLSink(width, height)
-        sink = Gst.ElementFactory.make("gtkglsink", None)
+        #sink = GstOverlaySink("glimagesink", self.width, self.height)
+        sink = GtkGLSink()
+
         self.init_pipeline(sink)
 
         self.window = Gtk.Window()
@@ -129,11 +130,7 @@ class SPHVR:
         self.window.connect("key-press-event", self.key_pressed, self.pipeline)
         self.window.set_default_size(self.width, self.height)
         self.window.set_title("SPHVR")
-
-        # gtksink
-        w = sink.get_property("widget")
-        self.window.add(w)
-        # self.window.add(sink)
+        self.window.add(sink.widget)
 
         try:
             from gi.repository import GdkPixbuf
@@ -146,7 +143,7 @@ class SPHVR:
             pass
         self.window.show_all()
 
-        # sink.set_handle()
+        sink.set_handle()
 
         if self.pipeline.set_state(Gst.State.PLAYING) == Gst.StateChangeReturn.FAILURE:
             self.pipeline.set_state(Gst.State.NULL)
