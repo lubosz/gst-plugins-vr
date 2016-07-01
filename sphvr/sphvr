@@ -1,6 +1,17 @@
 #!/usr/bin/env python3
 
 import signal, os, sys
+import gi
+gi.require_version('Gdk', '3.0')
+gi.require_version('Gst', '1.0')
+gi.require_version('Gtk', '3.0')
+gi.require_version('GstVideo', '1.0')
+gi.require_version('GstGL', '1.0')
+gi.require_version('GnomeDesktop', '3.0')
+
+from gi.repository import Gdk, Gst, Gtk, GdkX11, GstVideo, GstGL, GnomeDesktop
+from sphvr.sinks import *
+from collections import OrderedDict
 
 # Check if we're in development or installed version and set paths properly
 def _in_devel():
@@ -17,50 +28,35 @@ def _add_sphvr_path():
     if not root in sys.path:
         sys.path.append(root)
 
-_add_sphvr_path()
-
-from sphvr.sinks import *
-
-import gi
-gi.require_version('Gdk', '3.0')
-gi.require_version('Gst', '1.0')
-gi.require_version('Gtk', '3.0')
-gi.require_version('GstVideo', '1.0')
-gi.require_version('GstGL', '1.0')
-
-from gi.repository import Gdk, Gst, Gtk, GdkX11, GstVideo, GstGL
-
-import sys
-
-signal.signal(signal.SIGINT, signal.SIG_DFL)
-
 def trace(frame, event, arg):
     print ("%s, %s:%d" % (event, frame.f_code.co_filename, frame.f_lineno))
     return trace
 #sys.settrace(trace)
 
-
-def quit_app(widget, pipeline):
-    widget.hide()
-    pipeline.set_state(Gst.State.NULL)
-    Gtk.main_quit()
-
+class Monitor():
+  def __init__(self):
+    res = [1, 1]
+  def __str__(self):
+    return " ".join(("%dx%d" % (self.geometry.width, self.geometry.height),
+            "%.1fcmx%.1fcm" % (self.physical[0], self.physical[1]),
+            self.vendor, self.product, self.display_name))
 
 class SPHVR:
     @staticmethod
     def pad_added_cb(element, stuff, sink):
         element.link(sink)
 
-    @staticmethod
-    def bus_cb(bus, message):
+    def quit_app(self):
+        self.pipeline.set_state(Gst.State.NULL)
+        Gtk.main_quit()
+
+    def bus_cb(self, bus, message):
         if message.type == Gst.MessageType.EOS:
             print("eos")
-            Gtk.main_quit()
+            self.quit_app()
         elif message.type == Gst.MessageType.ERROR:
-            print(message.parse_error())
-            Gtk.main_quit()
-        else:
-            pass
+            print("Error:", message.parse_error())
+            self.quit_app()
 
     def init_pipeline(self, somesink):
         self.pipeline = Gst.Pipeline()
@@ -93,38 +89,10 @@ class SPHVR:
         bus.add_signal_watch()
         bus.connect("message", self.bus_cb)
 
-    """
-    def init_widgets(self):
-        outer_box = Gtk.Box()
-        outer_box.set_orientation(Gtk.Orientation.VERTICAL)
-
-        box = Gtk.Box()
-        box.set_orientation(Gtk.Orientation.HORIZONTAL)
-
-        #slider_box = Transformation2DSliderBox(transform, sink.scene)
-        #slider_box = Transformation3DSliderBox(transform)
-
-        #slider_box = SphereBox()
-
-        #sink.scene.slider_box = slider_box
-        #sink.scene.reposition(slider_box.build_mvp())
-        # sink.scene.window = window
-
-        #box.add(slider_box)
-        box.add(sink)
-
-        outer_box.add(box)
-
-        pause_button = Gtk.Button()
-        pause_button.set_label("Pause")
-        outer_box.add(pause_button)
-
-        pause_button.connect("clicked", self.pause, pipeline, sink)
-
-        self.window.add(outer_box)
-    """
-
     def __init__(self):
+    
+        self.rift_display = 0
+        self.monitors = OrderedDict()
 
         if (len(sys.argv) != 2):
           print("Usage:")
@@ -137,6 +105,9 @@ class SPHVR:
 
         Gtk.init([])
         Gst.init([])
+        
+        self.init_monitors()
+        self.print_monitors()
         
         self.width, self.height = 1920, 1080
         self.is_fullscreen = False
@@ -175,6 +146,39 @@ class SPHVR:
         else:
             Gtk.main()
 
+    def init_monitors(self):
+          screen = Gdk.Screen.get_default()
+          for m in range(0, screen.get_n_monitors()):
+            plug = screen.get_monitor_plug_name(m)
+            
+            mon = Monitor()
+            mon.id = m
+            
+            self.monitors[plug] = mon
+            
+            mon.geometry = screen.get_monitor_geometry(m)      
+            #mon.output = screen.get_monitor_output(m)
+            #mon.workarea = screen.get_monitor_workarea(m) 
+            mon.physical = [float(screen.get_monitor_height_mm(m)) / 10.0, float(screen.get_monitor_width_mm(m)) / 10.0]
+              
+          gscreen = GnomeDesktop.RRScreen.new(screen)
+          gconfig = GnomeDesktop.RRConfig.new_current(gscreen)
+          outputs = GnomeDesktop.RRConfig.get_outputs(gconfig)
+          
+          for info in outputs:
+            plug = info.get_name()
+            self.monitors[plug].vendor = info.get_vendor()
+            self.monitors[plug].product = info.get_product()
+            self.monitors[plug].display_name = info.get_display_name()
+            if "Rift DK2" in self.monitors[plug].product:
+              print("setting rift_display to", self.monitors[plug].id)
+              self.rift_display = self.monitors[plug].id
+
+
+    def print_monitors(self):
+      for k, v in self.monitors.items():
+        print(k, v)
+        
 
     def toggle_fullscreen(self):
       if self.is_fullscreen:
@@ -182,12 +186,17 @@ class SPHVR:
           self.window.unfullscreen() 
       else:
           screen = Gdk.Screen.get_default()
-          self.window.fullscreen_on_monitor(screen, 0)
+          #from IPython import embed
+          #embed()
+          x, y, width, height = self.monitors[self.rift_display]
+          self.window.move(x,y)
+          self.window.fullscreen_on_monitor(screen, self.rift_display)
+          print("fullscreen on", self.rift_display)
           self.is_fullscreen = True
 
     def key_pressed(self, widget, key, pipeline):
         if key.keyval == Gdk.KEY_Escape:
-            quit_app(widget, pipeline)
+            self.quit_app()
         elif key.keyval == Gdk.KEY_f:
             self.toggle_fullscreen()
         # else:
@@ -203,6 +212,11 @@ class SPHVR:
 
     @staticmethod
     def window_closed(widget, event, pipeline):
-        quit_app(widget, pipeline)
+        self.quit_app()
 
+
+signal.signal(signal.SIGINT, signal.SIG_DFL)
+_add_sphvr_path()
 SPHVR()
+
+
