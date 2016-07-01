@@ -61,7 +61,6 @@ class SPHVR:
         self.hmd_monitor = None
         self.monitors = OrderedDict()
         self.pipeline = None
-        self.hmd_window = None
 
         if len(sys.argv) != 2:
             print("Usage:")
@@ -80,7 +79,6 @@ class SPHVR:
         if self.hmd_monitor:
             self.width, self.height = self.hmd_monitor.geometry.width, self.hmd_monitor.geometry.height
             self.hmd_sink = GLSink()
-
         else:
             print("No HMD found in:")
             self.print_monitors()
@@ -91,8 +89,8 @@ class SPHVR:
         self.init_pipeline()
 
         desktop_window = Gtk.Window()
-        desktop_window.connect("delete-event", self.window_closed, self.pipeline)
-        desktop_window.connect("key-press-event", self.key_pressed, self.pipeline)
+        desktop_window.connect("delete-event", self.window_closed)
+        desktop_window.connect("key-press-event", self.key_pressed)
         desktop_window.set_default_size(self.width, self.height)
         desktop_window.set_title("SPHVR")
         desktop_window.add(self.desktop_sink.widget)
@@ -103,8 +101,8 @@ class SPHVR:
             hmd_window = Gtk.Window()
             hmd_window.set_default_size(self.width, self.height)
             hmd_window.set_title("HMD")
-            hmd_window.connect("delete-event", self.window_closed, self.pipeline)
-            hmd_window.connect("key-press-event", self.key_pressed, self.pipeline)
+            hmd_window.connect("delete-event", self.window_closed)
+            hmd_window.connect("key-press-event", self.key_pressed)
             hmd_window.add(self.hmd_sink.widget)
             hmd_window.show_all()
             self.hmd_sink.set_handle()
@@ -227,18 +225,11 @@ class SPHVR:
         for k, v in self.monitors.items():
             print(k, v)
 
-    def key_pressed(self, widget, key, pipeline):
+    def key_pressed(self, widget, key):
         if key.keyval == Gdk.KEY_Escape:
             self.quit_app()
 
-    @staticmethod
-    def pause(button, pipeline, sink):
-        if pipeline.get_state(Gst.CLOCK_TIME_NONE)[1] == Gst.State.PAUSED:
-            pipeline.set_state(Gst.State.PLAYING)
-        else:
-            pipeline.set_state(Gst.State.PAUSED)
-
-    def window_closed(self, widget, event, pipeline):
+    def window_closed(self, widget, event):
         self.quit_app()
 
 
