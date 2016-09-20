@@ -12,7 +12,7 @@ gst_version = '@0@.@1@'.format(gst_version, gst_nano)
 GST_DEP_VERSION = '>= @0@.@1@'.format(gst_major, gst_minor)
 
 gobject_dep = dependency('gobject-2.0')
-graphene_dep = dependency('graphene-1.0')
+graphene_dep = dependency('graphene-1.0', fallback : ['graphene', 'graphene_dep'])
 openhmd_dep = dependency('openhmd', required : false)
 freenect2_dep = dependency('freenect2', required : false)
 glib_dep = dependency('glib-2.0')
