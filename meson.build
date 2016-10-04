@@ -158,5 +158,5 @@ executable('mesh', 'tests/3d/mesh.c', 'gpu/shaders.c',
 
 # install sphvr
 install_data('sphvr/sphvr', install_dir : 'bin/')
-site_packages_dir = run_command('./print_sitepackages_dir.py').stdout().strip()
+site_packages_dir = run_command('./scripts/print_sitepackages_dir.py').stdout().strip()
 install_subdir('sphvr', install_dir : site_packages_dir)
