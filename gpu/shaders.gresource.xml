@@ -11,5 +11,6 @@
     <file>mandelbrot.frag</file>
     <file>debug_uv.frag</file>
     <file>color.frag</file>
+    <file>texture_equirectangular_sphere.frag</file>
   </gresource>
 </gresources>

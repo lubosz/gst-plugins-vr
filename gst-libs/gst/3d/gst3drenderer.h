@@ -74,6 +74,9 @@ void gst_3d_renderer_create_fbo (GstGLFuncs *gl, GLuint * fbo, GLuint * color_te
 void gst_3d_renderer_init_stereo (Gst3DRenderer * self, Gst3DCamera *cam);
 void gst_3d_renderer_draw_stereo (Gst3DRenderer * self, Gst3DScene *scene);
 
+void gst_3d_renderer_draw_stereo_shader_proj (Gst3DRenderer * self, Gst3DScene * scene);
+void gst_3d_renderer_init_stereo_shader_proj (Gst3DRenderer * self, Gst3DCamera * cam);
+
 #ifdef HAVE_OPENHMD
 gboolean gst_3d_renderer_stereo_init_from_hmd (Gst3DRenderer * self, Gst3DHmd * hmd);
 #endif

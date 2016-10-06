@@ -35,6 +35,9 @@
 #include "gst3dcamera_hmd.h"
 #endif
 
+bool use_shader_proj = FALSE;
+//bool use_shader_proj = TRUE;
+
 #define GST_CAT_DEFAULT gst_3d_scene_debug
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
@@ -128,7 +131,10 @@ gst_3d_scene_draw (Gst3DScene * self)
 
 #ifdef HAVE_OPENHMD
   if (GST_IS_3D_CAMERA_HMD (self->camera))
-    gst_3d_renderer_draw_stereo (self->renderer, self);
+    if (use_shader_proj)
+      gst_3d_renderer_draw_stereo_shader_proj (self->renderer, self);
+    else
+      gst_3d_renderer_draw_stereo (self->renderer, self);
   else
     gst_3d_scene_draw_nodes (self, &self->camera->mvp);
 #else
@@ -207,7 +213,11 @@ gst_3d_scene_init_stereo_renderer (Gst3DScene * self, GstGLContext * context)
     Gst3DCameraHmd *hmd_cam = GST_3D_CAMERA_HMD (self->camera);
     Gst3DHmd *hmd = hmd_cam->hmd;
     gst_3d_renderer_stereo_init_from_hmd (self->renderer, hmd);
-    gst_3d_renderer_init_stereo (self->renderer, self->camera);
+
+    if (use_shader_proj)
+      gst_3d_renderer_init_stereo_shader_proj (self->renderer, self->camera);
+    else
+      gst_3d_renderer_init_stereo (self->renderer, self->camera);
   }
 }
 #endif

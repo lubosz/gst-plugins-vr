@@ -190,6 +190,40 @@ _draw_framebuffers_on_planes (Gst3DRenderer * self)
   gst_3d_mesh_draw (self->render_plane);
 }
 
+
+static void
+_draw_framebuffers_on_planes_shader_proj (Gst3DRenderer * self,
+    Gst3DCamera * cam)
+{
+  GstGLFuncs *gl = self->context->gl_vtable;
+
+  _insert_gl_debug_marker (self->context, "_draw_framebuffers_on_planes");
+
+  Gst3DCameraHmd *hmd_cam = GST_3D_CAMERA_HMD (cam);
+
+  graphene_matrix_t projection_ortho;
+  graphene_matrix_init_ortho (&projection_ortho, -self->filter_aspect,
+      self->filter_aspect, -1.0, 1.0, -1.0, 1.0);
+  gst_3d_shader_upload_matrix (self->shader, &projection_ortho, "mvp");
+
+
+  gst_3d_shader_upload_matrix (self->shader, &hmd_cam->left_vp_matrix, "vp");
+
+  gst_3d_mesh_bind (self->render_plane);
+
+  /* left framebuffer */
+  gl->Viewport (0, 0, self->eye_width, self->eye_height);
+  gst_3d_mesh_draw (self->render_plane);
+
+  gst_3d_shader_upload_matrix (self->shader, &hmd_cam->right_vp_matrix, "vp");
+
+  /* right framebuffer */
+  gl->Viewport (self->eye_width, 0, self->eye_width, self->eye_height);
+  gst_3d_mesh_draw (self->render_plane);
+}
+
+
+
 void
 gst_3d_renderer_init_stereo (Gst3DRenderer * self, Gst3DCamera * cam)
 {
@@ -206,6 +240,25 @@ gst_3d_renderer_init_stereo (Gst3DRenderer * self, Gst3DCamera * cam)
       self->eye_width, self->eye_height);
   _create_fbo (gl, &self->right_fbo, &self->right_color_tex,
       self->eye_width, self->eye_height);
+
+  gst_3d_shader_bind (self->shader);
+  gst_gl_shader_set_uniform_1i (self->shader->shader, "texture", 0);
+}
+
+
+void
+gst_3d_renderer_init_stereo_shader_proj (Gst3DRenderer * self,
+    Gst3DCamera * cam)
+{
+  Gst3DCameraHmd *hmd_cam = GST_3D_CAMERA_HMD (cam);
+  Gst3DHmd *hmd = hmd_cam->hmd;
+  float aspect_ratio = hmd->left_aspect;
+  self->render_plane = gst_3d_mesh_new_plane (self->context, aspect_ratio);
+
+  self->shader = gst_3d_shader_new_vert_frag (self->context, "mvp_uv.vert",
+      "texture_equirectangular_sphere.frag");
+
+  gst_3d_mesh_bind_shader (self->render_plane, self->shader);
 
   gst_3d_shader_bind (self->shader);
   gst_gl_shader_set_uniform_1i (self->shader->shader, "texture", 0);
@@ -240,4 +293,17 @@ gst_3d_renderer_draw_stereo (Gst3DRenderer * self, Gst3DScene * scene)
 
   _draw_framebuffers_on_planes (self);
   gst_3d_scene_clear_state (scene);
+}
+
+void
+gst_3d_renderer_draw_stereo_shader_proj (Gst3DRenderer * self,
+    Gst3DScene * scene)
+{
+  GstGLFuncs *gl = self->context->gl_vtable;
+
+  _insert_gl_debug_marker (self->context, "gst_3d_renderer_draw_stereo");
+
+  gst_3d_shader_bind (self->shader);
+  gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  _draw_framebuffers_on_planes_shader_proj (self, scene->camera);
 }
