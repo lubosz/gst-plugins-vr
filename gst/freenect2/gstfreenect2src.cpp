@@ -44,8 +44,24 @@ GST_DEBUG_CATEGORY_STATIC (freenect2src_debug);
 static GstStaticPadTemplate srctemplate = GST_STATIC_PAD_TEMPLATE ("src",
     GST_PAD_SRC,
     GST_PAD_ALWAYS,
-    GST_STATIC_CAPS (GST_VIDEO_CAPS_MAKE ("{RGBA, RGB, GRAY16_LE}"))
+    GST_STATIC_CAPS (GST_VIDEO_CAPS_MAKE ("{RGBA, RGB, GRAY32F}"))
     );
+
+
+/* *INDENT-OFF* */
+/*
+static GstStaticPadTemplate src_factory = GST_STATIC_PAD_TEMPLATE ("src",
+    GST_PAD_SRC,
+    GST_PAD_ALWAYS,
+    GST_STATIC_CAPS ("video/x-raw(" GST_CAPS_FEATURE_MEMORY_GL_MEMORY "), "
+        "format = (string) RGBA, "
+        "width = " GST_VIDEO_SIZE_RANGE ", "
+        "height = " GST_VIDEO_SIZE_RANGE ", "
+        "framerate = " GST_VIDEO_FPS_RANGE ","
+        "texture-target = (string) 2D")
+    );
+*/
+/* *INDENT-ON* */
 
 enum
 {
@@ -292,11 +308,17 @@ gst_freenect2_src_get_caps (GstBaseSrc * src, GstCaps * filter)
   if (self->sourcetype == SOURCETYPE_COLOR_DEPTH) {
     format = GST_VIDEO_FORMAT_RGBA;
     gst_video_info_set_format (&info, format, 1920, 1080);
-  } else if (self->sourcetype == SOURCETYPE_DEPTH
-      || self->sourcetype == SOURCETYPE_IR) {
+  } else if (self->sourcetype == SOURCETYPE_DEPTH) {
+    //format = GST_VIDEO_FORMAT_GRAY16_LE;
+    format = GST_VIDEO_FORMAT_GRAY32F;
+    gst_video_info_set_format (&info, format, 512, 424);
+
+} else if (self->sourcetype == SOURCETYPE_IR) {
     format = GST_VIDEO_FORMAT_GRAY16_LE;
     //format = GST_VIDEO_FORMAT_GRAY32F;
     gst_video_info_set_format (&info, format, 512, 424);
+
+
   } else if (self->sourcetype == SOURCETYPE_COLOR) {
     format = GST_VIDEO_FORMAT_RGB;
     gst_video_info_set_format (&info, format, 1920, 1080);
@@ -530,13 +552,53 @@ freenect2_read_gstbuffer (GstFreenect2Src * self, GstBuffer * buf)
   } else if (self->sourcetype == SOURCETYPE_DEPTH) {
     depth = self->frames[libfreenect2::Frame::Depth];
     guint16 *pData = (guint16 *) GST_VIDEO_FRAME_PLANE_DATA (&vframe, 0);
+
+    //gfloat *pData = (gfloat *) GST_VIDEO_FRAME_PLANE_DATA (&vframe, 0);
+
     gfloat *pDepth = (float *) depth->data;
+
+    float smallest = 1000000;
+    float biggest = -1000;
+
 
     //TODO: use 16-bit float buffers.
     for (unsigned i = 0; i < depth->height * depth->width; ++i) {
-      float mapped_float = pDepth[i] * 65.535f/4.0;
+
+      const double ratio = 65535.0f/3000.0f;
+
+      //double mapped_float = pDepth[i] * 65.535f/4.0;
+
+      double mapped_float = pDepth[i] * ratio;
+
+      //double mapped_float = (double) pDepth[i] * 10.0f;
+
+
+      if (pDepth[i] > biggest)
+        biggest = pDepth[i];
+
+      if (pDepth[i] < smallest)
+        smallest = pDepth[i];
+
+
+
+
+
       pData[i] = (guint16) mapped_float;
+
+      //GST_ERROR("mapped %d", pData[i]);
+
+
+
+      //if (i < 108566) {
+      //  pData[i] = pDepth[i];
+
+      //GST_ERROR("i %d", i);
+    
+      //if (pDepth[i] != 0)
+      //  GST_ERROR("original %f mapped %f", pDepth[i], pData[i]);
     }
+
+      //GST_ERROR("smallest: %f biggest: %f", smallest, biggest);
       
   } else if (self->sourcetype == SOURCETYPE_IR) {
     ir = self->frames[libfreenect2::Frame::Ir];

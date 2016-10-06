@@ -24,11 +24,11 @@ void main()
     pos.z = depthValue;
     // Push all points of unknown depth away where they shouldn't be visible.
     /*
+    */
     if (depthValue == 0.0)
     {
         pos = vec3(9999.0);
     }
-    */
    gl_Position = mvp * vec4(pos, 1.0);
 
 
