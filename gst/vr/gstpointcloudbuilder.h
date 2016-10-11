@@ -42,7 +42,7 @@ struct _GstPointCloudBuilder
 {
   GstGLFilter parent;
 
-  guint in_tex;
+  GstGLMemory * in_tex;
 
   guint eye_width;
   guint eye_height;

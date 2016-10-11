@@ -70,10 +70,10 @@ static gboolean gst_hmd_warp_set_caps (GstGLFilter * filter,
 static void gst_hmd_warp_reset_gl (GstGLFilter * filter);
 static gboolean gst_hmd_warp_stop (GstBaseTransform * trans);
 static gboolean gst_hmd_warp_init_gl (GstGLFilter * filter);
-static void gst_hmd_warp_draw (gpointer stuff);
+static gboolean gst_hmd_warp_draw (gpointer stuff);
 
 static gboolean gst_hmd_warp_filter_texture (GstGLFilter * filter,
-    guint in_tex, guint out_tex);
+    GstGLMemory * in_tex, GstGLMemory * out_tex);
 
 static void
 gst_hmd_warp_class_init (GstHmdWarpClass * klass)
@@ -205,23 +205,18 @@ gst_hmd_warp_init_gl (GstGLFilter * filter)
 }
 
 static gboolean
-gst_hmd_warp_filter_texture (GstGLFilter * filter, guint in_tex, guint out_tex)
+gst_hmd_warp_filter_texture (GstGLFilter * filter, GstGLMemory * in_tex,
+    GstGLMemory * out_tex)
 {
   GstHmdWarp *self = GST_HMD_WARP (filter);
 
   self->in_tex = in_tex;
 
-  /* blocking call, use a FBO */
-  gst_gl_context_use_fbo_v2 (GST_GL_BASE_FILTER (filter)->context,
-      GST_VIDEO_INFO_WIDTH (&filter->out_info),
-      GST_VIDEO_INFO_HEIGHT (&filter->out_info),
-      filter->fbo, filter->depthbuffer,
-      out_tex, gst_hmd_warp_draw, (gpointer) self);
-
-  return TRUE;
+  return gst_gl_framebuffer_draw_to_texture (filter->fbo, out_tex,
+      gst_hmd_warp_draw, (gpointer) self);
 }
 
-static void
+static gboolean
 gst_hmd_warp_draw (gpointer this)
 {
   GstHmdWarp *self = GST_HMD_WARP (this);
@@ -231,7 +226,7 @@ gst_hmd_warp_draw (gpointer this)
   gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   gst_gl_shader_use (self->shader->shader);
-  gl->BindTexture (GL_TEXTURE_2D, self->in_tex);
+  gl->BindTexture (GL_TEXTURE_2D, self->in_tex->tex_id);
 
   graphene_matrix_t projection_ortho;
   graphene_matrix_init_ortho (&projection_ortho, -self->aspect, self->aspect,
@@ -243,4 +238,6 @@ gst_hmd_warp_draw (gpointer this)
   gl->BindVertexArray (0);
   gl->BindTexture (GL_TEXTURE_2D, 0);
   gst_gl_context_clear_shader (context);
+
+  return TRUE;
 }

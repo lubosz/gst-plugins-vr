@@ -47,7 +47,7 @@ struct _GstVRCompositor
 {
   GstGLFilter filter;
 
-  guint in_tex;
+  GstGLMemory * in_tex;
   gboolean caps_change;
 
   Gst3DScene *scene;

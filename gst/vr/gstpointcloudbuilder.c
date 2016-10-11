@@ -75,10 +75,10 @@ static gboolean gst_point_cloud_builder_src_event (GstBaseTransform * trans,
 static void gst_point_cloud_builder_reset_gl (GstGLFilter * filter);
 static gboolean gst_point_cloud_builder_stop (GstBaseTransform * trans);
 static gboolean gst_point_cloud_builder_init_scene (GstGLFilter * filter);
-static void gst_point_cloud_builder_draw (gpointer stuff);
+static gboolean gst_point_cloud_builder_draw (gpointer stuff);
 
 static gboolean gst_point_cloud_builder_filter_texture (GstGLFilter * filter,
-    guint in_tex, guint out_tex);
+    GstGLMemory * in_tex, GstGLMemory * out_tex);
 
 static void
 gst_point_cloud_builder_class_init (GstPointCloudBuilderClass * klass)
@@ -244,24 +244,18 @@ gst_point_cloud_builder_init_scene (GstGLFilter * filter)
 }
 
 static gboolean
-gst_point_cloud_builder_filter_texture (GstGLFilter * filter, guint in_tex,
-    guint out_tex)
+gst_point_cloud_builder_filter_texture (GstGLFilter * filter,
+    GstGLMemory * in_tex, GstGLMemory * out_tex)
 {
   GstPointCloudBuilder *self = GST_POINT_CLOUD_BUILDER (filter);
 
   self->in_tex = in_tex;
 
-  /* blocking call, use a FBO */
-  gst_gl_context_use_fbo_v2 (GST_GL_BASE_FILTER (filter)->context,
-      GST_VIDEO_INFO_WIDTH (&filter->out_info),
-      GST_VIDEO_INFO_HEIGHT (&filter->out_info),
-      filter->fbo, filter->depthbuffer,
-      out_tex, gst_point_cloud_builder_draw, (gpointer) self);
-
-  return TRUE;
+  return gst_gl_framebuffer_draw_to_texture (filter->fbo, out_tex,
+      gst_point_cloud_builder_draw, (gpointer) self);
 }
 
-static void
+static gboolean
 gst_point_cloud_builder_draw (gpointer this)
 {
   GstPointCloudBuilder *self = GST_POINT_CLOUD_BUILDER (this);
@@ -271,7 +265,7 @@ gst_point_cloud_builder_draw (gpointer this)
   gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   gst_gl_shader_use (self->shader->shader);
-  gl->BindTexture (GL_TEXTURE_2D, self->in_tex);
+  gl->BindTexture (GL_TEXTURE_2D, self->in_tex->tex_id);
 
   gst_3d_camera_update_view (GST_3D_CAMERA (self->camera));
   gst_3d_shader_upload_matrix (self->shader, &GST_3D_CAMERA (self->camera)->mvp,
@@ -283,4 +277,6 @@ gst_point_cloud_builder_draw (gpointer this)
   gl->BindVertexArray (0);
   gl->BindTexture (GL_TEXTURE_2D, 0);
   gst_gl_context_clear_shader (context);
+
+  return TRUE;
 }

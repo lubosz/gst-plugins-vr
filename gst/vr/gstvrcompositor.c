@@ -79,10 +79,10 @@ static gboolean gst_vr_compositor_src_event (GstBaseTransform * trans,
 // static void gst_vr_compositor_reset_gl (GstGLFilter * filter);
 static gboolean gst_vr_compositor_stop (GstBaseTransform * trans);
 static gboolean gst_vr_compositor_init_scene (GstGLFilter * filter);
-static void gst_vr_compositor_draw (gpointer stuff);
+static gboolean gst_vr_compositor_draw (gpointer stuff);
 
 static gboolean gst_vr_compositor_filter_texture (GstGLFilter * filter,
-    guint in_tex, guint out_tex);
+    GstGLMemory * in_tex, GstGLMemory * out_tex);
 
 static void _init_scene (Gst3DScene * scene);
 
@@ -252,32 +252,29 @@ gst_vr_compositor_init_scene (GstGLFilter * filter)
 }
 
 static gboolean
-gst_vr_compositor_filter_texture (GstGLFilter * filter, guint in_tex,
-    guint out_tex)
+gst_vr_compositor_filter_texture (GstGLFilter * filter, GstGLMemory * in_tex,
+    GstGLMemory * out_tex)
 {
   GstVRCompositor *self = GST_VR_COMPOSITOR (filter);
 
   self->in_tex = in_tex;
 
-  /* blocking call, use a FBO */
-  gst_gl_context_use_fbo_v2 (GST_GL_BASE_FILTER (filter)->context,
-      GST_VIDEO_INFO_WIDTH (&filter->out_info),
-      GST_VIDEO_INFO_HEIGHT (&filter->out_info),
-      filter->fbo, filter->depthbuffer,
-      out_tex, gst_vr_compositor_draw, (gpointer) self);
+  gst_gl_framebuffer_draw_to_texture (filter->fbo, out_tex,
+      gst_vr_compositor_draw, (gpointer) self);
 
   return TRUE;
 }
 
-static void
+static gboolean
 gst_vr_compositor_draw (gpointer this)
 {
   GstVRCompositor *self = GST_VR_COMPOSITOR (this);
   GstGLContext *context = GST_GL_BASE_FILTER (this)->context;
   GstGLFuncs *gl = context->gl_vtable;
 
-  gl->BindTexture (GL_TEXTURE_2D, self->in_tex);
+  gl->BindTexture (GL_TEXTURE_2D, self->in_tex->tex_id);
   gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   gst_3d_scene_draw (self->scene);
 
+  return TRUE;
 }
