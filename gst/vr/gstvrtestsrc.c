@@ -113,8 +113,6 @@ static gboolean gst_vr_test_src_event (GstBaseSrc * src, GstEvent * event);
 
 static gboolean gst_vr_test_src_init_shader (GstVRTestSrc * gstvrtestsrc);
 
-static gboolean gst_vr_test_src_decide_allocation (GstBaseSrc * basesrc,
-    GstQuery * query);
 
 #define GST_TYPE_VR_TEST_SRC_SCENE (gst_vr_test_src_scene_get_type ())
 static GType
@@ -642,6 +640,14 @@ _find_local_gl_context (GstVRTestSrc * src)
   return FALSE;
 }
 
+static void
+_src_generate_fbo_gl (GstGLContext * context, GstVRTestSrc * src)
+{
+  src->fbo = gst_gl_framebuffer_new_with_default_depth (src->context,
+      GST_VIDEO_INFO_WIDTH (&src->out_info),
+      GST_VIDEO_INFO_HEIGHT (&src->out_info));
+}
+
 static gboolean
 gst_vr_test_src_decide_allocation (GstBaseSrc * basesrc, GstQuery * query)
 {
@@ -652,7 +658,6 @@ gst_vr_test_src_decide_allocation (GstBaseSrc * basesrc, GstQuery * query)
   guint min, max, size;
   gboolean update_pool;
   GError *error = NULL;
-  guint out_width, out_height;
 
   if (!gst_gl_ensure_element_data (src, &src->display, &src->other_context))
     return FALSE;
@@ -685,11 +690,9 @@ gst_vr_test_src_decide_allocation (GstBaseSrc * basesrc, GstQuery * query)
   if ((gst_gl_context_get_gl_api (src->context) & SUPPORTED_GL_APIS) == 0)
     goto unsupported_gl_api;
 
-  out_width = GST_VIDEO_INFO_WIDTH (&src->out_info);
-  out_height = GST_VIDEO_INFO_HEIGHT (&src->out_info);
-
-  if (!(src->fbo = gst_gl_framebuffer_new_with_default_depth (src->context,
-      out_width, out_height)))
+  gst_gl_context_thread_add (src->context,
+      (GstGLContextThreadFunc) _src_generate_fbo_gl, src);
+  if (!src->fbo)
     goto context_error;
 
   gst_query_parse_allocation (query, &caps, NULL);
@@ -752,9 +755,13 @@ unsupported_gl_api:
   }
 context_error:
   {
-    GST_ELEMENT_ERROR (src, RESOURCE, NOT_FOUND, ("%s", error->message),
-        (NULL));
-    g_clear_error (&error);
+    if (error) {
+      GST_ELEMENT_ERROR (src, RESOURCE, NOT_FOUND, ("%s", error->message),
+          (NULL));
+      g_clear_error (&error);
+    } else {
+      GST_ELEMENT_ERROR (src, RESOURCE, NOT_FOUND, (NULL), (NULL));
+    }
     if (src->context)
       gst_object_unref (src->context);
     src->context = NULL;
