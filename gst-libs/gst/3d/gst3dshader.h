@@ -24,6 +24,8 @@
 
 #include <gst/gst.h>
 #include <gst/gl/gstgl_fwd.h>
+#include <gst/gl/gstglfuncs.h>
+
 #include <graphene-gobject.h>
 
 G_BEGIN_DECLS

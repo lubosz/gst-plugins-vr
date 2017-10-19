@@ -10,6 +10,7 @@ void setup_test_request(void);
 // #include <gst/check/gstcheck.h>
 
 #define GST_USE_UNSTABLE_API 1
+#include <gst/gl/gl.h>
 #include <gst/gl/gstglcontext.h>
 #include <gst/gl/gstglupload.h>
 

@@ -40,6 +40,7 @@
 #include "gstvrcompositor.h"
 
 #include <gst/gl/gstglapi.h>
+#include <gst/gl/gstglfuncs.h>
 #include <graphene-gobject.h>
 #include "gst/3d/gst3drenderer.h"
 #include "gst/3d/gst3dnode.h"
@@ -101,6 +102,8 @@ gst_vr_compositor_class_init (GstVRCompositorClass * klass)
   gobject_class->get_property = gst_vr_compositor_get_property;
 
   base_transform_class->src_event = gst_vr_compositor_src_event;
+
+  gst_gl_filter_add_rgba_pad_templates (GST_GL_FILTER_CLASS (klass));
 
   GST_GL_FILTER_CLASS (klass)->init_fbo = gst_vr_compositor_init_scene;
   // GST_GL_FILTER_CLASS (klass)->display_reset_cb = gst_vr_compositor_reset_gl;
