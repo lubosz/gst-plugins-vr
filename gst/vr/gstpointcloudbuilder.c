@@ -235,10 +235,15 @@ gst_point_cloud_builder_init_scene (GstGLFilter * filter)
   GstGLContext *context = GST_GL_BASE_FILTER (self)->context;
   GstGLFuncs *gl = context->gl_vtable;
   gboolean ret = TRUE;
+  GError *error = NULL;
 
   if (!self->mesh) {
+    GError *error = NULL;
+
     self->shader = gst_3d_shader_new_vert_frag (context, "points.vert",
-        "points.frag");
+        "points.frag", &error);
+    if (self->shader == NULL)
+      goto handle_error;
     gst_3d_shader_bind (self->shader);
     self->mesh = gst_3d_mesh_new_point_plane (context, 512, 424);
     gst_3d_mesh_bind_shader (self->mesh, self->shader);
@@ -248,6 +253,11 @@ gst_point_cloud_builder_init_scene (GstGLFilter * filter)
     gst_gl_shader_set_uniform_1i (self->shader->shader, "texture", 0);
   }
   return ret;
+
+handle_error:
+  GST_ELEMENT_ERROR (self, RESOURCE, NOT_FOUND, ("%s", error->message), (NULL));
+  g_clear_error (&error);
+  return FALSE;
 }
 
 static gboolean

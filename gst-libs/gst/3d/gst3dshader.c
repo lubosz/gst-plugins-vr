@@ -57,11 +57,15 @@ gst_3d_shader_new (GstGLContext * context)
 
 Gst3DShader *
 gst_3d_shader_new_vert_frag (GstGLContext * context, const gchar * vertex,
-    const gchar * fragment)
+    const gchar * fragment, GError **error)
 {
   g_return_val_if_fail (GST_IS_GL_CONTEXT (context), NULL);
   Gst3DShader *shader = gst_3d_shader_new (context);
-  gst_3d_shader_from_vert_frag (shader, vertex, fragment);
+  if (!gst_3d_shader_from_vert_frag (shader, vertex, fragment, error)) {
+    gst_object_unref (shader);
+    return NULL;
+  }
+
   return shader;
 }
 
@@ -128,12 +132,11 @@ gst_3d_shader_delete (Gst3DShader * self)
 
 gboolean
 gst_3d_shader_from_vert_frag (Gst3DShader * self, const gchar * vertex,
-    const gchar * fragment)
+    const gchar * fragment, GError **error)
 {
   gboolean ret = FALSE;
   GstGLShader *shader = NULL;
   GstGLContext *context = self->context;
-  GError *error = NULL;
 
   if (gst_gl_context_get_gl_api (context)) {
     GstGLSLStage *stage;
@@ -151,7 +154,7 @@ gst_3d_shader_from_vert_frag (Gst3DShader * self, const gchar * vertex,
       goto print_error;
     }
 
-    if (!gst_gl_shader_compile_attach_stage (shader, stage, &error)) {
+    if (!gst_gl_shader_compile_attach_stage (shader, stage, error)) {
       gst_object_unref (stage);
       goto print_error;
     }
@@ -161,12 +164,12 @@ gst_3d_shader_from_vert_frag (Gst3DShader * self, const gchar * vertex,
       goto print_error;
     }
 
-    if (!gst_gl_shader_compile_attach_stage (shader, stage, &error)) {
+    if (!gst_gl_shader_compile_attach_stage (shader, stage, error)) {
       gst_object_unref (stage);
       goto print_error;
     }
 
-    if (!gst_gl_shader_link (shader, &error)) {
+    if (!gst_gl_shader_link (shader, error)) {
       goto print_error;
     }
     if (self->shader)
@@ -181,9 +184,6 @@ print_error:
   if (shader)
     gst_object_unref (shader);
 
-  g_clear_error (&error);
-
-  GST_ELEMENT_ERROR (self, RESOURCE, NOT_FOUND, ("%s", error->message), (NULL));
   return FALSE;
 }
 

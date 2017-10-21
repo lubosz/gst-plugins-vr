@@ -222,12 +222,20 @@ _init_scene (Gst3DScene * scene)
 {
   GstGLContext *context = scene->context;
   GstGLFuncs *gl = context->gl_vtable;
+  GError *error = NULL;
+  Gst3DMesh *sphere_mesh;
+  Gst3DNode *sphere_node;
   Gst3DShader *sphere_shader =
       gst_3d_shader_new_vert_frag (context, "mvp_uv.vert",
-      "texture_uv.frag");
-  Gst3DMesh *sphere_mesh = gst_3d_mesh_new_sphere (context, 800.0, 100, 100);
-  Gst3DNode *sphere_node =
-      gst_3d_node_new_from_mesh_shader (context, sphere_mesh, sphere_shader);
+      "texture_uv.frag", &error);
+  if (sphere_shader == NULL) {
+    GST_WARNING ("Failed to create VR compositor shaders. Error: %s", error->message);
+    g_clear_error (&error);
+    return; /* FIXME: Add boolean return result */
+  }
+
+  sphere_mesh = gst_3d_mesh_new_sphere (context, 800.0, 100, 100);
+  sphere_node = gst_3d_node_new_from_mesh_shader (context, sphere_mesh, sphere_shader);
   gst_3d_scene_append_node (scene, sphere_node);
 
   gl->ClearColor (0.f, 0.f, 0.f, 0.f);

@@ -53,8 +53,15 @@ draw_render (gpointer data)
 static void
 init (gpointer data)
 {
+  GError *error;
+
   shader =
-      gst_3d_shader_new_vert_frag (context, "mvp_uv.vert", "debug_uv.frag");
+      gst_3d_shader_new_vert_frag (context, "mvp_uv.vert", "debug_uv.frag", &error);
+  if (shader == NULL) {
+    GST_WARNING ("Failed to create VR compositor shaders. Error: %s", error->message);
+    g_clear_error (&error);
+    return; /* FIXME: Add boolean return result */
+  }
 
   mesh = gst_3d_mesh_new_sphere (context, 0.5, 100, 100);
   gst_gl_shader_use (shader->shader);

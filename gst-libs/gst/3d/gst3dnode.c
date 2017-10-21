@@ -89,12 +89,21 @@ gst_3d_node_class_init (Gst3DNodeClass * klass)
 Gst3DNode *
 gst_3d_node_new_debug_axes (GstGLContext * context)
 {
+  GError *error = NULL;
+  Gst3DNode *node;
+
   g_return_val_if_fail (GST_IS_GL_CONTEXT (context), NULL);
-  Gst3DNode *node = g_object_new (GST_3D_TYPE_NODE, NULL);
+  node = g_object_new (GST_3D_TYPE_NODE, NULL);
   node->context = gst_object_ref (context);
 
   node->shader =
-      gst_3d_shader_new_vert_frag (context, "mvp_color.vert", "color.frag");
+      gst_3d_shader_new_vert_frag (context, "mvp_color.vert", "color.frag", &error);
+  if (node->shader == NULL) {
+    GST_WARNING ("Failed to create shaders. Error: %s", error->message);
+    g_clear_error (&error);
+    gst_object_unref (node);
+    return NULL;
+  }
 
   gst_gl_shader_use (node->shader->shader);
 
