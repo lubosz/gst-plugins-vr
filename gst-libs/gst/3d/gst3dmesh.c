@@ -28,6 +28,7 @@
 
 #define GST_USE_UNSTABLE_API
 #include <gst/gl/gl.h>
+#include <gst/gl/gstglfuncs.h>
 
 #include "gst3dmesh.h"
 
@@ -171,6 +172,8 @@ void
 gst_3d_mesh_bind_shader (Gst3DMesh * self, Gst3DShader * shader)
 {
   GstGLFuncs *gl = self->context->gl_vtable;
+
+  gst_3d_shader_bind (shader);
 
   GList *l;
   for (l = self->attribute_buffers; l != NULL; l = l->next) {

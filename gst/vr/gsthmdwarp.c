@@ -67,7 +67,7 @@ static void gst_hmd_warp_get_property (GObject * object, guint prop_id,
 static gboolean gst_hmd_warp_set_caps (GstGLFilter * filter,
     GstCaps * incaps, GstCaps * outcaps);
 
-static void gst_hmd_warp_reset_gl (GstGLFilter * filter);
+static void gst_hmd_warp_gl_stop (GstGLBaseFilter * filter);
 static gboolean gst_hmd_warp_stop (GstBaseTransform * trans);
 static gboolean gst_hmd_warp_init_gl (GstGLFilter * filter);
 static gboolean gst_hmd_warp_draw (gpointer stuff);
@@ -89,8 +89,11 @@ gst_hmd_warp_class_init (GstHmdWarpClass * klass)
   gobject_class->set_property = gst_hmd_warp_set_property;
   gobject_class->get_property = gst_hmd_warp_get_property;
 
+  GST_GL_BASE_FILTER_CLASS (klass)->gl_stop = gst_hmd_warp_gl_stop;
+
+  gst_gl_filter_add_rgba_pad_templates (GST_GL_FILTER_CLASS (klass));
+
   GST_GL_FILTER_CLASS (klass)->init_fbo = gst_hmd_warp_init_gl;
-  GST_GL_FILTER_CLASS (klass)->display_reset_cb = gst_hmd_warp_reset_gl;
   GST_GL_FILTER_CLASS (klass)->set_caps = gst_hmd_warp_set_caps;
   GST_GL_FILTER_CLASS (klass)->filter_texture = gst_hmd_warp_filter_texture;
   base_transform_class->stop = gst_hmd_warp_stop;
@@ -158,7 +161,7 @@ gst_hmd_warp_set_caps (GstGLFilter * filter, GstCaps * incaps,
 }
 
 static void
-gst_hmd_warp_reset_gl (GstGLFilter * filter)
+gst_hmd_warp_gl_stop (GstGLBaseFilter * filter)
 {
   GstHmdWarp *self = GST_HMD_WARP (filter);
 
@@ -167,7 +170,12 @@ gst_hmd_warp_reset_gl (GstGLFilter * filter)
     gst_object_unref (self->shader);
     self->shader = NULL;
   }
-  gst_object_unref (self->render_plane);
+  if (self->render_plane) {
+    gst_object_unref (self->render_plane);
+    self->render_plane = NULL;
+  }
+
+  GST_GL_BASE_FILTER_CLASS (parent_class)->gl_stop (filter);
 }
 
 static gboolean
@@ -182,12 +190,13 @@ gst_hmd_warp_init_gl (GstGLFilter * filter)
   GstHmdWarp *self = GST_HMD_WARP (filter);
   GstGLContext *context = GST_GL_BASE_FILTER (self)->context;
   GstGLFuncs *gl = context->gl_vtable;
-  gboolean ret = TRUE;
+  GError *error = NULL;
 
   if (!self->render_plane) {
     self->shader = gst_3d_shader_new (context);
-    ret =
-        gst_3d_shader_from_vert_frag (self->shader, "mvp_uv.vert", "warp.frag");
+    if (!gst_3d_shader_from_vert_frag (self->shader, "mvp_uv.vert", "warp.frag", &error))
+      goto handle_error;
+
     gst_3d_shader_bind (self->shader);
 
     self->render_plane = gst_3d_mesh_new_plane (context, self->aspect);
@@ -201,7 +210,13 @@ gst_hmd_warp_init_gl (GstGLFilter * filter)
 
     gst_3d_mesh_bind_shader (self->render_plane, self->shader);
   }
-  return ret;
+  return TRUE;
+
+handle_error:
+  GST_ELEMENT_ERROR (self, RESOURCE, NOT_FOUND, ("%s", error->message), (NULL));
+  g_clear_error (&error);
+
+  return FALSE;
 }
 
 static gboolean

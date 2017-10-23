@@ -40,6 +40,7 @@
 #include "gstvrcompositor.h"
 
 #include <gst/gl/gstglapi.h>
+#include <gst/gl/gstglfuncs.h>
 #include <graphene-gobject.h>
 #include "gst/3d/gst3drenderer.h"
 #include "gst/3d/gst3dnode.h"
@@ -101,6 +102,8 @@ gst_vr_compositor_class_init (GstVRCompositorClass * klass)
   gobject_class->get_property = gst_vr_compositor_get_property;
 
   base_transform_class->src_event = gst_vr_compositor_src_event;
+
+  gst_gl_filter_add_rgba_pad_templates (GST_GL_FILTER_CLASS (klass));
 
   GST_GL_FILTER_CLASS (klass)->init_fbo = gst_vr_compositor_init_scene;
   // GST_GL_FILTER_CLASS (klass)->display_reset_cb = gst_vr_compositor_reset_gl;
@@ -219,12 +222,20 @@ _init_scene (Gst3DScene * scene)
 {
   GstGLContext *context = scene->context;
   GstGLFuncs *gl = context->gl_vtable;
+  GError *error = NULL;
+  Gst3DMesh *sphere_mesh;
+  Gst3DNode *sphere_node;
   Gst3DShader *sphere_shader =
       gst_3d_shader_new_vert_frag (context, "mvp_uv.vert",
-      "texture_uv.frag");
-  Gst3DMesh *sphere_mesh = gst_3d_mesh_new_sphere (context, 800.0, 100, 100);
-  Gst3DNode *sphere_node =
-      gst_3d_node_new_from_mesh_shader (context, sphere_mesh, sphere_shader);
+      "texture_uv.frag", &error);
+  if (sphere_shader == NULL) {
+    GST_WARNING ("Failed to create VR compositor shaders. Error: %s", error->message);
+    g_clear_error (&error);
+    return; /* FIXME: Add boolean return result */
+  }
+
+  sphere_mesh = gst_3d_mesh_new_sphere (context, 800.0, 100, 100);
+  sphere_node = gst_3d_node_new_from_mesh_shader (context, sphere_mesh, sphere_shader);
   gst_3d_scene_append_node (scene, sphere_node);
 
   gl->ClearColor (0.f, 0.f, 0.f, 0.f);

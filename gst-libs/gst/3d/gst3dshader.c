@@ -28,6 +28,7 @@
 
 #define GST_USE_UNSTABLE_API
 #include <gst/gl/gl.h>
+#include <gst/gl/gstglfuncs.h>
 
 #include <gio/gio.h>
 
@@ -56,11 +57,15 @@ gst_3d_shader_new (GstGLContext * context)
 
 Gst3DShader *
 gst_3d_shader_new_vert_frag (GstGLContext * context, const gchar * vertex,
-    const gchar * fragment)
+    const gchar * fragment, GError **error)
 {
   g_return_val_if_fail (GST_IS_GL_CONTEXT (context), NULL);
   Gst3DShader *shader = gst_3d_shader_new (context);
-  gst_3d_shader_from_vert_frag (shader, vertex, fragment);
+  if (!gst_3d_shader_from_vert_frag (shader, vertex, fragment, error)) {
+    gst_object_unref (shader);
+    return NULL;
+  }
+
   return shader;
 }
 
@@ -99,6 +104,7 @@ gst_3d_shader_read (const char *file)
   const char *shader;
 
   char *path = g_strjoin ("", "/gpu/", file, NULL);
+  GST_LOG ("Loading shader from file: %s", path);
   bytes = g_resources_lookup_data (path, 0, &error);
   g_free (path);
 
@@ -118,34 +124,67 @@ gst_3d_shader_read (const char *file)
 void
 gst_3d_shader_delete (Gst3DShader * self)
 {
-  if (self->context != NULL && self->shader != NULL) {
-    gst_gl_context_del_shader (self->context, self->shader);
+  if (self->shader != NULL) {
+    gst_object_unref (self->shader);
     self->shader = NULL;
   }
 }
 
 gboolean
 gst_3d_shader_from_vert_frag (Gst3DShader * self, const gchar * vertex,
-    const gchar * fragment)
+    const gchar * fragment, GError **error)
 {
   gboolean ret = FALSE;
+  GstGLShader *shader = NULL;
+  GstGLContext *context = self->context;
 
-  if (self->shader) {
-    gst_object_unref (self->shader);
-    self->shader = NULL;
-  }
-
-  if (gst_gl_context_get_gl_api (self->context)) {
+  if (gst_gl_context_get_gl_api (context)) {
+    GstGLSLStage *stage;
 
     const gchar *vertex_src = gst_3d_shader_read (vertex);
     const gchar *fragment_src = gst_3d_shader_read (fragment);
 
-    /* blocking call, wait until the opengl thread has compiled the shader */
-    ret =
-        gst_gl_context_gen_shader (self->context, vertex_src, fragment_src,
-        &self->shader);
+    GST_LOG_OBJECT (self, "Creating shader from vertex src %s, fragment src %s",
+        vertex_src, fragment_src);
+
+    shader = gst_gl_shader_new (context);
+
+    if (!(stage = gst_glsl_stage_new_with_string (context, GL_VERTEX_SHADER,
+                GST_GLSL_VERSION_NONE, GST_GLSL_PROFILE_NONE, vertex_src))) {
+      goto print_error;
+    }
+
+    if (!gst_gl_shader_compile_attach_stage (shader, stage, error)) {
+      gst_object_unref (stage);
+      goto print_error;
+    }
+
+    if (!(stage = gst_glsl_stage_new_with_string (context, GL_FRAGMENT_SHADER,
+                GST_GLSL_VERSION_NONE, GST_GLSL_PROFILE_NONE, fragment_src))) {
+      goto print_error;
+    }
+
+    if (!gst_gl_shader_compile_attach_stage (shader, stage, error)) {
+      gst_object_unref (stage);
+      goto print_error;
+    }
+
+    if (!gst_gl_shader_link (shader, error)) {
+      goto print_error;
+    }
+    if (self->shader)
+      gst_object_unref (self->shader);
+    self->shader = gst_object_ref (shader);
+    ret = TRUE;
   }
+
   return ret;
+
+print_error:
+  if (shader)
+    gst_object_unref (shader);
+
+  return FALSE;
 }
 
 void

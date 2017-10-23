@@ -72,7 +72,7 @@ static gboolean gst_point_cloud_builder_set_caps (GstGLFilter * filter,
 static gboolean gst_point_cloud_builder_src_event (GstBaseTransform * trans,
     GstEvent * event);
 
-static void gst_point_cloud_builder_reset_gl (GstGLFilter * filter);
+static void gst_point_cloud_builder_gl_stop (GstGLBaseFilter * filter);
 static gboolean gst_point_cloud_builder_stop (GstBaseTransform * trans);
 static gboolean gst_point_cloud_builder_init_scene (GstGLFilter * filter);
 static gboolean gst_point_cloud_builder_draw (gpointer stuff);
@@ -96,9 +96,11 @@ gst_point_cloud_builder_class_init (GstPointCloudBuilderClass * klass)
 
   base_transform_class->src_event = gst_point_cloud_builder_src_event;
 
+  GST_GL_BASE_FILTER_CLASS (klass)->gl_stop = gst_point_cloud_builder_gl_stop;
+
+  gst_gl_filter_add_rgba_pad_templates (GST_GL_FILTER_CLASS (klass));
+
   GST_GL_FILTER_CLASS (klass)->init_fbo = gst_point_cloud_builder_init_scene;
-  GST_GL_FILTER_CLASS (klass)->display_reset_cb =
-      gst_point_cloud_builder_reset_gl;
   GST_GL_FILTER_CLASS (klass)->set_caps = gst_point_cloud_builder_set_caps;
   GST_GL_FILTER_CLASS (klass)->filter_texture =
       gst_point_cloud_builder_filter_texture;
@@ -198,7 +200,7 @@ gst_point_cloud_builder_src_event (GstBaseTransform * trans, GstEvent * event)
 }
 
 static void
-gst_point_cloud_builder_reset_gl (GstGLFilter * filter)
+gst_point_cloud_builder_gl_stop (GstGLBaseFilter * filter)
 {
   GstPointCloudBuilder *self = GST_POINT_CLOUD_BUILDER (filter);
 
@@ -206,7 +208,12 @@ gst_point_cloud_builder_reset_gl (GstGLFilter * filter)
     gst_object_unref (self->shader);
     self->shader = NULL;
   }
-  gst_object_unref (self->mesh);
+  if (self->mesh) {
+    gst_object_unref (self->mesh);
+    self->mesh = NULL;
+  }
+
+  GST_GL_BASE_FILTER_CLASS (parent_class)->gl_stop (filter);
 }
 
 static gboolean
@@ -228,10 +235,15 @@ gst_point_cloud_builder_init_scene (GstGLFilter * filter)
   GstGLContext *context = GST_GL_BASE_FILTER (self)->context;
   GstGLFuncs *gl = context->gl_vtable;
   gboolean ret = TRUE;
+  GError *error = NULL;
 
   if (!self->mesh) {
+    GError *error = NULL;
+
     self->shader = gst_3d_shader_new_vert_frag (context, "points.vert",
-        "points.frag");
+        "points.frag", &error);
+    if (self->shader == NULL)
+      goto handle_error;
     gst_3d_shader_bind (self->shader);
     self->mesh = gst_3d_mesh_new_point_plane (context, 512, 424);
     gst_3d_mesh_bind_shader (self->mesh, self->shader);
@@ -241,6 +253,11 @@ gst_point_cloud_builder_init_scene (GstGLFilter * filter)
     gst_gl_shader_set_uniform_1i (self->shader->shader, "texture", 0);
   }
   return ret;
+
+handle_error:
+  GST_ELEMENT_ERROR (self, RESOURCE, NOT_FOUND, ("%s", error->message), (NULL));
+  g_clear_error (&error);
+  return FALSE;
 }
 
 static gboolean

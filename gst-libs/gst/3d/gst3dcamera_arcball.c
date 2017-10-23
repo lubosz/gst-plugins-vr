@@ -55,6 +55,10 @@ gst_3d_camera_arcball_init (Gst3DCameraArcball * self)
 
   self->theta = 5.0;
   self->phi = 5.0;
+
+  self->zoom_step = 0.95;
+  self->min_fov = 45;
+  self->max_fov = 110;
 }
 
 Gst3DCameraArcball *
@@ -88,7 +92,10 @@ gst_3d_camera_arcball_class_init (Gst3DCameraArcballClass * klass)
 void
 gst_3d_camera_arcball_translate (Gst3DCameraArcball * self, float z)
 {
-  self->center_distance += z * self->scroll_speed;
+  float new_val = self->center_distance + z * self->scroll_speed;
+
+  self->center_distance = MAX (0, new_val);
+
   GST_DEBUG ("center distance: %f", self->center_distance);
   gst_3d_camera_update_view (GST_3D_CAMERA (self));
 }
@@ -115,6 +122,8 @@ gst_3d_camera_arcball_update_view (Gst3DCamera * cam)
 {
   Gst3DCameraArcball *self = GST_3D_CAMERA_ARCBALL (cam);
   float radius = exp (self->center_distance);
+
+  GST_LOG_OBJECT (self, "arcball radius = %f fov %f", radius, cam->fov);
 
   graphene_vec3_init (&cam->eye,
       radius * sin (self->theta) * cos (self->phi),
@@ -167,6 +176,8 @@ gst_3d_camera_arcball_navigation_event (Gst3DCamera * cam, GstEvent * event)
     }
     case GST_NAVIGATION_EVENT_MOUSE_BUTTON_RELEASE:{
       gint button;
+      Gst3DCamera * cam = GST_3D_CAMERA (self);
+
       gst_structure_get_int (structure, "button", &button);
       cam->pressed_mouse_button = 0;
 
@@ -174,12 +185,22 @@ gst_3d_camera_arcball_navigation_event (Gst3DCamera * cam, GstEvent * event)
         /* first mouse button release */
         gst_structure_get_double (structure, "pointer_x", &cam->cursor_last_x);
         gst_structure_get_double (structure, "pointer_y", &cam->cursor_last_y);
-      } else if (button == 4) {
+      } else if (button == 4 || button == 6) {
         /* wheel up */
-        gst_3d_camera_arcball_translate (self, -1.0);
-      } else if (button == 5) {
+        //gst_3d_camera_arcball_translate (self, -1.0);
+        if (cam->fov > self->min_fov) {
+          cam->fov *= self->zoom_step;
+          cam->fov = MAX (self->min_fov, cam->fov);
+          gst_3d_camera_update_view (cam);
+        }
+      } else if (button == 5 || button == 7) {
         /* wheel down */
-        gst_3d_camera_arcball_translate (self, 1.0);
+        //gst_3d_camera_arcball_translate (self, 1.0);
+        if (cam->fov < self->max_fov) {
+          cam->fov /= self->zoom_step;
+          cam->fov = MIN (self->max_fov, cam->fov);
+          gst_3d_camera_update_view (cam);
+        }
       }
       break;
     }

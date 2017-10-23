@@ -24,6 +24,8 @@
 
 #include <gst/gst.h>
 #include <gst/gl/gstgl_fwd.h>
+#include <gst/gl/gstglfuncs.h>
+
 #include "gst3dmesh.h"
 #include "gst3dshader.h"
 #include "gst3dcamera.h"

@@ -46,6 +46,10 @@ struct _Gst3DCameraArcball
   gdouble rotation_speed;
   gfloat theta;
   gfloat phi;
+
+  gfloat zoom_step;
+  gfloat min_fov;
+  gfloat max_fov;
 };
 
 struct _Gst3DCameraArcballClass

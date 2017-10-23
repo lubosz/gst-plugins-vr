@@ -53,10 +53,18 @@ static void
 _init_scene (Gst3DScene * scene)
 {
   GstGLContext *context = scene->context;
+  Gst3DNode *axes_node;
+  GError *error = NULL;
   Gst3DShader *uv_shader =
-      gst_3d_shader_new_vert_frag (context, "mvp_uv.vert", "debug_uv.frag");
+      gst_3d_shader_new_vert_frag (context, "mvp_uv.vert", "debug_uv.frag", &error);
 
-  Gst3DNode *axes_node = gst_3d_node_new_debug_axes (context);
+  if (uv_shader == NULL) {
+    GST_WARNING ("Failed to create VR shaders. Error: %s", error->message);
+    g_clear_error (&error);
+    return; /* FIXME: Add boolean return result */
+  }
+
+  axes_node = gst_3d_node_new_debug_axes (context);
   gst_3d_scene_append_node (scene, axes_node);
 
   Gst3DMesh *sphere_mesh = gst_3d_mesh_new_sphere (context, 0.5, 100, 100);

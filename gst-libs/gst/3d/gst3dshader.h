@@ -24,6 +24,8 @@
 
 #include <gst/gst.h>
 #include <gst/gl/gstgl_fwd.h>
+#include <gst/gl/gstglfuncs.h>
+
 #include <graphene-gobject.h>
 
 G_BEGIN_DECLS
@@ -63,7 +65,7 @@ void gst_3d_shader_disable_attribs (Gst3DShader * self);
 void gst_3d_shader_enable_attribs (Gst3DShader * self);
 */	
 gboolean gst_3d_shader_from_vert_frag (Gst3DShader * self, const gchar * vertex,
-    const gchar * fragment);
+    const gchar * fragment, GError **error);
 void gst_3d_shader_delete (Gst3DShader * self);
 
 void gst_3d_shader_upload_matrix (Gst3DShader * self, graphene_matrix_t * mat,
@@ -73,7 +75,7 @@ void gst_3d_shader_upload_vec2 (Gst3DShader * self, graphene_vec2_t * vec,
     
 Gst3DShader *
 gst_3d_shader_new_vert_frag (GstGLContext * context, const gchar * vertex,
-    const gchar * fragment);
+    const gchar * fragment, GError **error);
 
 G_END_DECLS
 #endif /* __GST_3D_SHADER_H__ */
