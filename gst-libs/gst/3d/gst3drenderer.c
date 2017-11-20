@@ -227,13 +227,22 @@ _draw_framebuffers_on_planes_shader_proj (Gst3DRenderer * self,
 void
 gst_3d_renderer_init_stereo (Gst3DRenderer * self, Gst3DCamera * cam)
 {
+  GError *error = NULL;
+
   GstGLFuncs *gl = self->context->gl_vtable;
   Gst3DCameraHmd *hmd_cam = GST_3D_CAMERA_HMD (cam);
   Gst3DHmd *hmd = hmd_cam->hmd;
   float aspect_ratio = hmd->left_aspect;
   self->render_plane = gst_3d_mesh_new_plane (self->context, aspect_ratio);
   self->shader = gst_3d_shader_new_vert_frag (self->context, "mvp_uv.vert",
-      "texture_uv.frag");
+      "texture_uv.frag", &error);
+
+  if (self->shader == NULL) {
+    GST_WARNING ("Failed to create shaders. Error: %s", error->message);
+    g_clear_error (&error);
+    return;
+  }
+
   gst_3d_mesh_bind_shader (self->render_plane, self->shader);
 
   _create_fbo (gl, &self->left_fbo, &self->left_color_tex,
@@ -250,13 +259,21 @@ void
 gst_3d_renderer_init_stereo_shader_proj (Gst3DRenderer * self,
     Gst3DCamera * cam)
 {
+  GError *error = NULL;
+
   Gst3DCameraHmd *hmd_cam = GST_3D_CAMERA_HMD (cam);
   Gst3DHmd *hmd = hmd_cam->hmd;
   float aspect_ratio = hmd->left_aspect;
   self->render_plane = gst_3d_mesh_new_plane (self->context, aspect_ratio);
 
   self->shader = gst_3d_shader_new_vert_frag (self->context, "mvp_uv.vert",
-      "texture_equirectangular_sphere.frag");
+      "texture_equirectangular_sphere.frag", &error);
+
+  if (self->shader == NULL) {
+    GST_WARNING ("Failed to create shaders. Error: %s", error->message);
+    g_clear_error (&error);
+    return;
+  }
 
   gst_3d_mesh_bind_shader (self->render_plane, self->shader);
 
