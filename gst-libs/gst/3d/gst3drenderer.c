@@ -181,12 +181,12 @@ _draw_framebuffers_on_planes (Gst3DRenderer * self)
 
   /* left framebuffer */
   gl->Viewport (0, 0, self->eye_width, self->eye_height);
-  glBindTexture (GL_TEXTURE_2D, self->left_color_tex);
+  gl->BindTexture (GL_TEXTURE_2D, self->left_color_tex);
   gst_3d_mesh_draw (self->render_plane);
 
   /* right framebuffer */
   gl->Viewport (self->eye_width, 0, self->eye_width, self->eye_height);
-  glBindTexture (GL_TEXTURE_2D, self->right_color_tex);
+  gl->BindTexture (GL_TEXTURE_2D, self->right_color_tex);
   gst_3d_mesh_draw (self->render_plane);
 }
 
