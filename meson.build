@@ -83,7 +83,7 @@ pkg_mod.generate(libraries : gst_3d_lib,
       subdirs : ['gstreamer-' + apiversion],
       version : gst_version,
       name : 'libgst3d-' + apiversion,
-      filebase :'gst-3d-' + apiversion,
+      filebase :'gst3d-' + apiversion,
       description : 'A high level API for 3D in GStreamer.')
 
 gst_c_args = ['-DHAVE_CONFIG_H',
