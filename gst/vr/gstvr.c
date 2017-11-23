@@ -20,8 +20,6 @@
 
 #define GST_USE_UNSTABLE_API
 
-#include "config.h"
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
