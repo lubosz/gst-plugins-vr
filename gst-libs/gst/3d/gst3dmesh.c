@@ -109,6 +109,16 @@ gst_3d_mesh_new_cube (GstGLContext * context)
   return mesh;
 }
 
+Gst3DMesh *
+gst_3d_mesh_new_assimp (GstGLContext * context, const char *file)
+{
+  g_return_val_if_fail (GST_IS_GL_CONTEXT (context), NULL);
+  Gst3DMesh *mesh = gst_3d_mesh_new (context);
+  gst_3d_mesh_init_buffers (mesh);
+  gst_3d_mesh_upload_assimp (mesh, file);
+  return mesh;
+}
+
 static void
 gst_3d_mesh_finalize (GObject * object)
 {
@@ -570,4 +580,61 @@ gst_3d_mesh_upload_sphere (Gst3DMesh * self, float radius, unsigned stacks,
       indices, GL_STATIC_DRAW);
 
   self->draw_mode = GL_TRIANGLE_STRIP;
+}
+
+#include <assimp/cimport.h>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
+void
+gst_3d_mesh_upload_assimp (Gst3DMesh * self, const char *file)
+{
+  GstGLFuncs *gl = self->context->gl_vtable;
+
+  const struct aiScene *scene = NULL;
+  scene = aiImportFile (file, 0);
+
+
+  const struct aiMesh *assimp_mesh =
+      scene->mMeshes[scene->mRootNode->mChildren[0]->mMeshes[0]];
+
+  GST_ERROR ("Uploading %s with %d verts", file, assimp_mesh->mNumVertices);
+
+  // GLfloat *normals = malloc(3 * mesh->mNumVertices *sizeof(float));
+
+  GLfloat *positions =
+      malloc (3 * assimp_mesh->mNumVertices * sizeof (GLfloat));
+  for (int i = 0; i < assimp_mesh->mNumVertices; ++i) {
+    positions[i * 3] = assimp_mesh->mVertices[i].x;
+    positions[i * 3 + 1] = assimp_mesh->mVertices[i].y;
+    positions[i * 3 + 2] = assimp_mesh->mVertices[i].z;
+  }
+
+  GLfloat *uvs = malloc (2 * assimp_mesh->mNumVertices * sizeof (GLfloat));
+  for (int i = 0; i < assimp_mesh->mNumVertices; ++i) {
+    uvs[i * 2] = assimp_mesh->mTextureCoords[0][i].x;
+    uvs[i * 2 + 1] = assimp_mesh->mTextureCoords[0][i].y;
+  }
+
+  GLushort *indices = malloc (3 * assimp_mesh->mNumFaces * sizeof (GLushort));
+
+  for (int i = 0; i < assimp_mesh->mNumFaces; ++i) {
+    indices[i * 3] = assimp_mesh->mFaces[i].mIndices[0];
+    indices[i * 3 + 1] = assimp_mesh->mFaces[i].mIndices[1];
+    indices[i * 3 + 2] = assimp_mesh->mFaces[i].mIndices[2];
+  }
+
+  self->vertex_count = assimp_mesh->mNumVertices;
+  self->draw_mode = GL_TRIANGLES;
+  //mesh->draw_mode = GL_LINE_STRIP;
+
+  gst_3d_mesh_append_attribute_buffer (self, "position", sizeof (GLfloat), 3,
+      positions);
+  gst_3d_mesh_append_attribute_buffer (self, "uv", sizeof (GLfloat), 2, uvs);
+
+  // index
+  self->index_size = 3 * assimp_mesh->mNumFaces * sizeof (GLushort);
+  gl->BindBuffer (GL_ELEMENT_ARRAY_BUFFER, self->vbo_indices);
+  gl->BufferData (GL_ELEMENT_ARRAY_BUFFER, self->index_size, indices,
+      GL_STATIC_DRAW);
 }

@@ -17,6 +17,7 @@ openhmd_dep = dependency('openhmd', required : false)
 freenect2_dep = dependency('freenect2', required : false)
 glib_dep = dependency('glib-2.0')
 gio_dep = dependency('gio-2.0')
+assimp_dep = dependency('assimp')
 gst_dep = dependency('gstreamer-' + apiversion, version: GST_DEP_VERSION)
 gst_gl_dep = dependency('gstreamer-gl-' + apiversion, version: GST_DEP_VERSION)
 gst_video_dep = dependency('gstreamer-video-' + apiversion, version: GST_DEP_VERSION)
@@ -52,7 +53,7 @@ gst_3d_lib = shared_library('gst3d-' + apiversion,
   'gst-libs/gst/3d/gst3dmath.c',
   gst_3d_lib_src_hmd,
   install: true,
-  dependencies: [glib_dep, gobject_dep, gst_dep, gst_gl_dep, gst_video_dep, graphene_dep, openhmd_dep, gio_dep],
+  dependencies: [glib_dep, gobject_dep, gst_dep, gst_gl_dep, gst_video_dep, graphene_dep, openhmd_dep, gio_dep, assimp_dep],
   c_args: ['-Wno-pedantic'],
   cpp_args: ['-fpermissive'],
   link_args: ['-lm'],
