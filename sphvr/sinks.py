@@ -11,11 +11,8 @@ class GLSink:
         self.widget = Gtk.DrawingArea()
         self.widget.set_double_buffered(True)
 
-    def xid(self):
-        return self.widget.get_window().get_xid()
-
     def set_handle(self):
-        self.element.set_window_handle(self.xid())
+        pass
 
 
 class GtkGLSink:

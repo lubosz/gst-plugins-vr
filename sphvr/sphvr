@@ -16,13 +16,6 @@ from gi.repository import Gdk, Gst, Gtk, GdkX11, GstVideo, GstGL, GnomeDesktop, 
 from sphvr.sinks import *
 from collections import OrderedDict
 
-from ctypes import cdll
-try:
-    x11 = cdll.LoadLibrary('libX11.so')
-    x11.XInitThreads()
-except OSError:
-    pass
-
 
 # Check if we're in development or installed version and set paths properly
 def _in_devel():
