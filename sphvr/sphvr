@@ -139,8 +139,11 @@ class SPHVR:
 
     def bus_cb(self, bus, message):
         if message.type == Gst.MessageType.EOS:
-            print("Show's over, bye.")
-            self.quit_app()
+            self.pipeline.seek(1.0,
+                               Gst.Format.TIME,
+                               Gst.SeekFlags.FLUSH,
+                               Gst.SeekType.SET, 0,
+                               Gst.SeekType.NONE, 0)
         elif message.type == Gst.MessageType.ERROR:
             print("Error:", message.parse_error())
             self.quit_app()
