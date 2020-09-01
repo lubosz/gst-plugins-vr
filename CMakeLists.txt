@@ -57,15 +57,11 @@ target_link_libraries(gst3d-1.0
   ${GST_VIDEO_LIBRARIES}
   ${GIO_LIBRARIES}
   ${OPENHMD_LIBRARIES}
+  assimp
 )
 
 file(GLOB_RECURSE GST_VR_C ${CMAKE_CURRENT_SOURCE_DIR}/gst/vr/*.c)
 file(GLOB_RECURSE GST_VR_H ${CMAKE_CURRENT_SOURCE_DIR}/gst/vr/*.h)
-
-if (NOT OPENHMD_FOUND)
-    list(REMOVE_ITEM GST_VR_C
-        ${CMAKE_CURRENT_SOURCE_DIR}/gst/vr/gsthmdwarp.c)
-endif()
 
 add_library(gstvrplugins SHARED ${GST_VR_C} ${GST_VR_H} ${CMAKE_CURRENT_SOURCE_DIR}/gpu/shaders.c)
 add_library(gstvrplugins_static STATIC ${GST_VR_C} ${GST_VR_H} ${CMAKE_CURRENT_SOURCE_DIR}/gpu/shaders.c)
