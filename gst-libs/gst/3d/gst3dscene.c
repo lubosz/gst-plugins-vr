@@ -53,6 +53,7 @@ gst_3d_scene_init (Gst3DScene * self)
   self->context = NULL;
   self->gl_initialized = FALSE;
   self->node_draw_func = &gst_3d_node_draw;
+  graphene_matrix_init_identity (&self->model);
 }
 
 Gst3DScene *
@@ -125,9 +126,19 @@ gst_3d_scene_draw_nodes (Gst3DScene * self, graphene_matrix_t * mvp)
 }
 
 void
+gst_3d_scene_set_orientation (Gst3DScene *self,
+                              graphene_quaternion_t *orientation)
+{
+  graphene_quaternion_to_matrix (orientation, &self->model);
+}
+
+void
 gst_3d_scene_draw (Gst3DScene * self)
 {
   gst_3d_camera_update_view (self->camera);
+
+  graphene_matrix_t mvp;
+  graphene_matrix_multiply (&self->model, &self->camera->mvp, &mvp);
 
 #ifdef HAVE_OPENHMD
   if (GST_IS_3D_CAMERA_HMD (self->camera))
@@ -136,9 +147,9 @@ gst_3d_scene_draw (Gst3DScene * self)
     else
       gst_3d_renderer_draw_stereo (self->renderer, self);
   else
-    gst_3d_scene_draw_nodes (self, &self->camera->mvp);
+    gst_3d_scene_draw_nodes (self, &mvp);
 #else
-  gst_3d_scene_draw_nodes (self, &self->camera->mvp);
+  gst_3d_scene_draw_nodes (self, &mvp);
 #endif
   gst_3d_scene_clear_state (self);
 }

@@ -53,6 +53,7 @@ struct _Gst3DScene
   Gst3DCamera *camera;
   Gst3DRenderer *renderer;
   GList *nodes;
+  graphene_matrix_t model;
 };
 
 struct _Gst3DSceneClass
@@ -77,6 +78,10 @@ void gst_3d_scene_clear_state (Gst3DScene * self);
 gboolean gst_3d_scene_init_hmd(Gst3DScene * self);
 void gst_3d_scene_init_stereo_renderer(Gst3DScene * self, GstGLContext * context);
 #endif
+
+void
+gst_3d_scene_set_orientation (Gst3DScene *self,
+                              graphene_quaternion_t *orientation);
 
 GType gst_3d_scene_get_type (void);
 
