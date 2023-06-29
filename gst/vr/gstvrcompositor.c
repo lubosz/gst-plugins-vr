@@ -59,6 +59,8 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 enum
 {
   PROP_0,
+  PROP_ORIENTATION,
+  LAST_PROP
 };
 
 #define DEBUG_INIT \
@@ -117,6 +119,12 @@ gst_vr_compositor_class_init (GstVRCompositorClass * klass)
       "Lubosz Sarnecki <lubosz.sarnecki@collabora.co.uk>\n");
 
   GST_GL_BASE_FILTER_CLASS (klass)->supported_gl_api = GST_GL_API_OPENGL3;
+
+  g_object_class_install_property (gobject_class, PROP_ORIENTATION,
+    g_param_spec_variant("orientation", "Sphere orientation quaternion",
+                         "Quaternion as 4 element GVariant double array",
+                         G_VARIANT_TYPE_ARRAY, NULL,
+                         G_PARAM_WRITABLE));
 }
 
 static void
@@ -124,13 +132,39 @@ gst_vr_compositor_init (GstVRCompositor * self)
 {
   self->scene = NULL;
   self->in_tex = 0;
+  graphene_quaternion_init(&self->orientation, 0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 static void
 gst_vr_compositor_set_property (GObject * object, guint prop_id,
     const GValue * value, GParamSpec * pspec)
 {
+  GstVRCompositor *self = GST_VR_COMPOSITOR (object);
+
   switch (prop_id) {
+    case PROP_ORIENTATION:
+      GVariant *variant = g_value_get_variant (value);
+
+      gsize n_values;
+      const gdouble *values = g_variant_get_fixed_array (variant, &n_values,
+                                                         sizeof(gdouble));
+
+      if (n_values == 4)
+        {
+          graphene_quaternion_init(&self->orientation, values[0], values[1],
+                                   values[2], values[3]);
+          if (self->scene)
+          {
+            gst_3d_scene_set_orientation (self->scene, &self->orientation);
+          }
+        }
+      else
+        {
+          GST_WARNING ("Incorrect array size of %ld provided."
+                       "Provide a double array of 4 elements.", n_values);
+        }
+
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -169,6 +203,9 @@ gst_vr_compositor_set_caps (GstGLFilter * filter, GstCaps * incaps,
 #endif
   }
   self->caps_change = TRUE;
+
+  gst_3d_scene_set_orientation (self->scene, &self->orientation);
+
   return ret;
 }
 

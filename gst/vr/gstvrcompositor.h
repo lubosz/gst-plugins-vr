@@ -51,6 +51,8 @@ struct _GstVRCompositor
   gboolean caps_change;
 
   Gst3DScene *scene;
+
+  graphene_quaternion_t orientation;
 };
 
 struct _GstVRCompositorClass
