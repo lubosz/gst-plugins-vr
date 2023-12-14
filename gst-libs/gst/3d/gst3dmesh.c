@@ -516,7 +516,7 @@ gst_3d_mesh_upload_sphere (Gst3DMesh * self, float radius, unsigned stacks,
 {
   GLfloat *positions;
   GLfloat *uvs;
-  GLushort *indices;
+  GLuint *indices;
 
   GstGLFuncs *gl = self->context->gl_vtable;
 
@@ -557,12 +557,12 @@ gst_3d_mesh_upload_sphere (Gst3DMesh * self, float radius, unsigned stacks,
   /* index */
   self->index_size = (slices - 1) * stacks * 2;
 
-  indices = (GLushort *) malloc (sizeof (GLushort) * self->index_size);
-  GLushort *indextemp = indices;
+  indices = (GLuint *) malloc (sizeof (GLuint) * self->index_size);
+  GLuint *indextemp = indices;
 
   // -3 = minus caps slices - one to iterate over strips
-  for (int i = 0; i < slices - 1; i++) {
-    for (int j = 0; j < stacks; j++) {
+  for (GLuint i = 0; i < slices - 1; i++) {
+    for (GLuint j = 0; j < stacks; j++) {
       *indextemp++ = i * stacks + j;
       *indextemp++ = (i + 1) * stacks + j;
     }
@@ -576,8 +576,9 @@ gst_3d_mesh_upload_sphere (Gst3DMesh * self, float radius, unsigned stacks,
    */
 
   // upload index
+  self->index_type = GL_UNSIGNED_INT;
   gl->BindBuffer (GL_ELEMENT_ARRAY_BUFFER, self->vbo_indices);
-  gl->BufferData (GL_ELEMENT_ARRAY_BUFFER, sizeof (GLushort) * self->index_size,
+  gl->BufferData (GL_ELEMENT_ARRAY_BUFFER, sizeof (GLuint) * self->index_size,
       indices, GL_STATIC_DRAW);
 
   self->draw_mode = GL_TRIANGLE_STRIP;
