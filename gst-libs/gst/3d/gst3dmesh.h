@@ -60,6 +60,8 @@ struct _Gst3DMesh
   guint vbo_indices;
 
   guint index_size;
+  GLenum index_type;
+
   guint vertex_count;
 
   GLenum draw_mode;

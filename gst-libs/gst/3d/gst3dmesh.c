@@ -44,6 +44,7 @@ gst_3d_mesh_init (Gst3DMesh * self)
   self->index_size = 0;
   self->vao = 0;
   self->vbo_indices = 0;
+  self->index_type = GL_UNSIGNED_SHORT;
 }
 
 Gst3DMesh *
@@ -220,14 +221,14 @@ void
 gst_3d_mesh_draw (Gst3DMesh * self)
 {
   GstGLFuncs *gl = self->context->gl_vtable;
-  gl->DrawElements (self->draw_mode, self->index_size, GL_UNSIGNED_SHORT, 0);
+  gl->DrawElements (self->draw_mode, self->index_size, self->index_type, 0);
 }
 
 void
 gst_3d_mesh_draw_mode (Gst3DMesh * self, GLenum draw_mode)
 {
   GstGLFuncs *gl = self->context->gl_vtable;
-  gl->DrawElements (draw_mode, self->index_size, GL_UNSIGNED_SHORT, 0);
+  gl->DrawElements (draw_mode, self->index_size, self->index_type, 0);
 }
 
 void
